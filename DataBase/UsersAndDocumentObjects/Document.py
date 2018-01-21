@@ -42,3 +42,6 @@ class Document:
     # Позже добавить инфу о том кто вернул книгу(his id)
     def return_book(self):
         self.__free_count += 1;
+
+    def get_info(self):
+        print(self.__name+" "+self.__author+" "+self.__type+" "+self.get_description()+" "+str(self.get_count()));

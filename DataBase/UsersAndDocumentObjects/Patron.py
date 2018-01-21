@@ -25,6 +25,12 @@ class Patron(userBase, IBookingSystem):
     def take_book(self, bookId): pass
 
     def return_book(self, bookId): pass
-
+    #кортеж (id,name,address,phone,history,current_books,type)
     def get_info(self):
-        print(self.get_name() + " " + str(self.get_address()) + " " + str(self.get_phone()) + " " + str(self.get_type()))
+        return (self.get_id(),
+                self.get_name(),
+                self.get_address(),
+                self.get_phone(),
+                str(self.__history),
+                str(self.__current_books),
+                self.get_type())

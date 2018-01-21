@@ -3,7 +3,10 @@ from UsersAndDocumentObjects.Document import  Document
 from UsersAndDocumentObjects.Librarian import Librarian
 from UsersAndDocumentObjects.Patron import Patron
 from UsersAndDocumentObjects.Patron import PatronType
+from BDmanagement import BDManagement
 def main():
-    p1=Patron("Vasya","UKRAIN","student",1,8999,[],[],2)
-    p1.get_info()
+    #print all information in DataBase.db
+    print("Data-base:")
+    a=BDManagement()
+    a.select_all()
 main()
