@@ -29,7 +29,7 @@ class userBase:
         except ValueError:
             return False
 
-    def get_phone(self, phone):
+    def get_phone(self):
         return self.__phone_number
 
     # getting id
