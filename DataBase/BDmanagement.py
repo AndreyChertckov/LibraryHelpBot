@@ -1,10 +1,6 @@
 import sqlite3
 from sqlite3 import Error
-from UsersAndDocumentObjects.IBookingSystem import IBookingSystem
-from UsersAndDocumentObjects.Document import Document
-from UsersAndDocumentObjects.Librarian import Librarian
-from UsersAndDocumentObjects.Patron import Patron
-from UsersAndDocumentObjects.Patron import PatronType
+
 
 
 class BDManagement:
@@ -12,7 +8,8 @@ class BDManagement:
     def __init__(self):
         file = 'DataBase.db'
         self.__create_connection(file)
-
+        self.__create_tables()
+        #self.__bd.cursor().execute("DROP TABLE documents")
     def __create_connection(self, file):
         try:
             self.__bd = sqlite3.connect(file)
@@ -30,7 +27,7 @@ class BDManagement:
 
     def __create_tables(self):
 
-        self.__create_table(self.__bd, """
+        self.__create_table( """
                 CREATE TABLE IF NOT EXISTS librarians (
                 id integer PRIMARY KEY,
                 name text NOT NULL,
@@ -39,7 +36,7 @@ class BDManagement:
                 type text
               ); """);
 
-        self.__create_table(self.__bd, """
+        self.__create_table( """
                  CREATE TABLE IF NOT EXISTS patrons (
                  id integer PRIMARY KEY,
                  name text NOT NULL,
@@ -50,25 +47,45 @@ class BDManagement:
                  type text
                   ); """);
 
-        self.__create_table(self.__bd, """
+        self.__create_table( """
               CREATE TABLE IF NOT EXISTS documents (
               id integer PRIMARY KEY,
               name text NOT NULL,
-              description text NOT NULL,
               author text NOT NULL,
+              description text NOT NULL,
+              type text,
               count integer,
              free_count integer);
         """)
-    def select_all(self):
+
+    def select_all(self,table_to_select):
         cur = self.__bd.cursor()
-        cur.execute("SELECT * FROM patrons")
+        cur.execute("SELECT * FROM "+str(table_to_select));
         rows = cur.fetchall()
+        print("Table "+table_to_select+":");
         for row in rows:
             print(row)
+
+    def add_librarian(self,newLibr):
+            sql="""INSERT INTO librarians(id,name,phone,address,type)
+                    VALUES(?,?,?,?,?)"""
+            self.__add_new(sql,newLibr)
+
+    # добавить в базу картеж в виде (id,name,author,descr.,type,count,free_count
+    def add_document(self,newDoc):
+            sql="""INSERT INTO documents(id,name,author,description,type,count,free_count)
+            VALUES (?,?,?,?,?,?,?)"""
+            self.__add_new(sql,newDoc)
+
     def add_patron(self, newPatron):
-        with self.__bd:
             sql = """ INSERT INTO patrons(id,name,address,phone,history,current_books,type)
-                VALUES(?,?,?,?,?,?,?)"""
+                VALUES (?,?,?,?,?,?,?)"""
+            self.__add_new(sql,newPatron)
+
+    def __add_new(self,sql,new):
+        with self.__bd:
             cur = self.__bd.cursor()
-            cur.execute(sql, newPatron.get_info())
+            print(new.get_info())
+            cur.execute(sql, new.get_info())
         return cur.lastrowid
+

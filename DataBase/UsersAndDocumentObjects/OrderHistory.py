@@ -1,5 +1,6 @@
 # class representing one order:
 # It stores user id,which took some document in the library,and document id
+from BDTables import BDTables
 class OrderHistoryObject:
 
     def __init__(self, userId, docId, time):
