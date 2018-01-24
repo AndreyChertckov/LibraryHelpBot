@@ -1,3 +1,4 @@
+from BDTables import BDTables
 # class representing all types of documents
 class Document:
     def __init__(self, name, type, description, author, id, max_check_out_time, count, free_count):
@@ -9,7 +10,7 @@ class Document:
         self.__max_check_out_time = max_check_out_time
         self.__count = count
         self.__free_count = count
-
+        BDTables.bd.add_document(self)
     def get_id(self):
         return self.__id
 
@@ -42,6 +43,6 @@ class Document:
     # Позже добавить инфу о том кто вернул книгу(his id)
     def return_book(self):
         self.__free_count += 1;
-
+    #получить картеж в виде (id,name,author,descr.,type,count,free_count
     def get_info(self):
-        print(self.__name+" "+self.__author+" "+self.__type+" "+self.get_description()+" "+str(self.get_count()));
+        return (self.get_id(),self.get_name(),self.__author,self.get_description(),self.get_type(),self.get_count(),self.__free_count);
