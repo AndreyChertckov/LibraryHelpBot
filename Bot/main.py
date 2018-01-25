@@ -48,7 +48,7 @@ def build_menu(buttons,
 pages = list(list(["book" + str(j) +str(i)] for i in range(5)) for j in range(5))
 
 
-def books(bot,update,pages,step = 0):
+def books(bot ,update,pages,step = 0):
     if step < 0:
         return
     key = "Книга"
