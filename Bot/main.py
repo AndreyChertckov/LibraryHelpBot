@@ -13,7 +13,10 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 
 def start(bot, update):
-    bot.send_message(chat_id=update.message.chat_id, text="I'm a bot, please talk to me!")
+    key = telegram.KeyboardButton(text = "test")
+    keyboard = [["/start","  ","stop",key]]
+    reply_markup = telegram.ReplyKeyboardMarkup(keyboard,True)
+    bot.send_message(chat_id=update.message.chat_id, text="I'm a bot, please talk to me!",reply_markup = reply_markup)
 
 
 def echo(bot, update):
@@ -56,8 +59,6 @@ def build_menu(buttons,
 #         )
 #     )
 #     bot.answer_inline_query(update.inline_query.id, results)
-
-
 start_handler = CommandHandler('start', start)
 echo_handler = MessageHandler(Filters.text, echo)
 caps_handler = CommandHandler('caps', caps)
@@ -69,3 +70,4 @@ dispatcher.add_handler(caps_handler)
 # dispatcher.add_handler(inline_caps_handler)
 
 updater.start_polling()
+updater.idle()
