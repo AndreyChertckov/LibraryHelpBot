@@ -14,8 +14,8 @@ class userBase:
         return str(self.__name)
 
     def set_name(self, name):
-        if any(char.isdigit() for char in str(name)):
-            return False
+       # if any(char.isdigit() for char in str(name)):
+       #     return False
         self.__name = name
         return True
 
