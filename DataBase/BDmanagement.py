@@ -137,7 +137,7 @@ class BDManagement:
              user_id integer,
              doc_id integer);
         """)
-
+#kek
     def __add_new(self, sql, new):
         with self.__bd:
             cur = self.__bd.cursor()
