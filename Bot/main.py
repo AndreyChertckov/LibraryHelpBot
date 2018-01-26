@@ -13,14 +13,11 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 
 def start(bot, update):
-    key = telegram.KeyboardButton(text = "test")
-    keyboard = [["/start","  ","stop",key]]
-    reply_markup = telegram.ReplyKeyboardMarkup(keyboard,True)
-    bot.send_message(chat_id=update.message.chat_id, text="I'm a bot, please talk to me!",reply_markup = reply_markup)
+    key = telegram.KeyboardButton(text="test")
+    keyboard = [["/start", "/books", "stop", key]]
+    reply_markup = telegram.ReplyKeyboardMarkup(keyboard, True)
+    bot.send_message(chat_id=update.message.chat_id, text="I'm a bot, please talk to me!", reply_markup=reply_markup)
 
-
-def echo(bot, update):
-    bot.send_message(chat_id=update.message.chat_id, text=update.message.text)
 
 
 def caps(bot, update):
@@ -46,6 +43,34 @@ def build_menu(buttons,
         menu.append(footer_buttons)
     return menu
 
+
+pages = list(list(["book" + str(j) + str(i)] for i in range(5)) for j in range(5))
+
+
+def books(bot, update, pages, step=0, condition=False):
+    if condition:
+        dispatcher.add_handler(MessageHandler('<-', lambda bot1, update1: books(bot1, update1, pages=pages, step=step - 1)))
+        dispatcher.add_handler(MessageHandler('->', lambda bot1, update1: books(bot1, update1, pages=pages, step=step + 1)))
+        dispatcher.add_handler(CommandHandler('cancel', cancel))
+    print(step)
+    if step < 0:
+        return
+    key = "Книга"
+    print(pages)
+    keyboard = pages[step] + [["<-", "->"], ["Cancel"]]
+    reply_markup = ReplyKeyboardMarkup(keyboard)
+    print("=======")
+    bot.send_message(chat_id=update.message.chat_id, text="My set of books!", reply_markup=reply_markup)
+
+
+def cancel(bot, update):
+    pass
+    # Листать страницы поиска книги
+
+def echo(bot, update):
+    bot.send_message(chat_id=update.message.chat_id, text=update.message.text)
+
+
 # def inline_caps(bot, update):
 #     query = update.inline_query.query
 #     if not query:
@@ -62,11 +87,11 @@ def build_menu(buttons,
 start_handler = CommandHandler('start', start)
 echo_handler = MessageHandler(Filters.text, echo)
 caps_handler = CommandHandler('caps', caps)
-
-
+library = CommandHandler("books", lambda bot, update: books(bot, update, pages, step=0, condition=True))
 dispatcher.add_handler(start_handler)
 dispatcher.add_handler(echo_handler)
 dispatcher.add_handler(caps_handler)
+dispatcher.add_handler(library)
 # dispatcher.add_handler(inline_caps_handler)
 
 updater.start_polling()
