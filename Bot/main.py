@@ -13,8 +13,6 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 
 def start(bot, update):
-    print(type(update))
-    print(update)
     key = telegram.KeyboardButton(text = "test")
     keyboard = [["/start","/books","stop",key]]
     reply_markup = telegram.ReplyKeyboardMarkup(keyboard,True)
@@ -52,8 +50,8 @@ pages = list(list(["book" + str(j) +str(i)] for i in range(5)) for j in range(5)
 
 def books(bot ,update,pages,step = 0,condition = False):
     if condition:
-        dispatcher.add_handler(CommandHandler('<-', books(bot,update,pages = pages,step = step - 1)))
-        dispatcher.add_handler(CommandHandler('->', books(bot,update,pages = pages,step = step + 1)))
+        dispatcher.add_handler(CommandHandler('<-',lambda: books(pages = pages,step = step - 1)))
+        dispatcher.add_handler(CommandHandler('->',lambda: books(pages = pages,step = step + 1)))
     if step < 0:
         return
     key = "Книга"
@@ -61,6 +59,9 @@ def books(bot ,update,pages,step = 0,condition = False):
     reply_markup = telegram.ReplyKeyboardMarkup(keyboard)
     bot.send_message(chat_id=update.message.chat_id, text="My set of books!", reply_markup=reply_markup)
 
+def nextpage(bot,update,pages,step= 0):
+    pass
+    #Листать страницы поиска книги
 
 # def inline_caps(bot, update):
 #     query = update.inline_query.query
@@ -78,10 +79,7 @@ def books(bot ,update,pages,step = 0,condition = False):
 start_handler = CommandHandler('start', start)
 echo_handler = MessageHandler(Filters.text, echo)
 caps_handler = CommandHandler('caps', caps)
-print(type(telegram.update.Update))
-print("==========================")
-print(telegram.update.Update)
-library = CommandHandler("books",books(bot = bot,update = , pages=pages,step = 0,condition = True))
+library = CommandHandler("books",lambda:books(pages=pages,step = 0,condition = True))
 dispatcher.add_handler(start_handler)
 dispatcher.add_handler(echo_handler)
 dispatcher.add_handler(caps_handler)
