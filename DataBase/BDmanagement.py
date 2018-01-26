@@ -12,17 +12,20 @@ delete_lable (deleteFrom,id) - delete cell with 'id' from 'deleteFrom' table
 drop_table - deletes table
 clear_table - clears table
 '''
+
+
 class BDManagement:
     def __init__(self):
         file = 'DataBase.db'
         self.__create_connection(file)
         self.__create_tables()
         # self.__bd.cursor().execute("DROP TABLE documents")
-#InnopolisUDj9^]Ye[
 
-    #patron id name phone address history current_books
-    #librarian id name phone address type
-    #document id name author description type count free_count
+    # InnopolisUDj9^]Ye[
+
+    # patron id name phone address history current_books
+    # librarian id name phone address type
+    # document id name author description type count free_count
     def select_all(self, table_to_select):
         cur = self.__bd.cursor()
         cur.execute("SELECT * FROM " + str(table_to_select));
@@ -31,6 +34,16 @@ class BDManagement:
         for row in rows:
             print(row)
         return rows
+
+    def add_chat(self,newChat):
+        sql="""INSERT INTO chats(chat_id,table_,id) VALUES(?,?,?)"""
+        with self.__bd:
+            cur = self.__bd.cursor()
+            cur.execute(sql,newChat)
+
+    def add_order(self,newOrder):
+        sql="""INSERT INTO orders(id,date,user_id,doc_id) VALUES(?,?,?,?)"""
+        self.__add_new(sql,newOrder)
 
     def add_librarian(self, newLibr):
         sql = """INSERT INTO librarians(id,name,phone,address,type)
@@ -54,9 +67,9 @@ class BDManagement:
         cur.execute(sql, newLabel)
 
     def delete_label(self, deleteFrom, deLID):
-        self.__bd.cursor().execute("DELETE FROM "+deleteFrom+" where id=?",(deLID,))
+        self.__bd.cursor().execute("DELETE FROM " + deleteFrom + " where id=?", (deLID,))
 
-    def clear_table(self,table):
+    def clear_table(self, table):
         self.__bd.cursor().execute("")
 
     def drop_table(self, table):
@@ -110,9 +123,23 @@ class BDManagement:
              free_count integer);
         """)
 
+        self.__create_table("""
+            CREATE TABLE IF NOT EXISTS chats (
+            chat_id integer PRIMARY KEY,
+            table_ text NOT NULL,
+            id integer);
+        """)
+
+        self.__create_table("""
+             CREATE TABLE  IF NOT EXISTS orders (
+             id integer PRIMARY KEY,
+             date text NOT NULL,
+             user_id integer,
+             doc_id integer);
+        """)
+
     def __add_new(self, sql, new):
         with self.__bd:
             cur = self.__bd.cursor()
-
             cur.execute(sql, new.get_info())
         return cur.lastrowid
