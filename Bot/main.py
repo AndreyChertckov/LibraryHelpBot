@@ -50,16 +50,18 @@ pages = list(list(["book" + str(j) +str(i)] for i in range(5)) for j in range(5)
 
 def books(bot ,update,pages,step = 0,condition = False):
     if condition:
-        dispatcher.add_handler(CommandHandler('<-',lambda: books(pages = pages,step = step - 1)))
-        dispatcher.add_handler(CommandHandler('->',lambda: books(pages = pages,step = step + 1)))
+        dispatcher.add_handler(CommandHandler('<-',lambda bot,update: books(pages = pages,step = step - 1)))
+        dispatcher.add_handler(CommandHandler('->',lambda bot,update: books(pages = pages,step = step + 1)))
+        dispatcher.add_handler(CommandHandler('cancer', cancer))
     if step < 0:
         return
     key = "Книга"
     keyboard = pages[step] + [["<-","->"],["Cancel"]]
     reply_markup = telegram.ReplyKeyboardMarkup(keyboard)
+    print("=======")
     bot.send_message(chat_id=update.message.chat_id, text="My set of books!", reply_markup=reply_markup)
 
-def nextpage(bot,update,pages,step= 0):
+def cancer(bot,update):
     pass
     #Листать страницы поиска книги
 
@@ -79,7 +81,7 @@ def nextpage(bot,update,pages,step= 0):
 start_handler = CommandHandler('start', start)
 echo_handler = MessageHandler(Filters.text, echo)
 caps_handler = CommandHandler('caps', caps)
-library = CommandHandler("books",lambda:books(pages=pages,step = 0,condition = True))
+library = CommandHandler("books",lambda bot,update:books)
 dispatcher.add_handler(start_handler)
 dispatcher.add_handler(echo_handler)
 dispatcher.add_handler(caps_handler)
