@@ -3,10 +3,12 @@
 from BDTables import BDTables
 class OrderHistoryObject:
 
-    def __init__(self, userId, docId, time):
+    def __init__(self,id,time,userId, docId):
         self.__userId = userId
         self.__docId = docId
         self.__time = time
+        self.__id=id
+        BDTables.bd.add_order(self)
 
     def get_info(self):
-        return (self.__userId, self.__docId, self.__time,)
+        return (self.__id,self.__time,self.__userId, self.__docId,)
