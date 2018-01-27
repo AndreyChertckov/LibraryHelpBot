@@ -22,6 +22,7 @@ class LibraryBot:
         start_handler = CommandHandler('start', self.start)
         reg_handler = MessageHandler(UserFilter("u") & WordFilter('Registration'), self.registration)
         library_handler = MessageHandler(WordFilter('library'), self.library)
+        #Hadlrers for library
         self.dispatcher.add_handler(
             MessageHandler(BooleanFilter(self.in_lib) & WordFilter('<-'), self.library))
         self.dispatcher.add_handler(
@@ -29,6 +30,7 @@ class LibraryBot:
         self.dispatcher.add_handler(
             MessageHandler(BooleanFilter(self.in_lib) & WordFilter('cancel'), self.cancel))
         self.dispatcher.add_handler(library_handler)
+        #End handlers for library
         self.dispatcher.add_handler(start_handler)
         self.dispatcher.add_handler(reg_handler)
         self.updater.start_polling()
