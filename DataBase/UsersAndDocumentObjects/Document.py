@@ -10,7 +10,10 @@ class Document:
         self.__max_check_out_time = max_check_out_time
         self.__count = count
         self.__free_count = count
-        BDTables.bd.add_document(self)
+
+    def load(self):
+        BDTables.bd.add_patron(self)
+
     def get_id(self):
         return self.__id
 

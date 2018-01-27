@@ -8,7 +8,9 @@ class OrderHistoryObject:
         self.__docId = docId
         self.__time = time
         self.__id=id
-        BDTables.bd.add_order(self)
+
+    def load(self):
+        BDTables.bd.add_patron(self)
 
     def get_info(self):
         return (self.__id,self.__time,self.__userId, self.__docId,)

@@ -6,7 +6,9 @@ class Librarian(userBase):
 
     def __init__(self, name, address, id, phone):
         userBase.__init__(self,name,address,"librarian",id,phone)
-        BDTables.bd.add_librarian(self)
+
+    def load(self):
+            BDTables.bd.add_patron(self)
         # additional information
 
     def edit_document(self, docId): pass

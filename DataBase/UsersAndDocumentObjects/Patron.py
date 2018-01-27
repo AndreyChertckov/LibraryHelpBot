@@ -18,6 +18,8 @@ class Patron(userBase, IBookingSystem):
         self.__current_books = current_books
         self.__check_out_time = check_out_time
         #BDTables.bd.add_patron(self)
+    def load(self):
+        BDTables.bd.add_patron(self)
     def get_history(self):
         return self.__history
 

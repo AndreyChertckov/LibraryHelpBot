@@ -37,9 +37,7 @@ class BDManagement:
 
     def add_chat(self,newChat):
         sql="""INSERT INTO chats(chat_id,table_,id) VALUES(?,?,?)"""
-        with self.__bd:
-            cur = self.__bd.cursor()
-            cur.execute(sql,newChat)
+        self.__add_new(sql,newChat)
 
     def add_order(self,newOrder):
         sql="""INSERT INTO orders(id,date,user_id,doc_id) VALUES(?,?,?,?)"""
