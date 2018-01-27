@@ -6,7 +6,7 @@ from Bot.filter import *
 from Bot.books import books, users
 import logging
 
-token = '537025892:AAHqwqWaGEKdb4bBBQ9CJlKGa8mAqz7fElI'
+token = '315702006:AAFwvs4RhsVmTCVPTvknedvxPSs7t_8KfJE'
 
 
 class LibraryBot:
@@ -130,12 +130,15 @@ class LibraryBot:
         pass
 
     def cancel_lib(self, bot, update):
-        # if
-        pass
-        # self.keyboardmarkup = telegram.ReplyKeyboardMarkup(self.keyboard_dict[""], True)
-        #
-        # bot.send_message(chat_id=update.message.chat_id,
-        #                  reply_markup=self.keyboardmarkup)
+        us = "u"
+        if us == "u":
+            self.keyboardmarkup = telegram.ReplyKeyboardMarkup(self.keyboard_dict["unauth"], True)
+        elif us == "a":
+            self.keyboardmarkup = telegram.ReplyKeyboardMarkup(self.keyboard_dict["auth"], True)
+        elif us == "l":
+            self.keyboardmarkup = telegram.ReplyKeyboardMarkup(self.keyboard_dict["admin"], True)
+
+        bot.send_message(chat_id=update.message.chat_id, text="Main menu", reply_markup=self.keyboardmarkup)
 
 
         # self.pagess = list([["books" + str(j) + " " + str(i)] for i in range(10)] for j in range(10))
