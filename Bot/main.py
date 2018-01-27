@@ -2,8 +2,8 @@ import telegram
 from telegram import InlineQueryResultArticle, InputTextMessageContent, ReplyKeyboardRemove, \
     InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton, CallbackQuery
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, InlineQueryHandler
-from Bot.filter import *
-from Bot.books import books, users
+from filter import *
+from books import books, users
 import logging
 
 token = '537025892:AAHqwqWaGEKdb4bBBQ9CJlKGa8mAqz7fElI'
@@ -15,10 +15,20 @@ class LibraryBot:
         self.updater = Updater(token=token)
         self.dispatcher = self.updater.dispatcher
         logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
-
+        self.in_lib = False  # In library or not
+        self.numpage = 0 # Number of page
+        #test list (pagess)
+        self.pagess = list([["books" + str(j) + " " + str(i)] for i in range(10)] for j in range(10))
         start_handler = CommandHandler('start', self.start)
         reg_handler = MessageHandler(UserFilter("u") & WordFilter('Registration'), self.registration)
-
+        library_handler = MessageHandler(WordFilter('library'), self.library)
+        self.dispatcher.add_handler(
+            MessageHandler(BooleanFilter(self.in_lib) & WordFilter('<-'), self.library))
+        self.dispatcher.add_handler(
+            MessageHandler( WordFilter('->'), self.library))
+        self.dispatcher.add_handler(
+            MessageHandler(BooleanFilter(self.in_lib) & WordFilter('cancel'), self.cancel))
+        self.dispatcher.add_handler(library_handler)
         self.dispatcher.add_handler(start_handler)
         self.dispatcher.add_handler(reg_handler)
         self.updater.start_polling()
@@ -65,7 +75,8 @@ class LibraryBot:
             self.new_user[self.field[self.reg_step]] = update.message.text
             self.reg_step += 1
             if self.reg_step < len(self.field):
-                bot.send_message(chat_id=update.message.chat_id, text="Enter your {}".format(self.field[self.reg_step]), reply_markup=self.low_menu)
+                bot.send_message(chat_id=update.message.chat_id, text="Enter your {}".format(self.field[self.reg_step]),
+                                 reply_markup=self.low_menu)
             else:
                 print(list(self.new_user.values())[1:])
                 text_for_message = """
@@ -88,16 +99,14 @@ class LibraryBot:
                 open("file.txt", "a").write(str(users))
                 self.keyboard = [['1', '2', '3', '4']]
                 self.low_menu = telegram.ReplyKeyboardMarkup(self.keyboard, True)
-                bot.send_message(chat_id=update.message.chat_id, text="You have been registered", reply_markup=self.low_menu)
+                bot.send_message(chat_id=update.message.chat_id, text="You have been registered",
+                                 reply_markup=self.low_menu)
             elif update.message.text == "Something is incorrect":
                 self.new_user = {"id": update.message.chat_id}
                 self.reg_step = 0
                 rkeyboard = [[]]
                 self.low_menu = ReplyKeyboardRemove(rkeyboard)
                 bot.send_message(chat_id=update.message.chat_id, text="Enter your name", reply_markup=self.low_menu)
-
-
-
 
     def caps(self, bot, update):
         # text_caps = ' '.join(args).upper()
@@ -117,29 +126,26 @@ class LibraryBot:
         if footer_buttons:
             menu.append(footer_buttons)
         return menu
-
-    # def books(self, bot, update, step=0, condition=False):
-    #     if condition:
-    #         self.dispatcher.add_handler(MessageHandler(WordFilter('<-'), lambda bot1, update1: books(bot1, update1, step=step - 1)))
-    #         self.dispatcher.add_handler(MessageHandler(WordFilter('->'), lambda bot1, update1: books(bot1, update1, step=step + 1)))
-    #         self.dispatcher.add_handler(MessageHandler(WordFilter('cancel'), self.cancel))
-    #     print(step)
-    #     if step < 0:
-    #         return
-    #     key = "Книга"
-    #     # print(pages)
-    #     keyboard = pages[step] + [["<-", "->"], ["Cancel"]]
-    #     reply_markup = ReplyKeyboardMarkup(keyboard)
-    #     print("=======")
-    #     bot.send_message(chat_id=update.message.chat_id, text="My set of books!", reply_markup=reply_markup)
-
-
-    # def cancel(bot, update):
-    #     pass
-    #     # Листать страницы поиска книги
-
-    # def echo(self, bot, update):
-    #     bot.send_message(chat_id=update.message.chat_id, text=update.message.text)
-
+#Search in library
+#!!!!Надо доделать cancel и дальнейший сценарий
+    def library(self, bot, update):
+        print(self.numpage)
+        print(len(self.pagess))
+        self.in_lib = True
+        if update.message.text == '<-':
+            self.numpage -= 1
+        elif update.message.text == '->':
+            self.numpage += 1
+        else:
+            self.numpage = 0
+        if self.numpage < 0 and self.numpage+1 >= len(self.pagess) :
+            return
+        # print(pages)
+        keyboard = self.pagess[self.numpage] + [["<-", "->"], ["Cancel"]]
+        reply_markup = ReplyKeyboardMarkup(keyboard)
+        print("=======")
+        bot.send_message(chat_id=update.message.chat_id, text="My set of books!", reply_markup=reply_markup)
+    def cancel(self,bot,update):
+        pass
 
 LibraryBot(token)
