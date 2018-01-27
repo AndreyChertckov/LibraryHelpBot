@@ -28,6 +28,7 @@ class userBase:
             self.__phone_number = int(phone)
             return True
         except ValueError:
+            self.__phone_number = -1
             return False
 
     def get_phone(self):

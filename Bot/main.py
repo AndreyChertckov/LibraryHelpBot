@@ -5,12 +5,11 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, Inlin
 from Bot.filter import *
 from Bot.books import books, users
 import logging
-
-token = '537025892:AAHqwqWaGEKdb4bBBQ9CJlKGa8mAqz7fElI'
-
+import CONSTANT
 
 class LibraryBot:
-    def __init__(self, token):
+    def __init__(self, token,cntrl):
+        self.cntrl = cntrl
         self.bot = telegram.Bot(token=token)
         self.updater = Updater(token=token)
         self.dispatcher = self.updater.dispatcher
@@ -89,6 +88,7 @@ class LibraryBot:
                 users[self.new_user['id']] = {i: self.new_user[i] for i in self.field}
                 del self.reg_step
                 del self.field
+                self.cntrl.registration(self.new_user)
                 del self.new_user
                 open("file.txt", "a").write(str(users))
                 self.keyboardmarkup = telegram.ReplyKeyboardMarkup(self.keyboard_dict["auth"], True)
@@ -194,5 +194,5 @@ class LibraryBot:
     #     bot.send_message(chat_id=update.message.chat_id, text="My set of books!", reply_markup=reply_markup)
     # def cancel(self,bot,update):
     #     pass
-
-LibraryBot(token)
+def start_bot(controller):
+    LibraryBot(CONSTANT.token,controller)

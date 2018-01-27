@@ -16,8 +16,8 @@ clear_table - clears table
 
 class BDManagement:
     def __init__(self):
-        file = 'DataBase.db'
-        self.__create_connection(file)
+        self.file = 'DataBase.db'
+        self.__create_connection(self.file)
         self.__create_tables()
         # self.__bd.cursor().execute("DROP TABLE documents")
 
@@ -27,7 +27,7 @@ class BDManagement:
     # librarian id name phone address type
     # document id name author description type count free_count
     def select_all(self, table_to_select):
-        cur = self.__bd.cursor()
+        cur = self.__create_connection(self.file).cursor()
         cur.execute("SELECT * FROM " + str(table_to_select));
         rows = cur.fetchall()
         print("Table " + table_to_select + ":");
@@ -61,29 +61,27 @@ class BDManagement:
 
     def edit_label(self, table, set, newLabel):
         sql = "UPDATE " + table + " SET " + set + " where id=?"
-        cur = self.__bd.cursor()
+        cur = self.__create_connection(self.file).cursor()
         cur.execute(sql, newLabel)
 
     def delete_label(self, deleteFrom, deLID):
-        self.__bd.cursor().execute("DELETE FROM " + deleteFrom + " where id=?", (deLID,))
+        self.__create_connection(self.file).cursor().execute("DELETE FROM " + deleteFrom + " where id=?", (deLID,))
 
     def clear_table(self, table):
-        self.__bd.cursor().execute("")
+        self.__create_connection(self.file).cursor().execute("")
 
     def drop_table(self, table):
-        self.__bd.cursor().execute("DROP TABLE IF EXISTS " + table)
+        self.__create_connection(self.file).cursor().execute("DROP TABLE IF EXISTS " + table)
 
     def __create_connection(self, file):
         try:
-            self.__bd = sqlite3.connect(file)
-            print(sqlite3.version)
-            return self.__bd
+            return sqlite3.connect(self.file)
         except Error as e:
             print(e)
 
     def __create_table(self, create_table_sql):
         try:
-            c = self.__bd.cursor()
+            c = self.__create_connection(self.file).cursor()
             c.execute(create_table_sql)
         except Error as e:
             print(e)
@@ -137,7 +135,6 @@ class BDManagement:
         """)
 #kek
     def __add_new(self, sql, new):
-        with self.__bd:
-            cur = self.__bd.cursor()
-            cur.execute(sql, new.get_info())
-        return cur.lastrowid
+      cur = self.__create_connection(self.file).cursor()
+      cur.execute(sql, new.get_info())
+      return cur.lastrowid
