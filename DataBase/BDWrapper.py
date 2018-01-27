@@ -1,16 +1,18 @@
 import sqlite3
-from UsersAndDocumentObjects.Librarian import Librarian
-from UsersAndDocumentObjects.Patron import Patron
-from UsersAndDocumentObjects.OrderHistory import OrderHistoryObject
-from BDmanagement import BDManagement
-from BDTables import BDTables
-from UsersAndDocumentObjects.Document import Document
-from UsersAndDocumentObjects.Patron import PatronType
-from UsersAndDocumentObjects.Chat import  chat
+
+from DataBase.UsersAndDocumentObjects.Librarian import Librarian
+from DataBase.UsersAndDocumentObjects.Patron import Patron
+from DataBase.UsersAndDocumentObjects.OrderHistory import OrderHistoryObject
+from DataBase.BDmanagement import BDManagement
+from DataBase.BDTables import BDTables
+from DataBase.UsersAndDocumentObjects.Document import Document
+from DataBase.UsersAndDocumentObjects.Patron import PatronType
+from DataBase.UsersAndDocumentObjects.Chat import chat
+
 class BDWrapper:
 
-    def __init__(self,bd):
-        self.__bd=bd
+    def __init__(self):
+        self.__bd = BDTables.bd
 
     def get_all_patrons(self):
         rows = BDTables.bd.select_all("patrons")
@@ -28,9 +30,9 @@ class BDWrapper:
         rows=BDTables.bd.select_all("chats")
         return [chat(x[0], x[1], x[2]) for x in rows]
 
-    def chat_exists(self,id):
+    def chat_exists(self, id):
         return any(x.get_chat_id()==id for x in self.get_all("chats"))
 
-    def add_chat(self,chat_id,table):
+    def add_chat(self, chat_id, table):
         chat(chat_id,table,chat_id).load()
 
