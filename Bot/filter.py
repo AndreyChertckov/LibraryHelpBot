@@ -10,6 +10,15 @@ class BooleanFilter(BaseFilter):
         return self.var
 
 
+class LocationFilter(BaseFilter):
+    def __init__(self, obj, loc):
+        self.obj = obj
+        self.loc = loc
+
+    def filter(self, message):
+        return self.obj.keyboard_dict[self.loc] == self.obj.keyboardmarkup.keyboard
+
+
 class WordFilter(BaseFilter):
     def __init__(self, word):
         self.word = word
