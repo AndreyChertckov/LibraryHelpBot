@@ -2,11 +2,11 @@ import telegram
 from telegram import InlineQueryResultArticle, InputTextMessageContent, ReplyKeyboardRemove, \
     InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton, CallbackQuery
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, InlineQueryHandler
-from filter import *
-from books import books, users
+from Bot.filter import *
+from Bot.books import books, users
 import logging
 
-token = '537025892:AAHqwqWaGEKdb4bBBQ9CJlKGa8mAqz7fElI'
+token = '315702006:AAFwvs4RhsVmTCVPTvknedvxPSs7t_8KfJE'
 
 
 class LibraryBot:
@@ -15,42 +15,35 @@ class LibraryBot:
         self.updater = Updater(token=token)
         self.dispatcher = self.updater.dispatcher
         logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
-        self.in_lib = False  # In library or not
-        self.numpage = 0 # Number of page
-        #test list (pagess)
-        self.pagess = list([["books" + str(j) + " " + str(i)] for i in range(10)] for j in range(10))
+        self.keyboard_dict = {
+            "unauth": [['Registration📝', 'Library🏤', 'Search🔎', 'Help👤']],
+            "auth": [['Library🏤', 'Search🔎', 'My Books📚', 'Help👤']],
+            "admin": [['5', '6', '7', '8']],
+            "reg_confirm": [["All is correct✅", "Something is incorrect❌"]],
+            "lib_main": [['Books📖', 'Journal Articles📰', "Audio/Video materials📼", "Cancel"]]
+        }
+
         start_handler = CommandHandler('start', self.start)
-        reg_handler = MessageHandler(UserFilter("u") & WordFilter('Registration'), self.registration)
-        library_handler = MessageHandler(WordFilter('library'), self.library)
-        #Hadlrers for library
-        self.dispatcher.add_handler(
-            MessageHandler(BooleanFilter(self.in_lib) & WordFilter('<-'), self.library))
-        self.dispatcher.add_handler(
-            MessageHandler( WordFilter('->'), self.library))
-        self.dispatcher.add_handler(
-            MessageHandler(BooleanFilter(self.in_lib) & WordFilter('cancel'), self.cancel))
-        self.dispatcher.add_handler(library_handler)
-        #End handlers for library
+        reg_handler = MessageHandler(UserFilter("u") & WordFilter('Registration📝'), self.registration)
+
         self.dispatcher.add_handler(start_handler)
         self.dispatcher.add_handler(reg_handler)
         self.updater.start_polling()
-        # self.dispatcher.handlers[0].remove(start_handler)
-        # print(self.dispatcher.handlers[0])
+        print(self.dispatcher.handlers)
         self.updater.idle()
 
     def start(self, bot, update):
         print(update.message.chat_id, list(users.keys()), update.message.from_user)
         if update.message.chat_id in list(users.keys()):
             if users[update.message.chat_id][0]:
-                self.keyboard = [['1', '2', '3', '4']]
+                keyboard = self.keyboard_dict["auth"]
             else:
-                self.keyboard = [['5', '6', '7', '8']]
+                keyboard = self.keyboard_dict["admin"]
         else:
-            self.keyboard = [['Registration', '9', '0']]
+            keyboard = self.keyboard_dict["unauth"]
 
-        self.low_menu = telegram.ReplyKeyboardMarkup(self.keyboard, True)
         bot.send_message(chat_id=update.message.chat_id, text="I'm bot, Hello",
-                         reply_markup=self.low_menu)
+                         reply_markup=telegram.ReplyKeyboardMarkup(keyboard, True))
 
     def registration(self, bot, update):
         self.new_user = {"id": update.message.chat_id}
@@ -68,9 +61,7 @@ class LibraryBot:
         bot.send_message(chat_id=update.message.chat_id, text=text_for_message)
         self.reg_step_handler = MessageHandler(BooleanFilter(self.is_in_reg) & Filters.text, self.reg_steps)
         self.dispatcher.add_handler(self.reg_step_handler)
-        rkeyboard = [[]]
-        self.low_menu = ReplyKeyboardRemove(rkeyboard)
-        bot.send_message(chat_id=update.message.chat_id, text="Enter your name", reply_markup=self.low_menu)
+        bot.send_message(chat_id=update.message.chat_id, text="Enter your name", reply_markup=ReplyKeyboardRemove([[]]))
 
     def reg_steps(self, bot, update):
         if self.reg_step < len(self.field):
@@ -80,7 +71,6 @@ class LibraryBot:
                 bot.send_message(chat_id=update.message.chat_id, text="Enter your {}".format(self.field[self.reg_step]),
                                  reply_markup=self.low_menu)
             else:
-                print(list(self.new_user.values())[1:])
                 text_for_message = """
                     Check whether all data is correct:
                     Name: {}
@@ -88,66 +78,84 @@ class LibraryBot:
                     Phone: {}
                     Status: {}
                 """.format(*list(self.new_user.values())[1:])
-                rkeyboard = [["All is correct", "Something is incorrect"]]
-                self.low_menu = ReplyKeyboardMarkup(rkeyboard)
-                bot.send_message(chat_id=update.message.chat_id, text=text_for_message, reply_markup=self.low_menu)
+                bot.send_message(chat_id=update.message.chat_id, text=text_for_message,
+                                 reply_markup=ReplyKeyboardMarkup(self.keyboard_dict["reg_confirm"]))
         elif self.reg_step == len(self.field):
-            if update.message.text == "All is correct":
+            if update.message.text == "All is correct✅":
                 self.is_in_reg = False
-                del self.reg_step
                 users[self.new_user['id']] = {i: self.new_user[i] for i in self.field}
+                del self.reg_step
                 del self.field
                 del self.new_user
                 open("file.txt", "a").write(str(users))
-                self.keyboard = [['1', '2', '3', '4']]
-                self.low_menu = telegram.ReplyKeyboardMarkup(self.keyboard, True)
                 bot.send_message(chat_id=update.message.chat_id, text="You have been registered",
-                                 reply_markup=self.low_menu)
-            elif update.message.text == "Something is incorrect":
+                                 reply_markup=telegram.ReplyKeyboardMarkup(self.keyboard_dict["auth"], True))
+                self.dispatcher.handlers[0].remove(self.reg_step_handler)
+            elif update.message.text == "Something is incorrect❌":
                 self.new_user = {"id": update.message.chat_id}
                 self.reg_step = 0
-                rkeyboard = [[]]
-                self.low_menu = ReplyKeyboardRemove(rkeyboard)
-                bot.send_message(chat_id=update.message.chat_id, text="Enter your name", reply_markup=self.low_menu)
+                bot.send_message(chat_id=update.message.chat_id, text="Enter your name",
+                                 reply_markup=ReplyKeyboardRemove([[]]))
 
-    def caps(self, bot, update):
-        # text_caps = ' '.join(args).upper()
-        # bot.send_message(chat_id=update.message.chat_id, text=text_caps)
-        button_list = [
-            InlineKeyboardButton("col1", url="https://vk.com/feed"),
-            InlineKeyboardButton("col2", callback_data="2"),
-            InlineKeyboardButton("row 2", callback_data="3")
-        ]
-        reply_markup = InlineKeyboardMarkup(self.build_menu(button_list, n_cols=2))
-        bot.send_message(chat_id=update.message.chat_id, text="Blb", reply_markup=reply_markup)
+    def lib_handler(self):
+        library_handler = MessageHandler(WordFilter('Library🏤'), self.library)
 
-    def build_menu(self, buttons, n_cols, header_buttons=None, footer_buttons=None):
-        menu = [buttons[i:i + n_cols] for i in range(0, len(buttons), n_cols)]
-        if header_buttons:
-            menu.insert(0, header_buttons)
-        if footer_buttons:
-            menu.append(footer_buttons)
-        return menu
+        self.in_lib = False  # In library or not
+        self.numpage = 0 # Number of page
+        #test list (pagess)
+        self.pagess = list([["books" + str(j) + " " + str(i)] for i in range(10)] for j in range(10))
+        #Hadlrers for library
+        # self.dispatcher.add_handler(
+        #     MessageHandler(BooleanFilter(self.in_lib) & WordFilter('<-'), self.library))
+        # self.dispatcher.add_handler(
+        #     MessageHandler(WordFilter('->'), self.library))
+        # self.dispatcher.add_handler(
+        #     MessageHandler(BooleanFilter(self.in_lib) & WordFilter('cancel'), self.cancel))
+        #
+        # self.dispatcher.add_handler(library_handler)
+        #End handlers for library
+
+
+    # def caps(self, bot, update):
+    #     # text_caps = ' '.join(args).upper()
+    #     # bot.send_message(chat_id=update.message.chat_id, text=text_caps)
+    #     button_list = [
+    #         InlineKeyboardButton("col1", url="https://vk.com/feed"),
+    #         InlineKeyboardButton("col2", callback_data="2"),
+    #         InlineKeyboardButton("row 2", callback_data="3")
+    #     ]
+    #     reply_markup = InlineKeyboardMarkup(self.build_menu(button_list, n_cols=2))
+    #     bot.send_message(chat_id=update.message.chat_id, text="Blb", reply_markup=reply_markup)
+    #
+    # def build_menu(self, buttons, n_cols, header_buttons=None, footer_buttons=None):
+    #     menu = [buttons[i:i + n_cols] for i in range(0, len(buttons), n_cols)]
+    #     if header_buttons:
+    #         menu.insert(0, header_buttons)
+    #     if footer_buttons:
+    #         menu.append(footer_buttons)
+    #     return menu
+
+
 #Search in library
 #!!!!Надо доделать cancel и дальнейший сценарий
-    def library(self, bot, update):
-        print(self.numpage)
-        print(len(self.pagess))
-        self.in_lib = True
-        if update.message.text == '<-':
-            self.numpage -= 1
-        elif update.message.text == '->':
-            self.numpage += 1
-        else:
-            self.numpage = 0
-        if self.numpage < 0 and self.numpage+1 >= len(self.pagess) :
-            return
-        # print(pages)
-        keyboard = self.pagess[self.numpage] + [["<-", "->"], ["Cancel"]]
-        reply_markup = ReplyKeyboardMarkup(keyboard)
-        print("=======")
-        bot.send_message(chat_id=update.message.chat_id, text="My set of books!", reply_markup=reply_markup)
-    def cancel(self,bot,update):
-        pass
+    # def library(self, bot, update):
+    #     print(self.numpage)
+    #     print(len(self.pagess))
+    #     self.in_lib = True
+    #     if update.message.text == '<-':
+    #         self.numpage -= 1
+    #     elif update.message.text == '->':
+    #         self.numpage += 1
+    #     else:
+    #         self.numpage = 0
+    #     if self.numpage < 0 and self.numpage+1 >= len(self.pagess) :
+    #         return
+    #     # print(pages)
+    #     keyboard = self.pagess[self.numpage] + [["<-", "->"], ["Cancel"]]
+    #     reply_markup = ReplyKeyboardMarkup(keyboard)
+    #     print("=======")
+    #     bot.send_message(chat_id=update.message.chat_id, text="My set of books!", reply_markup=reply_markup)
+    # def cancel(self,bot,update):
+    #     pass
 
 LibraryBot(token)
