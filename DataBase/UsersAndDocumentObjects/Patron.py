@@ -1,4 +1,4 @@
-from DataBase.UsersAndDocumentObjects.IBookingSystem import IBookingSystem
+
 from DataBase.UsersAndDocumentObjects.user import userBase
 from enum import Enum
 
@@ -8,7 +8,7 @@ class PatronType(Enum):
     proffessor = 2
 
 
-class Patron(userBase, IBookingSystem):
+class Patron(userBase):
     __metaclass__ = type
 
     def __init__(self,name, address, type, id, phone=None, history=None, current_books=None, check_out_time=None):

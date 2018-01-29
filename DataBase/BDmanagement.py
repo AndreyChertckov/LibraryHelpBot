@@ -51,6 +51,9 @@ class BDManagement:
                     VALUES(?,?,?,?,?)"""
         self.__add_new(sql, newLibr)
 
+    def select_label(self,selecting_table,id):
+        return  self.__create_connection(self.file).cursor().execute("SELECT * FROM "+selecting_table+" WHERE id=?",(id,)).fetchone()
+
     # добавить в базу картеж в виде (id,name,author,descr.,type,count,free_count
     def add_document(self, newDoc):
         sql = """INSERT INTO books(id,name,author,description,count,free_count,price)

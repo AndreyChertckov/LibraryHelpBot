@@ -1,5 +1,4 @@
 from UsersAndDocumentObjects.user import userBase
-from BDTables import BDTables
 
 class Librarian(userBase):
     __metaclass__ = type
@@ -7,8 +6,7 @@ class Librarian(userBase):
     def __init__(self, name, address, id, phone):
         userBase.__init__(self,name,address,"librarian",id,phone)
 
-    def load(self):
-            BDTables.bd.add_patron(self)
+
         # additional information
 
     def edit_document(self, docId): pass

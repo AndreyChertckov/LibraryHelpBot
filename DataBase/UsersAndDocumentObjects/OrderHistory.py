@@ -1,6 +1,6 @@
 # class representing one order:
 # It stores user id,which took some document in the library,and document id
-from BDTables import BDTables
+
 class OrderHistoryObject:
 
     def __init__(self,id,time,userId, docId):
@@ -8,9 +8,6 @@ class OrderHistoryObject:
         self.__docId = docId
         self.__time = time
         self.__id=id
-
-    def load(self):
-        BDTables.bd.add_patron(self)
 
     def get_info(self):
         return (self.__id,self.__time,self.__userId, self.__docId,)

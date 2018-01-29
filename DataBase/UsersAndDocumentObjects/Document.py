@@ -1,4 +1,4 @@
-from BDTables import BDTables
+
 from UsersAndDocumentObjects.BaseDoc import BaseDoc
 # class representing all types of documents
 class Document(BaseDoc):
