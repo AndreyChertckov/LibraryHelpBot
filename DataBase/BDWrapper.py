@@ -48,7 +48,7 @@ class BDWrapper:
             p=Patron(obj[1]["name"],obj[1]["address"],obj[1]["status"],obj[0],obj[1]["phone number"],[],[],3)
             self.__bd.add_patron(p)
         else:
-            l=Librarian(obj[1]["name"],obj[1]["address"],obj[0],obj[1]["phone"])
+            l=Librarian(obj[1]["name"],obj[1]["address"],obj[0],obj[1]["phone number"])
             self.__bd.add_librarian(l)
 
     def add_chat(self, chat_id, table):
