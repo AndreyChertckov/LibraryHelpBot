@@ -40,7 +40,7 @@ class BDWrapper:
         return [chat(x[0], x[1], x[2]) for x in rows]
 
     def chat_exists(self, id):
-        return any(x.get_chat_id()==id for x in self.get_all("chats"))
+        return any(x.get_chat_id()==id for x in self.get_all_chats())
 
     def add_new_user(self,obj):
         if (obj[1]["status"]=="faculty" or
