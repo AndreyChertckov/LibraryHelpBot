@@ -17,9 +17,12 @@ clear_table - clears table
 class BDManagement:
     def __init__(self):
         self.file = 'DataBase.db'
-        self.__create_connection(self.file)
+        self.__bd = self.__create_connection(self.file)
+        #self.__bd.cursor().execute("DROP TABLE articles")
         self.__create_tables()
-        # self.__bd.cursor().execute("DROP TABLE documents")
+
+    #        self.__bd.cursor().execute("DROP TABLE documents")
+
 
     # InnopolisUDj9^]Ye[
 
@@ -31,17 +34,17 @@ class BDManagement:
         cur.execute("SELECT * FROM " + str(table_to_select));
         rows = cur.fetchall()
         print("Table " + table_to_select + ":");
-        for row in rows:
-            print(row)
+       #for row in rows:
+        #    print(row)
         return rows
 
-    def add_chat(self,newChat):
-        sql="""INSERT INTO chats(chat_id,table_,id) VALUES(?,?,?)"""
-        self.__add_new(sql,newChat)
+    def add_chat(self, newChat):
+        sql = """INSERT INTO chats(chat_id,table_,id) VALUES(?,?,?)"""
+        self.__add_new(sql, newChat)
 
-    def add_order(self,newOrder):
-        sql="""INSERT INTO orders(id,date,user_id,doc_id) VALUES(?,?,?,?)"""
-        self.__add_new(sql,newOrder)
+    def add_order(self, newOrder):
+        sql = """INSERT INTO orders(id,date,user_id,doc_id) VALUES(?,?,?,?)"""
+        self.__add_new(sql, newOrder)
 
     def add_librarian(self, newLibr):
         sql = """INSERT INTO librarians(id,name,phone,address,type)
@@ -50,9 +53,28 @@ class BDManagement:
 
     # добавить в базу картеж в виде (id,name,author,descr.,type,count,free_count
     def add_document(self, newDoc):
-        sql = """INSERT INTO documents(id,name,author,description,type,count,free_count)
+        sql = """INSERT INTO books(id,name,author,description,count,free_count,price)
             VALUES (?,?,?,?,?,?,?)"""
-        self.__add_new(sql, newDoc)
+
+        cur = self.__create_connection(self.file).cursor()
+        cur.execute(sql,
+                        (newDoc.id, newDoc.name, newDoc.authors, newDoc.description, newDoc.count, newDoc.free_count,
+                         newDoc.price,))
+            # self.__add_new(sql,(newDoc.id,newDoc.name))
+
+    def add_media(self, newMed):
+        sql = """INSERT INTO media(id,name,authors,type,count,free_count,price)
+        VALUES(?,?,?,?,?,?,?)"""
+        self.__bd.cursor().execute(sql, (
+        newMed.id, newMed.name, newMed.authors, newMed.type, newMed.count, newMed.free_count, newMed.price))
+
+    def add_article(self, newArticle):
+        sql = """INSERT INTO articles(id,name,authors,journal_name,journal_publisher,count,free_count,price)
+        VALUES(?,?,?,?,?,?,?,?)"""
+        cur = self.__bd.cursor()  # cursor()
+
+        cur.execute(sql, (newArticle.id, newArticle.name, newArticle.authors,newArticle.journal_name,
+                          newArticle.journal_publisher, newArticle.count, newArticle.free_count, newArticle.price,))
 
     def add_patron(self, newPatron):
         sql = """ INSERT INTO patrons(id,name,address,phone,history,current_books,type)
@@ -68,20 +90,21 @@ class BDManagement:
         self.__create_connection(self.file).cursor().execute("DELETE FROM " + deleteFrom + " where id=?", (deLID,))
 
     def clear_table(self, table):
-        self.__create_connection(self.file).cursor().execute("")
+        self.__create_connection(self.file).cursor().execute(table)
 
     def drop_table(self, table):
         self.__create_connection(self.file).cursor().execute("DROP TABLE IF EXISTS " + table)
 
     def __create_connection(self, file):
         try:
-            return sqlite3.connect(self.file)
+            return sqlite3.connect(self.file, isolation_level=None)
         except Error as e:
             print(e)
 
     def __create_table(self, create_table_sql):
         try:
-            c = self.__create_connection(self.file).cursor()
+            c = self.__bd.cursor()
+            # c = self.__create_connection(self.file).cursor()
             c.execute(create_table_sql)
         except Error as e:
             print(e)
@@ -109,16 +132,34 @@ class BDManagement:
                   ); """);
 
         self.__create_table("""
-              CREATE TABLE IF NOT EXISTS documents (
+              CREATE TABLE IF NOT EXISTS books(
               id integer PRIMARY KEY,
               name text NOT NULL,
               author text NOT NULL,
               description text NOT NULL,
-              type text,
               count integer,
-             free_count integer);
+             free_count integer,
+             price);
         """)
-
+        self.__create_table("""CREATE TABLE IF NOT EXISTS articles(
+             id integer PRIMARY KEY,
+             name text NOT NULL,
+             authors text,
+            journal_name text,
+            journal_publisher text,
+            count integer,
+            free_count integer,
+            price);
+        """)
+        self.__create_table("""CREATE TABLE IF NOT EXISTS media(
+                id integer PRIMARY KEY,
+                name text NOT NULL,
+                authors text,
+                type text,
+                count integer,
+                free_count integer,
+                price);
+                """)
         self.__create_table("""
             CREATE TABLE IF NOT EXISTS chats (
             chat_id integer PRIMARY KEY,
@@ -133,8 +174,9 @@ class BDManagement:
              user_id integer,
              doc_id integer);
         """)
-#kek
+
+    # kek
     def __add_new(self, sql, new):
-      cur = self.__create_connection(self.file).cursor()
-      cur.execute(sql, new.get_info())
-      return cur.lastrowid
+        cur = self.__create_connection(self.file).cursor()
+        cur.execute(sql, new.get_info())
+        return cur.lastrowid

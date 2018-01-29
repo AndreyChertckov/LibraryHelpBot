@@ -21,10 +21,6 @@ class Patron(userBase, IBookingSystem):
     def get_history(self):
         return self.__history
 
-    # IBookingSystem interface implementation
-    def take_book(self, bookId): pass
-
-    def return_book(self, bookId): pass
     #кортеж (id,name,address,phone,history,current_books,type)
     def get_info(self):
         return (self.get_id(),
