@@ -1,5 +1,4 @@
 # users = {370795834:["p"]}
-users = {}
 books = {"Introduction to Algorithms": ["Introduction to Algorithms",
                                         ["Thomas H. Cormen", "Charles E. Leiserson", "RonaldL. Rivest",
                                          "Clifford Stein"], "MIT Press", 2009,

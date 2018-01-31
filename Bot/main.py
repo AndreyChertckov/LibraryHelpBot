@@ -3,7 +3,7 @@ from telegram import InlineQueryResultArticle, InputTextMessageContent, ReplyKey
     InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton, CallbackQuery
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, InlineQueryHandler
 from Bot.filter import *
-from Bot.books import books, users
+from Bot.books import books
 import logging
 import CONSTANT
 
@@ -34,12 +34,12 @@ class LibraryBot:
         self.updater.idle()
 
     def start(self, bot, update):
-        print(update.message.chat_id, list(users.keys()), update.message.from_user)
-        if update.message.chat_id in list(users.keys()):
-            if users[update.message.chat_id][0]:
-                keyboard = self.keyboard_dict["auth"]
-            else:
+        print(update.message.chat_id, update.message.from_user)
+        if self.cntrl.chat_exists(update.message.chat_id):
+            if self.cntrl.get_user(update.message.chat_id)['status'] == 'Librarian':
                 keyboard = self.keyboard_dict["admin"]
+            else:
+                keyboard = self.keyboard_dict["auth"]
         else:
             keyboard = self.keyboard_dict["unauth"]
 
@@ -49,7 +49,7 @@ class LibraryBot:
 
     def registration(self, bot, update):
         self.new_user = {"id": update.message.chat_id}
-        self.field = ["name", "address", "phone number", "status"]
+        self.field = ["name", "address", "phone", "status"]
         self.reg_step = 0
         self.is_in_reg = True
         text_for_message = """
@@ -85,12 +85,11 @@ class LibraryBot:
         elif self.reg_step == len(self.field):
             if update.message.text == "All is correct✅":
                 self.is_in_reg = False
-                users[self.new_user['id']] = {i: self.new_user[i] for i in self.field}
+                #users[self.new_user['id']] = {i: self.new_user[i] for i in self.field}
                 del self.reg_step
                 del self.field
                 self.cntrl.registration(self.new_user)
                 del self.new_user
-                open("file.txt", "a").write(str(users))
                 self.keyboardmarkup = telegram.ReplyKeyboardMarkup(self.keyboard_dict["auth"], True)
                 bot.send_message(chat_id=update.message.chat_id, text="You have been registered",
                                  reply_markup=self.keyboardmarkup)

@@ -17,7 +17,6 @@ clear_table - clears table
 class BDManagement:
     def __init__(self):
         self.file = 'DataBase.db'
-        self.__bd = self.__create_connection(self.file)
         #self.__bd.cursor().execute("DROP TABLE articles")
         self.__create_tables()
 
@@ -106,8 +105,8 @@ class BDManagement:
 
     def __create_table(self, create_table_sql):
         try:
-            c = self.__bd.cursor()
-            # c = self.__create_connection(self.file).cursor()
+            #c = self.__bd.cursor()
+            c = self.__create_connection(self.file).cursor()
             c.execute(create_table_sql)
         except Error as e:
             print(e)
