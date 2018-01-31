@@ -2,25 +2,26 @@ from DataBase.BDmanagement import BDManagement
 from DataBase.UsersAndDocumentObjects.Patron import Patron
 from DataBase.UsersAndDocumentObjects.Librarian import Librarian
 
-class Controller:
 
+class Controller:
     def __init__(self):
         self.BDmanager = BDManagement()
 
-    def registration(self,user_info):
+    def registration(self, user_info):
         user_info = user_info
         if not self.chat_exists(user_info['id']):
             if user_info['status'] != "Librarian":
-                patron = Patron(name=user_info['name'],address=user_info['address'],type=user_info['status'],id=user_info['id'],phone=user_info['phone'])
+                patron = Patron(name=user_info['name'], address=user_info['address'], type=user_info['status'],
+                                id=user_info['id'], phone=user_info['phone'])
                 self.BDmanager.add_patron(patron)
             else:
-                librarian = Librarian(user_info['name'],user_info['address'],user_info['id'],user_info['phone'])
+                librarian = Librarian(user_info['name'], user_info['address'], user_info['id'], user_info['phone'])
                 self.BDmanager.add_librarian(librarian)
         else:
             print('Chat exist in BD!')
 
     def delete_user(self, user_info):
-        print(self.remove_user(user_info['id'],user_info['status']))
+        print(self.remove_user(user_info['id'], user_info['status']))
 
     # def get_all_patrons(self):
     #     rows = self.BDmanager.select_all("patrons")
@@ -43,29 +44,29 @@ class Controller:
     #     return [BaseDoc(x[0], x[2], x[1], x[4], x[5], x[6], x[3]) for x in rows]
 
     def chat_exists(self, id):
-        return any([self.BDmanager.select_label('librarians',id),self.BDmanager.select_label('patrons',id)])
+        return any([self.BDmanager.select_label('librarians', id), self.BDmanager.select_label('patrons', id)])
 
-    def remove_user(self, id,table = None):
+    def remove_user(self, id, table=None):
         if table != None:
-            if self.BDmanager.select_label(table,id):
-                self.BDmanager.delete_label(table,id)
+            if self.BDmanager.select_label(table, id):
+                self.BDmanager.delete_label(table, id)
                 return True
             else:
                 return False
         else:
-            if self.BDmanager.select_label('librarians',id):
-                self.BDmanager.delete_label('librarians',id)
+            if self.BDmanager.select_label('librarians', id):
+                self.BDmanager.delete_label('librarians', id)
                 return True
-            elif self.BDmanager.select_label('patrons',id):
-                self.BDmanager.delete_label('patrons',id)
+            elif self.BDmanager.select_label('patrons', id):
+                self.BDmanager.delete_label('patrons', id)
                 return True
             else:
                 return False
 
     def get_user(self, id):
         user = {}
-        if self.BDmanager.select_label('patrons',id):
-            user_bd = self.BDmanager.select_label('patrons',id)
+        if self.BDmanager.select_label('patrons', id):
+            user_bd = self.BDmanager.select_label('patrons', id)
             user['id'] = user_bd[0]
             user['name'] = user_bd[1]
             user['address'] = user_bd[2]
@@ -73,8 +74,8 @@ class Controller:
             user['history'] = user_bd[4]
             user['current_books'] = user_bd[5]
             user['status'] = user_bd[6]
-        elif self.BDmanager.select_label('librarians',id):
-            user_bd = self.BDmanager.select_label('librarians',id)
+        elif self.BDmanager.select_label('librarians', id):
+            user_bd = self.BDmanager.select_label('librarians', id)
             user['id'] = user_bd[0]
             user['name'] = user_bd[1]
             user['phone'] = user_bd[2]

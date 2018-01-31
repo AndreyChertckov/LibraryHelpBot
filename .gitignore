@@ -3,3 +3,6 @@ venv
 DataBase.db
 __pycache__
 CONSTANT.py
+file.txt
+books.py
+configs.py
