@@ -17,7 +17,7 @@ class LibraryBot:
         self.keyboard_dict = {
             "unauth": [['Registration📝', 'Library🏤', 'Search🔎', 'Help👤']],
             "auth": [['Library🏤', 'Search🔎', 'My Books📚', 'Help👤']],
-            "admin": [['5', '6', '7', '8']],
+            "admin": [["Check material", "Return material", "Add material"], ["Library", "Search", "Confirm users"]],
             "reg_confirm": [["All is correct✅", "Something is incorrect❌"]],
             "lib_main": [['Books📖', 'Journal Articles📰', "Audio/Video materials📼", "Cancel⤵️"]],
             "status": [['Student', 'Faculty (professor, instructor, TA)']]
@@ -25,17 +25,18 @@ class LibraryBot:
 
         start_handler = CommandHandler('start', self.start)
         reg_handler = MessageHandler(UserFilter("u") & WordFilter('Registration📝'), self.registration)
+        reg_admin_handler = CommandHandler('get_admin', self.reg_admin, filters=UserFilter("p"), pass_args=True)
         library_handler = MessageHandler(WordFilter('Library🏤'), self.library)
 
         self.dispatcher.add_handler(start_handler)
         self.dispatcher.add_handler(reg_handler)
+        self.dispatcher.add_handler(reg_admin_handler)
         self.dispatcher.add_handler(library_handler)
 
         self.updater.start_polling()
         self.updater.idle()
 
     def start(self, bot, update):
-        print(update.message.chat_id, update.message.from_user)
         if self.cntrl.chat_exists(update.message.chat_id):
             if self.cntrl.get_user(update.message.chat_id)['status'] == 'Librarian':
                 keyboard = self.keyboard_dict["admin"]
@@ -47,6 +48,10 @@ class LibraryBot:
         self.keyboardmarkup = telegram.ReplyKeyboardMarkup(keyboard, True)
         bot.send_message(chat_id=update.message.chat_id, text="I'm bot, Hello",
                          reply_markup=self.keyboardmarkup)
+
+    def reg_admin(self, bot, update, args):
+        if args == open('key.txt').read():
+            pass
 
     def registration(self, bot, update):
         self.new_user = {"id": update.message.chat_id}          # заготовка под нового юзера
@@ -95,8 +100,9 @@ class LibraryBot:
                 del self.reg_step
                 del self.field
                 self.cntrl.registration(self.new_user)   # Добавляем пользователя в бд
-                del self.new_user
-                self.keyboardmarkup = telegram.ReplyKeyboardMarkup(self.keyboard_dict["auth"], True)  # Возвращаем пользователю
+                self.keyboardmarkup = telegram.ReplyKeyboardMarkup(self.keyboard_dict["auth"], True)
+
+                del self.new_user  # Возвращаем пользователю
                 bot.send_message(chat_id=update.message.chat_id, text="You have been registered",     # интерфейс зарегистрированного
                                  reply_markup=self.keyboardmarkup)
                 self.dispatcher.handlers[0].remove(self.reg_step_handler)

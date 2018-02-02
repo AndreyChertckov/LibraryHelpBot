@@ -1,4 +1,5 @@
 from telegram.ext import BaseFilter
+from Controller.controller import Controller
 
 
 class BooleanFilter(BaseFilter):
@@ -30,12 +31,13 @@ class UserFilter(BaseFilter):
         self.user_type = user_type
 
     def filter(self, message):
-        # if self.user_type == "u" and not (message.chat_id in list(users.keys())):
-        #     return True
-        # elif self.user_type == "p" and users[message.chat_id][0] == 0:
-        #     return True
-        # elif self.user_type == "l" and users[message.chat_id][0] == 1:
-        #     return True
-        # else:
-        #     return False
-        return True
+        chat_id = message.chat_id
+        ctrl = Controller()
+        if self.user_type == "u" and not ctrl.chat_exists(chat_id):
+            return True
+        elif self.user_type == "p" and (ctrl.get_user(chat_id)["status"] == "Faculty" or ctrl.get_user(chat_id)["status"] == "student"):
+            return True
+        elif self.user_type == "l" and ctrl.get_user(chat_id)["status"] == "Librarian":
+            return True
+        else:
+            return False
