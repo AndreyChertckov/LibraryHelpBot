@@ -3,6 +3,7 @@ from telegram import InlineQueryResultArticle, InputTextMessageContent, ReplyKey
     InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton, CallbackQuery
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, InlineQueryHandler
 from Bot.filter import *
+from Bot import utils
 import logging
 import configs
 
@@ -24,13 +25,15 @@ class LibraryBot:
         }
 
         start_handler = CommandHandler('start', self.start)
-        reg_handler = MessageHandler(UserFilter("u") & WordFilter('Registration📝'), self.registration)
-        reg_admin_handler = CommandHandler('get_admin', self.reg_admin, filters=UserFilter("p"), pass_args=True)
+        reg_handler = MessageHandler(UserFilter("unreg") & WordFilter('Registration📝'), self.registration)
+        reg_admin_handler = CommandHandler('get_admin', self.reg_admin, filters=UserFilter("patron"), pass_args=True)
+        get_key_handler = CommandHandler('get_key', self.get_key, filters=UserFilter("libr"))
         library_handler = MessageHandler(WordFilter('Library🏤'), self.library)
 
         self.dispatcher.add_handler(start_handler)
         self.dispatcher.add_handler(reg_handler)
         self.dispatcher.add_handler(reg_admin_handler)
+        self.dispatcher.add_handler(get_key_handler)
         self.dispatcher.add_handler(library_handler)
 
         self.updater.start_polling()
@@ -51,7 +54,15 @@ class LibraryBot:
 
     def reg_admin(self, bot, update, args):
         if args == open('key.txt').read():
-            pass
+            self.cntrl.upto_librarian(update.message.chat_id) # Андрей, вот этот метод
+            self.keyboardmarkup = telegram.ReplyKeyboardMarkup(self.keyboard_dict["admin"], True)
+            bot.send_message(chat_id=update.message.chat_id, text="You have been update to Librarian",
+                             reply_markup=self.keyboardmarkup)
+            utils.key_gen()
+
+    def get_key(self, bot, update):
+        bot.send_message(chat_id=update.message.chat_id, text=utils.key_gen())
+
 
     def registration(self, bot, update):
         self.new_user = {"id": update.message.chat_id}          # заготовка под нового юзера

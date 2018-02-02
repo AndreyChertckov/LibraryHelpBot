@@ -85,7 +85,7 @@ class Controller:
             return False
         return user
 
-    def request_on_add_librarian(self,user_info):
+    def upto_librarian(self, user_info):
         pass
 
     def generate_key(self,alias):

@@ -33,11 +33,11 @@ class UserFilter(BaseFilter):
     def filter(self, message):
         chat_id = message.chat_id
         ctrl = Controller()
-        if self.user_type == "u" and not ctrl.chat_exists(chat_id):
+        if self.user_type == "unreg" and not ctrl.chat_exists(chat_id):
             return True
-        elif self.user_type == "p" and (ctrl.get_user(chat_id)["status"] == "Faculty" or ctrl.get_user(chat_id)["status"] == "student"):
+        elif self.user_type == "patron" and (ctrl.get_user(chat_id)["status"] == "Faculty" or ctrl.get_user(chat_id)["status"] == "Student"):
             return True
-        elif self.user_type == "l" and ctrl.get_user(chat_id)["status"] == "Librarian":
+        elif self.user_type == "libr" and ctrl.get_user(chat_id)["status"] == "Librarian":
             return True
         else:
             return False

@@ -1,5 +1,6 @@
 import random
 
+
 def key_gen():
     symbols = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
     key = ""
@@ -7,5 +8,3 @@ def key_gen():
         key += symbols[random.randint(0, len(symbols))]
     open("key.txt", 'w').write(key)
     return key
-
-print(key_gen())
