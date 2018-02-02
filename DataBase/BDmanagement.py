@@ -17,6 +17,7 @@ clear_table - clears table
 class BDManagement:
     def __init__(self):
         self.file = 'DataBase.db'
+        #self.drop_table("orders")
         #self.__bd.cursor().execute("DROP TABLE articles")
         self.__create_tables()
 
@@ -42,7 +43,7 @@ class BDManagement:
         self.__add_new(sql, newChat)
 
     def add_order(self, newOrder):
-        sql = """INSERT INTO orders(id,date,user_id,doc_id) VALUES(?,?,?,?)"""
+        sql = """INSERT INTO orders(id,date,storing_table,doc_id,user_id) VALUES(?,?,?,?,?)"""
         self.__add_new(sql, newOrder)
 
     def add_librarian(self, newLibr):
@@ -173,8 +174,11 @@ class BDManagement:
              CREATE TABLE  IF NOT EXISTS orders (
              id integer PRIMARY KEY,
              date text NOT NULL,
+             storing_table text,
+             doc_id integer,
              user_id integer,
-             doc_id integer);
+             FOREIGN KEY (user_id) REFERENCES patrons (id)
+             );
         """)
 
     # kek
