@@ -53,8 +53,8 @@ class LibraryBot:
                          reply_markup=self.keyboardmarkup)
 
     def reg_admin(self, bot, update, args):
-        if args == open('key.txt').read():
-            self.cntrl.upto_librarian(update.message.chat_id) # Андрей, вот этот метод
+        if args[0] == open('Bot/key.txt').read():
+            self.cntrl.upto_librarian(update.message.chat_id)
             self.keyboardmarkup = telegram.ReplyKeyboardMarkup(self.keyboard_dict["admin"], True)
             bot.send_message(chat_id=update.message.chat_id, text="You have been update to Librarian",
                              reply_markup=self.keyboardmarkup)
@@ -98,11 +98,11 @@ class LibraryBot:
             else:  # иначе просим подтверждения корректнсти данных
                 text_for_message = """
                     Check whether all data is correct:
-                    Name: {}
-                    Adress: {}
-                    Phone: {}
-                    Status: {}
-                """.format(*list(self.new_user.values())[1:])
+                    Name: {name}
+                    Adress: {address}
+                    Phone: {phone}
+                    Status: {status}
+                """.format(**self.new_user)
                 bot.send_message(chat_id=update.message.chat_id, text=text_for_message,
                                  reply_markup=ReplyKeyboardMarkup(self.keyboard_dict["reg_confirm"], True))
         elif self.reg_step == len(self.field):  # Если это последний шаг регистрации

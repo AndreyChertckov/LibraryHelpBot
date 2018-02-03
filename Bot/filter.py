@@ -37,7 +37,7 @@ class UserFilter(BaseFilter):
             return True
         elif self.user_type == "patron" and (ctrl.get_user(chat_id)["status"] == "Faculty" or ctrl.get_user(chat_id)["status"] == "Student"):
             return True
-        elif self.user_type == "libr" and ctrl.get_user(chat_id)["status"] == "Librarian":
+        elif self.user_type == "libr" and ctrl.get_user(chat_id)["status"] == "librarian":
             return True
         else:
             return False

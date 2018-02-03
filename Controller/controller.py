@@ -87,7 +87,7 @@ class Controller:
 
     def upto_librarian(self, user_id):
         user_info = self.get_user(user_id)
-        self.remove_user(user_id,'patrons')
+        self.remove_user(user_id, 'patrons')
         librarian = Librarian(user_info['name'], user_info['address'], user_info['id'], user_info['phone'])
         self.BDmanager.add_librarian(librarian)
 
