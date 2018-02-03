@@ -13,7 +13,7 @@ class Controller:
 
     def confirm_user(self, id):
         x = self.BDmanager.select_label("unconfirmed", id)
-        l = Librarian(x[1], x[3], x[0], x[2])
+        l = Librarian(x[1], x[3], x[0], x[2], x[4])
         self.delete_unconfirmed_user(id)
         self.BDmanager.add_patron(Patron(l.get_name(), l.get_address(), "patron", id, l.get_phone(), [], [], 2))
 
@@ -21,9 +21,9 @@ class Controller:
         self.BDmanager.delete_label("unconfirmed", id)
 
     def registration(self, user_info):
-        unconfirmed_patron = Librarian(user_info['name'], user_info['address'], user_info['id'], user_info['phone'])
+        unconfirmed_patron = Librarian(user_info['name'], user_info['address'], user_info['id'], user_info['phone'],
+                                       user_info['status'])
         self.BDmanager.add_unconfirmed(unconfirmed_patron)
-
 
     def delete_user(self, user_info):
         print(self.remove_user(user_info['id'], user_info['status']))
@@ -34,7 +34,7 @@ class Controller:
 
     def get_all_librarians(self):
         rows = self.BDmanager.select_all("librarians")
-        return [Librarian(x[1], x[3], x[0], x[2]) for x in rows]
+        return [Librarian(x[1], x[3], x[0], x[2], x[4]) for x in rows]
 
     def get_all_books(self):
         rows = self.BDmanager.select_all("books")
