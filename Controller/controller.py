@@ -21,8 +21,7 @@ class Controller:
         self.BDmanager.delete_label("unconfirmed", id)
 
     def registration(self, user_info):
-        unconfirmed_patron = Librarian(user_info['name'], user_info['address'], user_info['id'], user_info['phone'],
-                                       user_info['status'])
+        unconfirmed_patron = Librarian(**user_info)
         self.BDmanager.add_unconfirmed(unconfirmed_patron)
 
     def delete_user(self, user_info):
