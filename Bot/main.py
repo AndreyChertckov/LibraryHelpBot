@@ -45,7 +45,7 @@ class LibraryBot:
 
     def start(self, bot, update):
         if self.cntrl.chat_exists(update.message.chat_id):
-            if self.cntrl.get_user(update.message.chat_id)['status'] == 'Librarian':
+            if self.cntrl.get_user(update.message.chat_id)['status'] == 'librarian':
                 keyboard = self.keyboard_dict["admin"]
             else:
                 keyboard = self.keyboard_dict["auth"]
@@ -118,7 +118,7 @@ class LibraryBot:
                 self.keyboardmarkup = telegram.ReplyKeyboardMarkup(self.keyboard_dict["auth"], True)
 
                 del self.new_user  # Возвращаем пользователю
-                bot.send_message(chat_id=update.message.chat_id, text="You have been registered",     # интерфейс зарегистрированного
+                bot.send_message(chat_id=update.message.chat_id, text="Your request has been sent.\n Wait for librarian confirmation",     # интерфейс зарегистрированного
                                  reply_markup=self.keyboardmarkup)
                 self.dispatcher.handlers[0].remove(self.reg_step_handler)
             elif update.message.text == "Something is incorrect❌":  # Если что-то неверно, то возвращаем

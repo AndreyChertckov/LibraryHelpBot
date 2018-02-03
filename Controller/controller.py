@@ -15,7 +15,7 @@ class Controller:
         x = self.BDmanager.select_label("unconfirmed", id)
         l = Librarian(x[1], x[3], x[0], x[2], x[4])
         self.delete_unconfirmed_user(id)
-        self.BDmanager.add_patron(Patron(l.get_name(), l.get_address(), "patron", id, l.get_phone(), [], [], 2))
+        self.BDmanager.add_patron(Patron(l.get_name(), l.get_address(), id, l.get_phone(), [], [], 2))
 
     def delete_unconfirmed_user(self, id):
         self.BDmanager.delete_label("unconfirmed", id)
@@ -92,7 +92,8 @@ class Controller:
     def upto_librarian(self, user_id):
         user_info = self.get_user(user_id)
         self.remove_user(user_id, 'patrons')
-        librarian = Librarian(user_info['name'], user_info['address'], user_info['id'], user_info['phone'])
+        user_info["status"] = 'librarian'
+        librarian = Librarian(user_info['name'], user_info['address'], user_info['id'], user_info['phone'], 'librarian')
         self.BDmanager.add_librarian(librarian)
 
     def generate_key(self, alias):

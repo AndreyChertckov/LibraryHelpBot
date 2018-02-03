@@ -1,4 +1,4 @@
-from UsersAndDocumentObjects.BaseDoc import BaseDoc
+from DataBase.UsersAndDocumentObjects.BaseDoc import BaseDoc
 
 
 class Document(BaseDoc):

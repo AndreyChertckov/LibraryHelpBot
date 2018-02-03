@@ -4,8 +4,8 @@ from DataBase.UsersAndDocumentObjects.user import userBase
 class Librarian(userBase):
     __metaclass__ = type
 
-    def __init__(self, name, address, id, phone,status):
-        userBase.__init__(self, name, address,status, id, phone)
+    def __init__(self, name, address, id, phone, status):
+        userBase.__init__(self, name, address, status, id, phone)
 
     def edit_document(self, docId): pass
 
