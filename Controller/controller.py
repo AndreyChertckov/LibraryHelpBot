@@ -25,7 +25,7 @@ class Controller:
         self.BDmanager.add_unconfirmed(unconfirmed_patron)
 
     def delete_user(self, user_info):
-        print(self.remove_user(user_info['id'], user_info['status']))
+        print(self.remove_user(user_info['id'], 'librarians' if user_info['status'] == "Librarian" else 'patrons'))
 
     def get_all_patrons(self):
         rows = self.BDmanager.select_all("patrons")
@@ -33,6 +33,10 @@ class Controller:
 
     def get_all_librarians(self):
         rows = self.BDmanager.select_all("librarians")
+        return [Librarian(x[1], x[3], x[0], x[2], x[4]) for x in rows]
+     
+    def get_all_unconfirmed(self):
+        rows = self.BDmanager.select_all("unconfirmed")
         return [Librarian(x[1], x[3], x[0], x[2], x[4]) for x in rows]
 
     def get_all_books(self):
