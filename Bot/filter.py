@@ -1,7 +1,7 @@
 from telegram.ext import BaseFilter
 from Controller.controller import Controller
 
-
+#Filter for boolean operation
 class BooleanFilter(BaseFilter):
     def __init__(self, var):
         self.var = var
@@ -9,7 +9,7 @@ class BooleanFilter(BaseFilter):
     def filter(self, message):
         return self.var
 
-
+#Filter for check location
 class LocationFilter(BaseFilter):
     def __init__(self, obj, loc):
         self.obj = obj
@@ -18,7 +18,7 @@ class LocationFilter(BaseFilter):
     def filter(self, message):
         return self.obj.keyboard_dict[self.loc] == self.obj.keyboardmarkup.keyboard
 
-
+#Filter for check word
 class WordFilter(BaseFilter):
     def __init__(self, word):
         self.word = word
@@ -26,7 +26,7 @@ class WordFilter(BaseFilter):
     def filter(self, message):
         return self.word == message.text
 
-
+#Filter for type of users
 class UserFilter(BaseFilter):
     def __init__(self, user_type):
         self.user_type = user_type
@@ -43,7 +43,7 @@ class UserFilter(BaseFilter):
         else:
             return False
 
-
+#Filter for check registration of users
 class RegFilter(BaseFilter):
     def __init__(self, user_type):
         self.user_type = user_type

@@ -7,8 +7,12 @@ from Bot import utils
 import logging
 import configs
 
-
+#Class represents a Bot in Telegram
 class LibraryBot:
+    #Intialization of Bot
+    #params:
+    #token -- Token from BotFather
+    #cntrl -- Bot's data base
     def __init__(self, token, cntrl):
         self.cntrl = cntrl
         self.bot = telegram.Bot(token=token)
@@ -44,7 +48,10 @@ class LibraryBot:
 
         self.updater.start_polling()
         self.updater.idle()
-
+    #Main menu
+    #params:
+    #  bot -- This object represents a Bot's commands
+    #  update -- This object represents an incoming update
     def start(self, bot, update):
         if self.cntrl.chat_exists(update.message.chat_id):
             if self.cntrl.get_user(update.message.chat_id)['status'] == 'librarian':
@@ -57,7 +64,11 @@ class LibraryBot:
         self.keyboardmarkup = telegram.ReplyKeyboardMarkup(keyboard, True)
         bot.send_message(chat_id=update.message.chat_id, text="I'm bot, Hello",
                          reply_markup=self.keyboardmarkup)
-
+    #Registration of admins
+    #params:
+    #  bot -- This object represents a Bot's commands
+    #  update -- This object represents an incoming update
+    #  args -- Arguments
     def reg_admin(self, bot, update, args):
         if args[0] == open('Bot/key.txt').read():
             self.cntrl.upto_librarian(update.message.chat_id)
@@ -65,7 +76,10 @@ class LibraryBot:
             bot.send_message(chat_id=update.message.chat_id, text="You have been update to Librarian",
                              reply_markup=self.keyboardmarkup)
             utils.key_gen()
-
+    #Registration of users
+    #params:
+    #  bot -- This object represents a Bot's commands
+    #  update -- This object represents an incoming update
     def registration(self, bot, update):
         self.new_user = {"id": update.message.chat_id}          # заготовка под нового юзера
         self.field = ["name", "address", "phone", "status"]     # шаги регистрации
@@ -84,7 +98,10 @@ class LibraryBot:
         self.dispatcher.add_handler(self.reg_step_handler)      # хандлер для фиксирования сообщений при регистраци
         self.keyboardmarkup.keyboard = [[]]
         bot.send_message(chat_id=update.message.chat_id, text="Enter your name", reply_markup=ReplyKeyboardRemove([[]]))
-
+    #Steps the registration
+    #params:
+    #  bot -- This object represents a Bot's commands
+    #  update -- This object represents an incoming update
     def reg_steps(self, bot, update):
         if self.reg_step < len(self.field):  # Если шаг регистрации не последний
             text = update.message.text
@@ -133,7 +150,10 @@ class LibraryBot:
     #
     #     self.dispatcher.add_handler(library_handler)
 
-
+    #Main menu of library
+    #params:
+    #  bot -- This object represents a Bot's commands
+    #  update -- This object represents an incoming update
     def library(self, bot, update):
         self.keyboardmarkup = telegram.ReplyKeyboardMarkup(self.keyboard_dict["lib_main"], True)
         book_handler = MessageHandler(WordFilter('Books📖') & LocationFilter(self, "lib_main"), self.cancel)
@@ -148,10 +168,16 @@ class LibraryBot:
 
         bot.send_message(chat_id=update.message.chat_id, text="Choose type of material",
                          reply_markup=self.keyboardmarkup)
-
+    #Selected material
+    #params:
+    #  bot -- This object represents a Bot's commands
+    #  update -- This object represents an incoming update
     def load_material(self, bot, update):
         pass
-
+    #Cancel the operation
+    #params:
+    #  bot -- This object represents a Bot's commands
+    #  update -- This object represents an incoming update
     def cancel(self, bot, update):
         user_id = update.message.chat_id
         if not self.cntrl.chat_exists(user_id):
@@ -217,6 +243,8 @@ class LibraryBot:
         # def cancel(self,bot,update):
         #     pass
 
-
+#Start Bot
+    #params:
+    #  Controller -- Bot's data base
 def start_bot(controller):
     LibraryBot(configs.token, controller)
