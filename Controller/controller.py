@@ -25,7 +25,7 @@ class Controller:
         self.BDmanager.add_unconfirmed(unconfirmed_patron)
 
     def delete_user(self, user_info):
-        print(self.remove_user(user_info['id'], user_info['status']))
+        print(self.remove_user(user_info['id'], 'librarians' if user_info['status'] == "Librarian" else 'patrons'))
 
     def get_all_patrons(self):
         rows = self.BDmanager.select_all("patrons")
