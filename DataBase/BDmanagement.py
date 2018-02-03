@@ -4,6 +4,7 @@ from sqlite3 import Error
 class BDManagement:
     def __init__(self):
         self.file = 'DataBase.db'
+        
         self.__create_tables()
 
     def select_all(self, table_to_select):
@@ -97,7 +98,7 @@ class BDManagement:
                 CREATE TABLE IF NOT EXISTS librarians (
                 id integer PRIMARY KEY,
                 name text NOT NULL,
-                phone integer,
+                phone text,
                 address text,
                 type text
               ); """);
@@ -105,7 +106,7 @@ class BDManagement:
                         CREATE TABLE IF NOT EXISTS unconfirmed (
                         id integer PRIMARY KEY,
                         name text NOT NULL,
-                        phone integer,
+                        phone text,
                         address text,
                         type text
                       ); """);
@@ -113,7 +114,7 @@ class BDManagement:
                  CREATE TABLE IF NOT EXISTS patrons (
                  id integer PRIMARY KEY,
                  name text NOT NULL,
-                 phone integer,
+                 phone text,
                  address text,
                  history text,
                  current_books text,

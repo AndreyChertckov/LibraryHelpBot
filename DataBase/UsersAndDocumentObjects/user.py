@@ -21,12 +21,7 @@ class userBase:
 
     # setting and getting phone number
     def set_phone(self, phone):
-        try:
-            self.__phone_number = int(phone)
-            return True
-        except ValueError:
-            self.__phone_number = -1
-            return False
+            self.__phone_number = phone
 
     def get_phone(self):
         return self.__phone_number
