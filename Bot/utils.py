@@ -1,4 +1,5 @@
 import random
+import re
 
 
 # Generate and return random key
@@ -20,4 +21,19 @@ def get_key(bot, update):
     bot.send_message(chat_id=update.message.chat_id, text=key_gen())
 
 
-key_gen()
+def data_checker(user):
+    name = user['name']
+    address = user["address"]
+    phone = user['phone']
+    status = user["status"]
+    if (not re.findall(r'\d', name)) and len(name.split(" ")) < 2:
+        return [True, 'You have to enter your full real name']
+    elif False:
+        return [True, 'Your address must be real and located in the Innopolis']
+    elif re.findall('[^+1234567890]', phone):
+        return [True, 'You phone number must be correct']
+    elif status != 'Student' and status != 'Faculty':
+        return [True, 'You must be faculty or student']
+    else:
+        return [False]
+

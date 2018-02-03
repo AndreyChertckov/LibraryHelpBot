@@ -18,12 +18,12 @@ class LibraryBot:
     # cntrl -- Bot's data base
     def __init__(self, token, cntrl):
         self.cntrl = cntrl
-        self.bot = telegram.Bot(token=token)
         self.updater = Updater(token=token)
         self.dispatcher = self.updater.dispatcher
         logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
         self.keyboard_dict = {
             "unauth": [['Registration📝', 'Library🏤', 'Search🔎', 'Help👤']],
+            "unconf": [['Library🏤', 'Search🔎', 'Help👤']],
             "auth": [['Library🏤', 'Search🔎', 'My Books📚', 'Help👤']],
             "admin": [["Check material", "Material management", "User management"]],
             "mat_manage": [[]],
@@ -100,7 +100,7 @@ class LibraryBot:
         bot.send_message(chat_id=chat, text=text_for_message)
         bot.send_message(chat_id=chat, text="Enter your name", reply_markup=KeyboardR([[]]))
 
-    # Steps the registration
+    # Steps of the registration
     # params:
     #  bot -- This object represents a Bot's commands
     #  update -- This object represents an incoming update
@@ -116,26 +116,33 @@ class LibraryBot:
             step += 1
             self.is_in_reg[chat][0] += 1
             if step < len(fields):
+                keyboard = KeyboardM(self.keyboard_dict["status"], True) if fields[step] == "status" else None
                 bot.send_message(chat_id=update.message.chat_id, text="Enter your {}".format(fields[step]),
-                                 reply_markup=KeyboardM(self.keyboard_dict["status"], True) if fields[
-                                                                                                   step] == "status" else None)
+                                 reply_markup=keyboard)
             else:
                 text_for_message = """
                     Check whether all data is correct:
                     Name: {name}
-                    Adress: {address}
+                    Address: {address}
                     Phone: {phone}
                     Status: {status}
                 """.format(**user)
                 bot.send_message(chat_id=update.message.chat_id, text=text_for_message,
                                  reply_markup=KeyboardM(self.keyboard_dict["reg_confirm"], True))
         elif step == len(fields):
+            print(user)
             if update.message.text == "All is correct✅":
-                self.cntrl.registration(user)
-                self.is_in_reg.pop(chat)
-                bot.send_message(chat_id=chat, text="Your request has been sent.\n Wait for librarian confirmation",
-                                 reply_markup=KeyboardM(self.keyboard_dict["auth"], True))
+                is_incorrect = utils.data_checker(self.is_in_reg[chat][1])
+                if is_incorrect[0]:
+                    bot.send_message(chat_id=chat, text=is_incorrect[1],
+                                     reply_markup=KeyboardM(self.keyboard_dict["unauth"], True))
+                else:
+                    self.cntrl.registration(user)
+                    self.is_in_reg.pop(chat)
+                    bot.send_message(chat_id=chat, text="Your request has been sent.\n Wait for librarian confirmation",
+                                     reply_markup=KeyboardM(self.keyboard_dict["unconf"], True))
             elif update.message.text == "Something is incorrect❌":
+                self.is_in_reg[chat] = [0, {"id": update.message.chat_id}]
                 bot.send_message(chat_id=chat, text="Enter your name", reply_markup=KeyboardR([[]]))
 
     # Main menu of library
