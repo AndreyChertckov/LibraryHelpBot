@@ -30,7 +30,7 @@ class Controller:
 
     def get_all_patrons(self):
         rows = self.BDmanager.select_all("patrons")
-        return [Patron(x[1], x[3], "patron", x[0], x[2], x[4], x[5], 2) for x in rows]
+        return [Patron(x[1], x[3], x[0], x[2], x[4], x[5], 2) for x in rows]
 
     def get_all_librarians(self):
         rows = self.BDmanager.select_all("librarians")

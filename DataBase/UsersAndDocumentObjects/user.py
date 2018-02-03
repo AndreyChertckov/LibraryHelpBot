@@ -9,13 +9,10 @@ class userBase:
         self.__type = type
         self.__id = id
 
-    # getting and setting name(returns true if name is suitable,false otherwise)
     def get_name(self):
         return str(self.__name)
 
     def set_name(self, name):
-       # if any(char.isdigit() for char in str(name)):
-       #     return False
         self.__name = name
         return True
 
@@ -44,8 +41,3 @@ class userBase:
 
     def get_address(self):
         return self.__address
-
-    '''def get_history(self):
-        return self.__history__
-        ()
-    '''
