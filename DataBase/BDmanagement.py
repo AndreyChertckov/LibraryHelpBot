@@ -17,8 +17,8 @@ clear_table - clears table
 class BDManagement:
     def __init__(self):
         self.file = 'DataBase.db'
-        self.drop_table("patrons")
-        self.drop_table("unconfirmed")
+        #self.drop_table("patrons")
+       # self.drop_table("unconfirmed")
         # self.drop_table("orders")
         # self.__bd.cursor().execute("DROP TABLE articles")
         self.__create_tables()
