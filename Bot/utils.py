@@ -12,7 +12,7 @@ def key_gen():
 #Send the key
 #params:
 #  bot -- This object represents a Bot's commands
-#  update -- This object represents an incoming update
+#  update -- This object represents an incoming  update
 def get_key(bot, update):
     bot.send_message(chat_id=update.message.chat_id, text=key_gen())
 

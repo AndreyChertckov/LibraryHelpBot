@@ -51,7 +51,7 @@ class RegFilter(BaseFilter):
     def filter(self, message):
         chat_id = message.chat_id
         ctrl = Controller()
-        if self.user_type == "unreg" and not ctrl.chat_exists(chat_id):
+        if self.user_type == "unreg"  and not ctrl.chat_exists(chat_id):
             return True
         elif self.user_type == "patron" and (ctrl.get_user(chat_id)["status"] == "Faculty" or ctrl.get_user(chat_id)["status"] == "Student"):
             return True
