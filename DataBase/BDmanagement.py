@@ -17,8 +17,10 @@ clear_table - clears table
 class BDManagement:
     def __init__(self):
         self.file = 'DataBase.db'
-        #self.drop_table("orders")
-        #self.__bd.cursor().execute("DROP TABLE articles")
+        self.drop_table("patrons")
+        self.drop_table("unconfirmed")
+        # self.drop_table("orders")
+        # self.__bd.cursor().execute("DROP TABLE articles")
         self.__create_tables()
 
     #        self.__bd.cursor().execute("DROP TABLE documents")
@@ -34,7 +36,7 @@ class BDManagement:
         cur.execute("SELECT * FROM " + str(table_to_select));
         rows = cur.fetchall()
         print("Table " + table_to_select + ":");
-       #for row in rows:
+        # for row in rows:
         #    print(row)
         return rows
 
@@ -51,8 +53,14 @@ class BDManagement:
                     VALUES(?,?,?,?,?)"""
         self.__add_new(sql, newLibr)
 
-    def select_label(self,selecting_table,id):
-        return  self.__create_connection(self.file).cursor().execute("SELECT * FROM "+selecting_table+" WHERE id=?",(id,)).fetchone()
+    def add_unconfirmed(self, newLibr):
+        sql = """INSERT INTO unconfirmed(id,name,phone,address,type)
+                    VALUES(?,?,?,?,?)"""
+        self.__add_new(sql, newLibr)
+
+    def select_label(self, selecting_table, id):
+        return self.__create_connection(self.file).cursor().execute("SELECT * FROM " + selecting_table + " WHERE id=?",
+                                                                    (id,)).fetchone()
 
     # добавить в базу картеж в виде (id,name,author,descr.,type,count,free_count
     def add_document(self, newDoc):
@@ -61,22 +69,22 @@ class BDManagement:
 
         cur = self.__create_connection(self.file).cursor()
         cur.execute(sql,
-                        (newDoc.id, newDoc.name, newDoc.authors, newDoc.description, newDoc.count, newDoc.free_count,
-                         newDoc.price,))
-            # self.__add_new(sql,(newDoc.id,newDoc.name))
+                    (newDoc.id, newDoc.name, newDoc.authors, newDoc.description, newDoc.count, newDoc.free_count,
+                     newDoc.price,))
+        # self.__add_new(sql,(newDoc.id,newDoc.name))
 
     def add_media(self, newMed):
         sql = """INSERT INTO media(id,name,authors,type,count,free_count,price)
         VALUES(?,?,?,?,?,?,?)"""
         self.__bd.cursor().execute(sql, (
-        newMed.id, newMed.name, newMed.authors, newMed.type, newMed.count, newMed.free_count, newMed.price))
+            newMed.id, newMed.name, newMed.authors, newMed.type, newMed.count, newMed.free_count, newMed.price))
 
     def add_article(self, newArticle):
         sql = """INSERT INTO articles(id,name,authors,journal_name,journal_publisher,count,free_count,price)
         VALUES(?,?,?,?,?,?,?,?)"""
         cur = self.__bd.cursor()  # cursor()
 
-        cur.execute(sql, (newArticle.id, newArticle.name, newArticle.authors,newArticle.journal_name,
+        cur.execute(sql, (newArticle.id, newArticle.name, newArticle.authors, newArticle.journal_name,
                           newArticle.journal_publisher, newArticle.count, newArticle.free_count, newArticle.price,))
 
     def add_patron(self, newPatron):
@@ -106,7 +114,7 @@ class BDManagement:
 
     def __create_table(self, create_table_sql):
         try:
-            #c = self.__bd.cursor()
+            # c = self.__bd.cursor()
             c = self.__create_connection(self.file).cursor()
             c.execute(create_table_sql)
         except Error as e:
@@ -122,7 +130,14 @@ class BDManagement:
                 address text,
                 type text
               ); """);
-
+        self.__create_table("""
+                        CREATE TABLE IF NOT EXISTS unconfirmed (
+                        id integer PRIMARY KEY,
+                        name text NOT NULL,
+                        phone integer,
+                        address text,
+                        type text
+                      ); """);
         self.__create_table("""
                  CREATE TABLE IF NOT EXISTS patrons (
                  id integer PRIMARY KEY,
