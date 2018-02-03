@@ -21,7 +21,7 @@ class Controller:
             print('Chat exist in BD!')
 
     def delete_user(self, user_info):
-        print(self.remove_user(user_info['id'], user_info['status']))
+        print(self.remove_user(user_info['id'], 'librarians' if user_info['status'] == 'Librarian' else 'patrons'))
 
     # def get_all_patrons(self):
     #     rows = self.BDmanager.select_all("patrons")
@@ -85,8 +85,11 @@ class Controller:
             return False
         return user
 
-    def upto_librarian(self, user_info):
-        pass
+    def upto_librarian(self, user_id):
+        user_info = self.get_user(user_id)
+        self.remove_user(user_id,'patrons')
+        librarian = Librarian(user_info['name'], user_info['address'], user_info['id'], user_info['phone'])
+        self.BDmanager.add_librarian(librarian)
 
     def generate_key(self,alias):
         pass
