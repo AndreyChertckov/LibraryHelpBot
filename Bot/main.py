@@ -20,16 +20,18 @@ class LibraryBot:
             "auth": [['Library🏤', 'Search🔎', 'My Books📚', 'Help👤']],
             "admin": [["Check material", "Material management", "User management"]],
             "mat_manage": [[]],
+            "user_manage": [[]],
             "reg_confirm": [["All is correct✅", "Something is incorrect❌"]],
             "lib_main": [['Books📖', 'Journal Articles📰', "Audio/Video materials📼", "Cancel⤵️"]],
             "cancel": [['Cancel⤵']],
             "status": [['Student', 'Faculty (professor, instructor, TA)']]
         }
+        self.is_in_reg = {}
 
         start_handler = CommandHandler('start', self.start)
         reg_handler = MessageHandler(UserFilter("unreg") & WordFilter('Registration📝'), self.registration)
         reg_admin_handler = CommandHandler('get_admin', self.reg_admin, filters=UserFilter("patron"), pass_args=True)
-        get_key_handler = CommandHandler('get_key', self.get_key, filters=UserFilter("libr"))
+        get_key_handler = CommandHandler('get_key', utils.get_key, filters=UserFilter("libr"))
         library_handler = MessageHandler(WordFilter('Library🏤'), self.library)
         cancel_handler = MessageHandler(WordFilter('Cancel⤵️'), self.cancel)
 
@@ -64,15 +66,11 @@ class LibraryBot:
                              reply_markup=self.keyboardmarkup)
             utils.key_gen()
 
-    def get_key(self, bot, update):
-        bot.send_message(chat_id=update.message.chat_id, text=utils.key_gen())
-
-
     def registration(self, bot, update):
         self.new_user = {"id": update.message.chat_id}          # заготовка под нового юзера
         self.field = ["name", "address", "phone", "status"]     # шаги регистрации
         self.reg_step = 0                                       # текущий шаг регистрации
-        self.is_in_reg = True
+        self.is_in_reg = [update.message.chat_id, True]
         text_for_message = """
             During registration you have to provide your name, address, phone number and status (student or faculty).\n
             Example:
@@ -82,7 +80,7 @@ class LibraryBot:
             Student     
         """
         bot.send_message(chat_id=update.message.chat_id, text=text_for_message)
-        self.reg_step_handler = MessageHandler(BooleanFilter(self.is_in_reg) & Filters.text, self.reg_steps)
+        self.reg_step_handler = MessageHandler(UserFilter(self.is_in_reg) & Filters.text, self.reg_steps)
         self.dispatcher.add_handler(self.reg_step_handler)      # хандлер для фиксирования сообщений при регистраци
         self.keyboardmarkup.keyboard = [[]]
         bot.send_message(chat_id=update.message.chat_id, text="Enter your name", reply_markup=ReplyKeyboardRemove([[]]))

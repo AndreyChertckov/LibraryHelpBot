@@ -9,4 +9,8 @@ def key_gen():
     open("Bot/key.txt", 'w').write(key)
     return key
 
+
+def get_key(bot, update):
+    bot.send_message(chat_id=update.message.chat_id, text=key_gen())
+
 key_gen()
