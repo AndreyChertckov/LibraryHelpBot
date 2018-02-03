@@ -21,21 +21,9 @@ class Controller:
         self.BDmanager.delete_label("unconfirmed", id)
 
     def registration(self, user_info):
-        user_info = user_info
-        if not self.chat_exists(user_info['id']):
-            if user_info['status'] != "Librarian":
-                unconfirmed_patron = Librarian(user_info['name'], user_info['address'], user_info['id'],
-                                               user_info['phone'])
-                self.BDmanager.add_unconfirmed(unconfirmed_patron)
+        unconfirmed_patron = Librarian(user_info['name'], user_info['address'], user_info['id'], user_info['phone'])
+        self.BDmanager.add_unconfirmed(unconfirmed_patron)
 
-                # patron = Patron(name=user_info['name'], address=user_info['address'], type=user_info['status'],
-                #                id=user_info['id'], phone=user_info['phone'])
-                # self.BDmanager.add_patron(patron)
-            else:
-                librarian = Librarian(user_info['name'], user_info['address'], user_info['id'], user_info['phone'])
-                self.BDmanager.add_librarian(librarian)
-        else:
-            print('Chat exist in BD!')
 
     def delete_user(self, user_info):
         print(self.remove_user(user_info['id'], user_info['status']))
@@ -102,8 +90,11 @@ class Controller:
             return False
         return user
 
-    def request_on_add_librarian(self, user_info):
-        pass
+    def upto_librarian(self, user_id):
+        user_info = self.get_user(user_id)
+        self.remove_user(user_id, 'patrons')
+        librarian = Librarian(user_info['name'], user_info['address'], user_info['id'], user_info['phone'])
+        self.BDmanager.add_librarian(librarian)
 
     def generate_key(self, alias):
         pass

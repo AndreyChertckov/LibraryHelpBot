@@ -18,9 +18,11 @@ class LibraryBot:
         self.keyboard_dict = {
             "unauth": [['Registration📝', 'Library🏤', 'Search🔎', 'Help👤']],
             "auth": [['Library🏤', 'Search🔎', 'My Books📚', 'Help👤']],
-            "admin": [["Check material", "Return material", "Add material"], ["Library", "Search", "Confirm users"]],
+            "admin": [["Check material", "Material management", "User management"]],
+            "mat_manage": [[]],
             "reg_confirm": [["All is correct✅", "Something is incorrect❌"]],
             "lib_main": [['Books📖', 'Journal Articles📰', "Audio/Video materials📼", "Cancel⤵️"]],
+            "cancel": [['Cancel⤵']],
             "status": [['Student', 'Faculty (professor, instructor, TA)']]
         }
 
@@ -29,12 +31,14 @@ class LibraryBot:
         reg_admin_handler = CommandHandler('get_admin', self.reg_admin, filters=UserFilter("patron"), pass_args=True)
         get_key_handler = CommandHandler('get_key', self.get_key, filters=UserFilter("libr"))
         library_handler = MessageHandler(WordFilter('Library🏤'), self.library)
+        cancel_handler = MessageHandler(WordFilter('Cancel⤵️'), self.cancel)
 
         self.dispatcher.add_handler(start_handler)
         self.dispatcher.add_handler(reg_handler)
         self.dispatcher.add_handler(reg_admin_handler)
         self.dispatcher.add_handler(get_key_handler)
         self.dispatcher.add_handler(library_handler)
+        self.dispatcher.add_handler(cancel_handler)
 
         self.updater.start_polling()
         self.updater.idle()
@@ -134,17 +138,15 @@ class LibraryBot:
 
     def library(self, bot, update):
         self.keyboardmarkup = telegram.ReplyKeyboardMarkup(self.keyboard_dict["lib_main"], True)
-        book_handler = MessageHandler(WordFilter('Books📖') & LocationFilter(self, "lib_main"), self.cancel_lib)
+        book_handler = MessageHandler(WordFilter('Books📖') & LocationFilter(self, "lib_main"), self.cancel)
         article_handler = MessageHandler(WordFilter('Journal Articles📰️') & LocationFilter(self, "lib_main"),
-                                         self.cancel_lib)
+                                         self.cancel)
         av_handler = MessageHandler(WordFilter('Audio/Video materials📼') & LocationFilter(self, "lib_main"),
-                                    self.cancel_lib)
-        cancel_handler = MessageHandler(WordFilter('Cancel⤵️') & LocationFilter(self, "lib_main"), self.cancel_lib)
+                                    self.cancel)
 
         self.dispatcher.add_handler(book_handler)
         self.dispatcher.add_handler(article_handler)
         self.dispatcher.add_handler(av_handler)
-        self.dispatcher.add_handler(cancel_handler)
 
         bot.send_message(chat_id=update.message.chat_id, text="Choose type of material",
                          reply_markup=self.keyboardmarkup)
@@ -152,11 +154,11 @@ class LibraryBot:
     def load_material(self, bot, update):
         pass
 
-    def cancel_lib(self, bot, update):
+    def cancel(self, bot, update):
         user_id = update.message.chat_id
         if not self.cntrl.chat_exists(user_id):
             self.keyboardmarkup = telegram.ReplyKeyboardMarkup(self.keyboard_dict["unauth"], True)
-        elif self.cntrl.get_user(user_id)['status'] != "Librarian":
+        elif self.cntrl.get_user(user_id)['status'] != "librarian":
             self.keyboardmarkup = telegram.ReplyKeyboardMarkup(self.keyboard_dict["auth"], True)
         else:
             self.keyboardmarkup = telegram.ReplyKeyboardMarkup(self.keyboard_dict["admin"], True)
