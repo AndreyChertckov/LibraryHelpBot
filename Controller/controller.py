@@ -56,12 +56,12 @@ class Controller:
     # Return all books from database
     def get_all_books(self):
         rows = self.BDmanager.select_all("books")
-        return [Document(book[1], book[3], book[2], book[0], book[4], book[5], book[6]) for book in rows]
+        return [Document(book[0],book[1], book[3], book[2], book[4], book[5], book[6]) for book in rows]
 
     # Return all articles from database
     def get_all_articles(self):
         rows = self.BDmanager.select_all("articles")
-        return [JournalArticle(article[1], article[2], article[3], article[4], article[0], article[5], article[6],
+        return [JournalArticle(article[0],article[1], article[2], article[3], article[4],  article[5], article[6],
                                article[7]) for article in rows]
 
     # Return all media from database
@@ -135,8 +135,8 @@ class Controller:
     # param: user_id : id of user
     def upto_librarian(self, user_id):
         user_info = self.get_user(user_id)
-        del user_info['history']
-        del user_info['current_books']
+        user_info.pop('current_books',0)
+        user_info.pop('history',0)
         self.remove_user(user_id, 'patrons')
         user_info["status"] = 'librarian'
         self.BDmanager.add_librarian(Librarian(**user_info))
