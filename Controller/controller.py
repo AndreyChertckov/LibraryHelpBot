@@ -16,10 +16,9 @@ class Controller:
     # param: user_id - id of user
     def confirm_user(self, user_id):
         user = self.BDmanager.select_label("unconfirmed", user_id)
-        confirmed_user = Librarian(user[1], user[3], user[0], user[2], user[4])
         self.remove_user(user_id, 'unconfirmed')
         self.BDmanager.add_patron(
-            Patron(confirmed_user.get_name(), confirmed_user.get_address(), user_id, confirmed_user.get_phone(), [], [],
+            Patron(user[1], user[3], user_id, user[4],user[2], [], [],
                    2))
 
     # Put user in queue for accepting to the library
@@ -39,7 +38,7 @@ class Controller:
     def get_all_patrons(self):
         rows = self.BDmanager.select_all("patrons")
         return [{'id': user[0], 'name': user[1], 'phone': user[2], 'address': user[3], 'history': user[4],
-                 'current_books': user[5]} for user in rows]
+                 'current_books': user[5],'status':user[6]} for user in rows]
 
     # Return all librarians from database
     def get_all_librarians(self):
