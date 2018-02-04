@@ -29,27 +29,27 @@ class Controller:
 
     def get_all_patrons(self):
         rows = self.BDmanager.select_all("patrons")
-        return [Patron(x[1], x[3], x[0], x[2], x[4], x[5], 2) for x in rows]
+        return [{'name':user[1], 'address':user[3], 'id': user[0], 'phone':user[2], 'history':user[4], 'current_books':user[5], 'check_out_time':2} for user in rows]
 
     def get_all_librarians(self):
         rows = self.BDmanager.select_all("librarians")
-        return [Librarian(x[1], x[3], x[0], x[2], x[4]) for x in rows]
+        return [{'name':user[1], 'address':user[3], 'id':user[0], 'phone':user[2], 'status':user[4]} for user in rows]
 
     def get_all_unconfirmed(self):
         rows = self.BDmanager.select_all("unconfirmed")
-        return [Librarian(x[1], x[3], x[0], x[2], x[4]) for x in rows]
+        return [{'name':user[1], 'address':user[3], 'id':user[0], 'phone':user[2], 'status':user[4]} for user in rows]
 
     def get_all_books(self):
         rows = self.BDmanager.select_all("books")
-        return [Document(x[1], x[3], x[2], x[0], x[4], x[5], x[6]) for x in rows]
+        return [Document(book[1], book[3], book[2], book[0], book[4], book[5], book[6]) for book in rows]
 
     def get_all_articles(self):
         rows = self.BDmanager.select_all("articles")
-        return [JournalArticle(x[1], x[2], x[3], x[4], x[0], x[5], x[6], x[7]) for x in rows]
+        return [JournalArticle(article[1], article[2], article[3], article[4], article[0], article[5], article[6], article[7]) for article in rows]
 
     def get_all_media(self):
         rows = self.BDmanager.select_all("media")
-        return [BaseDoc(x[0], x[2], x[1], x[4], x[5], x[6], x[3]) for x in rows]
+        return [BaseDoc(media[0], media[2], media[1], media[4], media[5], media[6], media[3]) for media in rows]
 
     def chat_exists(self, id):
         return any([self.BDmanager.select_label('librarians', id), self.BDmanager.select_label('patrons', id)])
