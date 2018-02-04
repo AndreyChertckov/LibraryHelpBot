@@ -4,7 +4,7 @@ from telegram import InlineQueryResultArticle, InputTextMessageContent, InlineKe
 from telegram import ReplyKeyboardMarkup as KeyboardM
 from telegram import ReplyKeyboardRemove as KeyboardR
 from telegram import InlineKeyboardButton as IKB
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, InlineQueryHandler
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, InlineQueryHandler, CallbackQueryHandler
 from Bot.filter import *
 from Bot import utils
 import logging
@@ -22,7 +22,7 @@ class LibraryBot:
         self.updater = Updater(token=token)
         self.dispatcher = self.updater.dispatcher
         logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
-        self.logger = logging.getLogger(__name__)
+        # self.logger = logging.getLogger(__name__)
         self.keyboard_dict = {
             "unauth": [['Registration📝', 'Library🏤', 'Search🔎', 'Help👤']],
             "unconf": [['Library🏤', 'Search🔎', 'Help👤']],
@@ -37,13 +37,14 @@ class LibraryBot:
         }
         self.types = ['unauth', "unconf", "auth", 'admin']
         self.is_in_reg = {}
+        self.admins = {}
 
         self.add_user_handlers()
         self.add_admin_handlers()
         start_handler = CommandHandler('start', self.start)
 
         self.dispatcher.add_handler(start_handler)
-        self.dispatcher.add_error_handler(self.error)
+        # self.dispatcher.add_error_handler(self.error)
 
         self.updater.start_polling()
         self.updater.idle()
@@ -55,6 +56,14 @@ class LibraryBot:
         library_handler = MessageHandler(WordFilter('Library🏤'), self.library)
         cancel_handler = MessageHandler(WordFilter('Cancel⤵️'), self.cancel)
 
+        book_handler = MessageHandler(WordFilter('Books📖'), self.cancel)
+        article_handler = MessageHandler(WordFilter('Journal Articles📰️'), self.cancel)
+        av_handler = MessageHandler(WordFilter('Audio/Video materials📼'), self.cancel)
+
+        self.dispatcher.add_handler(book_handler)
+        self.dispatcher.add_handler(article_handler)
+        self.dispatcher.add_handler(av_handler)
+
         self.dispatcher.add_handler(reg_handler)
         self.dispatcher.add_handler(reg_step_handler)
         self.dispatcher.add_handler(reg_admin_handler)
@@ -64,6 +73,7 @@ class LibraryBot:
     def add_admin_handlers(self):
         self.dispatcher.add_handler(CommandHandler('get_key', utils.get_key, filters=UserFilter(3)))
         self.dispatcher.add_handler(MessageHandler(WordFilter("User management👥") & UserFilter(3), self.user_manage))
+        self.dispatcher.add_handler(CallbackQueryHandler(self.conf_user))
 
     # Main menu
     # params:
@@ -96,12 +106,12 @@ class LibraryBot:
         chat = update.message.chat_id
         self.is_in_reg[chat] = [0, {"id": update.message.chat_id}]
         text_for_message = """
-            During registration you have to provide your name, address, phone number and status (student or faculty).\n
-            Example:
-            Ivan Ivanov,
-            ul. Universitetskaya 1, 2-100,
-            +71234567890,
-            Student     
+        During registration you have to provide your name, address, phone number and status (student or faculty).\n
+        Example:
+        Ivan Ivanov,
+        ul. Universitetskaya 1, 2-100,
+        +71234567890,
+        Student     
         """
         bot.send_message(chat_id=chat, text=text_for_message)
         bot.send_message(chat_id=chat, text="Enter your name", reply_markup=KeyboardR([[]]))
@@ -127,11 +137,11 @@ class LibraryBot:
                                  reply_markup=keyboard)
             else:
                 text_for_message = """
-                    Check whether all data is correct:
-                    Name: {name}
-                    Address: {address}
-                    Phone: {phone}
-                    Status: {status}
+                Check whether all data is correct:
+                Name: {name}
+                Address: {address}
+                Phone: {phone}
+                Status: {status}
                 """.format(**user)
                 bot.send_message(chat_id=update.message.chat_id, text=text_for_message,
                                  reply_markup=KeyboardM(self.keyboard_dict["reg_confirm"], True))
@@ -160,18 +170,69 @@ class LibraryBot:
         self.dispatcher.add_handler(MessageHandler(WordFilter("Show users👥") & UserFilter(3), self.show_users))
 
     def confirm(self, bot, update):
-        n = 7
+        chat = update.message.chat_id
+        n = 3
         unconf_users = self.cntrl.get_all_unconfirmed()
         unconf_users = [unconf_users[i * n:(i + 1) * n] for i in range(len(unconf_users) // n + 1)]
-        cur_page = 0
-        max_page = len(unconf_users) - 1
+        if not (chat in self.admins):
+            self.admins[chat] = 0
         text_message = ("\n" + "-" * 50 + "\n").join(
-            ["{}) {} - {}".format(i+1, user['name'], user["status"]) for i, user in enumerate(unconf_users[cur_page])])
-        keyboard = [[IKB(str(i+1), callback_data=str(i)) for i in range(n)]]
+            ["{}) {} - {}".format(i + 1, user['name'], user["status"]) for i, user in enumerate(unconf_users[0])])
+        keyboard = [[IKB(str(i + 1), callback_data=str(i)) for i in range(len(unconf_users[0]))]]
         keyboard += [[IKB("⬅", callback_data='next'), IKB("➡️", callback_data='next')]]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        bot.send_message(chat_id=update.message.chat_id, text=text_message,
-                         reply_markup=reply_markup)
+        update.message.reply_text(text=text_message + "\nCurrent page: " + str(1), reply_markup=reply_markup)
+
+    def conf_user(self, bot, update):
+        query = update.callback_query
+        chat = query.message.chat_id
+        n = 3
+        unconf_users = self.cntrl.get_all_unconfirmed()
+        unconf_users = [unconf_users[i * n:(i + 1) * n] for i in range(len(unconf_users) // n + 1)]
+        max_page = len(unconf_users) - 1
+        if (query.data == "prev" or "next" == query.data) and max_page:
+            if query.data == "next":
+                if self.admins[chat] == max_page:
+                    self.admins[chat] = 0
+                else:
+                    self.admins[chat] += 1
+            if query.data == "prev":
+                if self.admins[chat] == 0:
+                    self.admins[chat] = max_page
+                else:
+                    self.admins[chat] -= 1
+
+            text_message = ("\n" + "-" * 50 + "\n").join(
+                ["{}) {} - {}".format(i + 1, user['name'], user["status"]) for i, user in enumerate(unconf_users[self.admins[chat]])])
+            keyboard = [[IKB(str(i + 1), callback_data=str(i)) for i in range(len(unconf_users[self.admins[chat]]))]]
+            keyboard += [[IKB("⬅", callback_data='prev'), IKB("➡️", callback_data='next')]]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            bot.edit_message_text(text=text_message + "\nCurrent page: " + str(self.admins[chat] + 1), chat_id=chat,
+                                  message_id=query.message.message_id, reply_markup=reply_markup)
+        elif utils.is_int(query.data):
+            k = int(query.data)
+            user = unconf_users[self.admins[chat]][k]
+            text = """
+            Check whether all data is correct:\nName: {name}\nAddress: {address}\nPhone: {phone}\nStatus: {status}
+            """.format(**user)
+            keyboard = [[IKB("Accept✅", callback_data='accept ' + query.data), IKB("Reject️❌", callback_data='reject ' + query.data)]]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            bot.edit_message_text(text=text, chat_id=chat, message_id=query.message.message_id,
+                                  reply_markup=reply_markup)
+        elif query.data.split(" ")[0] == 'accept':
+            k = int(query.data.split(" ")[1])
+            user_id = unconf_users[self.admins[chat]][k]["id"]
+            self.cntrl.confirm_user(user_id)
+            bot.edit_message_text(text="This user was confirmed", chat_id=chat, message_id=query.message.message_id)
+            bot.send_message(chat_id=user_id, text="Your application was confirmed",
+                             reply_markup=KeyboardM(self.keyboard_dict[self.types[2]], True))
+        elif query.data.split(" ")[0] == 'reject':
+            k = int(query.data.split(" ")[1])
+            user_id = unconf_users[self.admins[chat]][k]["id"]
+            self.cntrl.delete_user(user_id)
+            bot.edit_message_text(text="This user was rejected", chat_id=chat, message_id=query.message.message_id)
+            bot.send_message(chat_id=user_id, text="Your application was rejected",
+                             reply_markup=KeyboardM(self.keyboard_dict[self.types[0]], True))
 
     def check_overdue(self, bot, update):
         pass
@@ -185,13 +246,6 @@ class LibraryBot:
     #  update -- This object represents an incoming update
 
     def library(self, bot, update):
-        book_handler = MessageHandler(WordFilter('Books📖'), self.cancel)
-        article_handler = MessageHandler(WordFilter('Journal Articles📰️'), self.cancel)
-        av_handler = MessageHandler(WordFilter('Audio/Video materials📼'), self.cancel)
-
-        self.dispatcher.add_handler(book_handler)
-        self.dispatcher.add_handler(article_handler)
-        self.dispatcher.add_handler(av_handler)
 
         bot.send_message(chat_id=update.message.chat_id, text="Choose type of material",
                          reply_markup=KeyboardM(self.keyboard_dict["lib_main"], True))
