@@ -150,11 +150,9 @@ class LibraryBot:
     #  bot -- This object represents a Bot's commands
     #  update -- This object represents an incoming update
     def library(self, bot, update):
-        book_handler = MessageHandler(WordFilter('Books📖') & LocationFilter(self, "lib_main"), self.cancel)
-        article_handler = MessageHandler(WordFilter('Journal Articles📰️') & LocationFilter(self, "lib_main"),
-                                         self.cancel)
-        av_handler = MessageHandler(WordFilter('Audio/Video materials📼') & LocationFilter(self, "lib_main"),
-                                    self.cancel)
+        book_handler = MessageHandler(WordFilter('Books📖'), self.cancel)
+        article_handler = MessageHandler(WordFilter('Journal Articles📰️'), self.cancel)
+        av_handler = MessageHandler(WordFilter('Audio/Video materials📼'), self.cancel)
 
         self.dispatcher.add_handler(book_handler)
         self.dispatcher.add_handler(article_handler)
