@@ -51,30 +51,31 @@ class Controller:
         rows = self.BDmanager.select_all("media")
         return [BaseDoc(x[0], x[2], x[1], x[4], x[5], x[6], x[3]) for x in rows]
 
-    def chat_exists(self, id):
-        return any([self.BDmanager.select_label('librarians', id), self.BDmanager.select_label('patrons', id)])
+    def chat_exists(self, user_id):
+        return any(
+            [self.BDmanager.select_label('librarians', user_id), self.BDmanager.select_label('patrons', user_id)])
 
-    def remove_user(self, id, table=None):
+    def remove_user(self, user_id, table=None):
         if table != None:
-            if self.BDmanager.select_label(table, id):
-                self.BDmanager.delete_label(table, id)
+            if self.BDmanager.select_label(table, user_id):
+                self.BDmanager.delete_label(table, user_id)
                 return True
             else:
                 return False
         else:
-            if self.BDmanager.select_label('librarians', id):
-                self.BDmanager.delete_label('librarians', id)
+            if self.BDmanager.select_label('librarians', user_id):
+                self.BDmanager.delete_label('librarians', user_id)
                 return True
-            elif self.BDmanager.select_label('patrons', id):
-                self.BDmanager.delete_label('patrons', id)
+            elif self.BDmanager.select_label('patrons', user_id):
+                self.BDmanager.delete_label('patrons', user_id)
                 return True
             else:
                 return False
 
-    def get_user(self, id):
+    def get_user(self, user_id):
         user = {}
-        if self.BDmanager.select_label('patrons', id):
-            user_bd = self.BDmanager.select_label('patrons', id)
+        if self.BDmanager.select_label('patrons', user_id):
+            user_bd = self.BDmanager.select_label('patrons', user_id)
             user['id'] = user_bd[0]
             user['name'] = user_bd[1]
             user['address'] = user_bd[2]
@@ -82,8 +83,8 @@ class Controller:
             user['history'] = user_bd[4]
             user['current_books'] = user_bd[5]
             user['status'] = user_bd[6]
-        elif self.BDmanager.select_label('librarians', id):
-            user_bd = self.BDmanager.select_label('librarians', id)
+        elif self.BDmanager.select_label('librarians', user_id):
+            user_bd = self.BDmanager.select_label('librarians', user_id)
             user['id'] = user_bd[0]
             user['name'] = user_bd[1]
             user['phone'] = user_bd[2]
@@ -105,9 +106,9 @@ class Controller:
         d = {"unauthorized": 0, 'unconfirmed': 1, 'patron': 2, 'admin': 3}
         if self.BDmanager.select_label('librarians', user_id):
             return d['admin']
-        elif self.BDmanager.select_label('patrons',user_id):
+        elif self.BDmanager.select_label('patrons', user_id):
             return d['patron']
-        elif self.BDmanager.select_label('unconfirmed',user_id):
+        elif self.BDmanager.select_label('unconfirmed', user_id):
             return d['unconfirmed']
         else:
             return d['unauthorized']

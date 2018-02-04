@@ -47,9 +47,9 @@ class LibraryBot:
         self.updater.idle()
 
     def add_user_handlers(self):
-        reg_handler = MessageHandler(UserFilter("unreg") & WordFilter('Registration📝'), self.registration)
+        reg_handler = MessageHandler(WordFilter('Registration📝') & UserFilter(0), self.registration)
         reg_step_handler = MessageHandler(RegFilter(self.is_in_reg) & Filters.text, self.reg_steps)
-        reg_admin_handler = CommandHandler('get_admin', self.reg_admin, filters=UserFilter("patron"), pass_args=True)
+        reg_admin_handler = CommandHandler('get_admin', self.reg_admin, filters=UserFilter(2), pass_args=True)
         library_handler = MessageHandler(WordFilter('Library🏤'), self.library)
         cancel_handler = MessageHandler(WordFilter('Cancel⤵️'), self.cancel)
 
@@ -60,19 +60,20 @@ class LibraryBot:
         self.dispatcher.add_handler(cancel_handler)
 
     def add_admin_handlers(self):
-        get_key_handler = CommandHandler('get_key', utils.get_key, filters=UserFilter("libr"))
-        userm_handler = MessageHandler(WordFilter("User management👥"), self.user_manage)
+        get_key_handler = CommandHandler('get_key', utils.get_key, filters=UserFilter(3))
+        user_handler = MessageHandler(WordFilter("User management👥") & UserFilter(3), self.user_manage)
 
         self.dispatcher.add_handler(get_key_handler)
-        self.dispatcher.add_handler(userm_handler)
+        self.dispatcher.add_handler(user_handler)
 
     # Main menu
     # params:
     #  bot -- This object represents a Bot's commands
     #  update -- This object represents an incoming update
     def start(self, bot, update):
+        # user_type =
         if self.cntrl.chat_exists(update.message.chat_id):
-            if self.cntrl.get_user(update.message.chat_id)['status'] == 'librarian':
+            if self.cntrl.user_type():
                 keyboard = self.keyboard_dict["admin"]
             else:
                 keyboard = self.keyboard_dict["auth"]
@@ -162,6 +163,9 @@ class LibraryBot:
         bot.send_message(chat_id=update.message.chat_id, text="Choose option",
                          reply_markup=KeyboardM(keyboard, True))
 
+        t = self.cntrl.get_all_unconfirmed()
+        print(t)
+
 
 
     # Main menu of library
@@ -192,10 +196,12 @@ class LibraryBot:
     #  bot -- This object represents a Bot's commands
     #  update -- This object represents an incoming update
     def cancel(self, bot, update):
-        user_id = update.message.chat_id
-        if not self.cntrl.chat_exists(user_id):
+        user_type = self.cntrl.user_type(update.message.chat_id)
+        if user_type == 0:
             keyboard = self.keyboard_dict["unauth"]
-        elif self.cntrl.get_user(user_id)['status'] != "librarian":
+        elif user_type == 1:
+            keyboard = self.keyboard_dict["unconf"]
+        elif user_type == 2:
             keyboard = self.keyboard_dict["auth"]
         else:
             keyboard = self.keyboard_dict["admin"]
