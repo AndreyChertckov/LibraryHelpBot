@@ -71,14 +71,9 @@ class LibraryBot:
     #  bot -- This object represents a Bot's commands
     #  update -- This object represents an incoming update
     def start(self, bot, update):
-        # user_type =
-        if self.cntrl.chat_exists(update.message.chat_id):
-            if self.cntrl.user_type():
-                keyboard = self.keyboard_dict["admin"]
-            else:
-                keyboard = self.keyboard_dict["auth"]
-        else:
-            keyboard = self.keyboard_dict["unauth"]
+        user_type = self.cntrl.user_type(update.message.chat_id)
+        types = ['unauth', "unconf", "auth", 'admin']
+        keyboard = self.keyboard_dict[types[user_type]]
 
         bot.send_message(chat_id=update.message.chat_id, text="I'm bot, Hello",
                          reply_markup=KeyboardM(keyboard, True))
