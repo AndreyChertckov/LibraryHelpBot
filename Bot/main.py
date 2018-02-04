@@ -21,13 +21,14 @@ class LibraryBot:
         self.updater = Updater(token=token)
         self.dispatcher = self.updater.dispatcher
         logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+        self.logger = logging.getLogger(__name__)
         self.keyboard_dict = {
             "unauth": [['Registration📝', 'Library🏤', 'Search🔎', 'Help👤']],
             "unconf": [['Library🏤', 'Search🔎', 'Help👤']],
             "auth": [['Library🏤', 'Search🔎', 'My Books📚', 'Help👤']],
-            "admin": [["Check material", "Material management", "User management"]],
+            "admin": [["Check material📆", "Material management📚", "User management👥"]],
             "mat_manage": [[]],
-            "user_manage": [["Confirm application", "Check overdue", "Show users"]],
+            "user_manage": [["Confirm application📝", "Check overdue📋", "Show users👥"]],
             "reg_confirm": [["All is correct✅", "Something is incorrect❌"]],
             "lib_main": [['Books📖', 'Journal Articles📰', "Audio/Video materials📼", "Cancel⤵️"]],
             "cancel": [['Cancel⤵']],
@@ -36,23 +37,31 @@ class LibraryBot:
         self.is_in_reg = {}
 
         start_handler = CommandHandler('start', self.start)
-        reg_handler = MessageHandler(UserFilter("unreg") & WordFilter('Registration📝'), self.registration)
-        reg_step_handler = MessageHandler(RegFilter(self.is_in_reg) & Filters.text, self.reg_steps)
-        reg_admin_handler = CommandHandler('get_admin', self.reg_admin, filters=UserFilter("patron"), pass_args=True)
-        get_key_handler = CommandHandler('get_key', utils.get_key, filters=UserFilter("libr"))
-        library_handler = MessageHandler(WordFilter('Library🏤'), self.library)
-        cancel_handler = MessageHandler(WordFilter('Cancel⤵️'), self.cancel)
 
         self.dispatcher.add_handler(start_handler)
-        self.dispatcher.add_handler(reg_handler)
-        self.dispatcher.add_handler(reg_step_handler)
-        self.dispatcher.add_handler(reg_admin_handler)
-        self.dispatcher.add_handler(get_key_handler)
-        self.dispatcher.add_handler(library_handler)
-        self.dispatcher.add_handler(cancel_handler)
+        self.dispatcher.add_error_handler(self.error)
 
         self.updater.start_polling()
         self.updater.idle()
+
+    def add_user_handlers(self):
+        reg_handler = MessageHandler(UserFilter("unreg") & WordFilter('Registration📝'), self.registration)
+        reg_step_handler = MessageHandler(RegFilter(self.is_in_reg) & Filters.text, self.reg_steps)
+        reg_admin_handler = CommandHandler('get_admin', self.reg_admin, filters=UserFilter("patron"), pass_args=True)
+        library_handler = MessageHandler(WordFilter('Library🏤'), self.library)
+        cancel_handler = MessageHandler(WordFilter('Cancel⤵️'), self.cancel)
+
+        self.dispatcher.add_handler(reg_handler)
+        self.dispatcher.add_handler(reg_step_handler)
+        self.dispatcher.add_handler(reg_admin_handler)
+        self.dispatcher.add_handler(library_handler)
+        self.dispatcher.add_handler(cancel_handler)
+
+    def add_admin_handlers(self):
+        get_key_handler = CommandHandler('get_key', utils.get_key, filters=UserFilter("libr"))
+        library_handler = MessageHandler(WordFilter('Library🏤'), self.library)
+
+        self.dispatcher.add_handler(get_key_handler)
 
     # Main menu
     # params:
@@ -182,6 +191,10 @@ class LibraryBot:
             keyboard = self.keyboard_dict["admin"]
 
         bot.send_message(chat_id=update.message.chat_id, text="Main menu", reply_markup=KeyboardM(keyboard, True))
+
+    def error(self, bot, update, error):
+        """Log Errors caused by Updates."""
+        self.logger.warning('Update "%s" caused error "%s"', update, error)
 
 
 # Start Bot

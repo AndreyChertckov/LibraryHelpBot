@@ -34,7 +34,7 @@ class Controller:
     def get_all_librarians(self):
         rows = self.BDmanager.select_all("librarians")
         return [Librarian(x[1], x[3], x[0], x[2], x[4]) for x in rows]
-     
+
     def get_all_unconfirmed(self):
         rows = self.BDmanager.select_all("unconfirmed")
         return [Librarian(x[1], x[3], x[0], x[2], x[4]) for x in rows]
@@ -100,5 +100,8 @@ class Controller:
         librarian = Librarian(user_info['name'], user_info['address'], user_info['id'], user_info['phone'], 'librarian')
         self.BDmanager.add_librarian(librarian)
 
-    def generate_key(self, alias):
-        pass
+    # Функция должна возвращать от 0 до 3 в зависимости от того, в какой таблице лежит пользователь
+    # unconfirmed
+    def user_type(self, user_id):
+        d = {"unauthorized": 0, 'unconfirmed': 1, 'patron': 2, 'admin': 3}
+        return True
