@@ -27,8 +27,8 @@ class LibraryBot:
             "unconf": [['Library🏤', 'Search🔎', 'Help👤']],
             "auth": [['Library🏤', 'Search🔎', 'My Books📚', 'Help👤']],
             "admin": [["Check material📆", "Material management📚", "User management👥"]],
-            "mat_manage": [[]],
-            "user_manage": [["Confirm application📝", "Check overdue📋", "Show users👥"]],
+            "mat_management": [[]],
+            "user_management": [["Confirm application📝", "Check overdue📋", "Show users👥", "Cancel⤵️"]],
             "reg_confirm": [["All is correct✅", "Something is incorrect❌"]],
             "lib_main": [['Books📖', 'Journal Articles📰', "Audio/Video materials📼", "Cancel⤵️"]],
             "cancel": [['Cancel⤵']],
@@ -36,6 +36,8 @@ class LibraryBot:
         }
         self.is_in_reg = {}
 
+        self.add_user_handlers()
+        self.add_admin_handlers()
         start_handler = CommandHandler('start', self.start)
 
         self.dispatcher.add_handler(start_handler)
@@ -59,9 +61,10 @@ class LibraryBot:
 
     def add_admin_handlers(self):
         get_key_handler = CommandHandler('get_key', utils.get_key, filters=UserFilter("libr"))
-        library_handler = MessageHandler(WordFilter('Library🏤'), self.library)
+        userm_handler = MessageHandler(WordFilter("User management👥"), self.user_manage)
 
         self.dispatcher.add_handler(get_key_handler)
+        self.dispatcher.add_handler(userm_handler)
 
     # Main menu
     # params:
@@ -153,6 +156,13 @@ class LibraryBot:
             elif update.message.text == "Something is incorrect❌":
                 self.is_in_reg[chat] = [0, {"id": update.message.chat_id}]
                 bot.send_message(chat_id=chat, text="Enter your name", reply_markup=KeyboardR([[]]))
+
+    def user_manage(self, bot, update):
+        keyboard = self.keyboard_dict["user_management"]
+        bot.send_message(chat_id=update.message.chat_id, text="Choose option",
+                         reply_markup=KeyboardM(keyboard, True))
+
+
 
     # Main menu of library
     # params:
