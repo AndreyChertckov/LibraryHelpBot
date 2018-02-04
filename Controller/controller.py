@@ -39,7 +39,7 @@ class Controller:
     def get_all_patrons(self):
         rows = self.BDmanager.select_all("patrons")
         return [{'id': user[0], 'name': user[1], 'phone': user[2], 'address': user[3], 'history': user[4],
-                 'current_books': user[5], 'check_out_time': 2} for user in rows]
+                 'current_books': user[5]} for user in rows]
 
     # Return all librarians from database
     def get_all_librarians(self):
