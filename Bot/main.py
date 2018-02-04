@@ -152,7 +152,6 @@ class LibraryBot:
                 bot.send_message(chat_id=chat, text="Enter your name", reply_markup=KeyboardR([[]]))
 
     def user_manage(self, bot, update):
-        print(2)
         keyboard = self.keyboard_dict["user_management"]
         bot.send_message(chat_id=update.message.chat_id, text="Choose option",
                          reply_markup=KeyboardM(keyboard, True))
@@ -162,19 +161,17 @@ class LibraryBot:
 
     def confirm(self, bot, update):
         n = 7
-        print(n)
         unconf_users = self.cntrl.get_all_unconfirmed()
         unconf_users = [unconf_users[i * n:(i + 1) * n] for i in range(len(unconf_users) // n + 1)]
         cur_page = 0
         max_page = len(unconf_users) - 1
-        text_message = ("\n" + "-" * 101 + "\n").join(
+        text_message = ("\n" + "-" * 50 + "\n").join(
             ["{}) {} - {}".format(i+1, user['name'], user["status"]) for i, user in enumerate(unconf_users[cur_page])])
-
-        keyboard = [[IKB("Option 1", callback_data='0'),
-                     IKB("Option 2", callback_data='1')],
-                    [IKB("Option 3", callback_data='2')]]
-        bot.send_message(chat_id=update.message.chat_id, text=text_message)
-                         # reply_markup=KeyboardM(keyboard, True))
+        keyboard = [[IKB(str(i+1), callback_data=str(i)) for i in range(n)]]
+        keyboard += [[IKB("⬅", callback_data='next'), IKB("➡️", callback_data='next')]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        bot.send_message(chat_id=update.message.chat_id, text=text_message,
+                         reply_markup=reply_markup)
 
     def check_overdue(self, bot, update):
         pass

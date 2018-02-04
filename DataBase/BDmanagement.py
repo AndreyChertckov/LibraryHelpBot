@@ -28,9 +28,8 @@ class BDManagement:
     # returns number of the last row in the table
     def select_all(self, table_to_select):
         cur = self.__create_connection(self.file).cursor()
-        cur.execute("SELECT * FROM " + str(table_to_select));
+        cur.execute("SELECT * FROM " + str(table_to_select))
         rows = cur.fetchall()
-        print("Table " + table_to_select + ":");
         return rows
 
     # Add new chat to DB
