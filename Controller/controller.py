@@ -135,8 +135,8 @@ class Controller:
     # param: user_id : id of user
     def upto_librarian(self, user_id):
         user_info = self.get_user(user_id)
-        del user_info['history']
-        del user_info['current_books']
+        user_info.pop('current_books',0)
+        user_info.pop('history',0)
         self.remove_user(user_id, 'patrons')
         user_info["status"] = 'librarian'
         self.BDmanager.add_librarian(Librarian(**user_info))
