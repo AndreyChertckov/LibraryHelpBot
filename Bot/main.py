@@ -1,8 +1,9 @@
 import telegram
-from telegram import InlineQueryResultArticle, InputTextMessageContent, InlineKeyboardMarkup, \
-    InlineKeyboardButton, KeyboardButton, CallbackQuery
+from telegram import InlineQueryResultArticle, InputTextMessageContent, InlineKeyboardMarkup, KeyboardButton, \
+    CallbackQuery
 from telegram import ReplyKeyboardMarkup as KeyboardM
 from telegram import ReplyKeyboardRemove as KeyboardR
+from telegram import InlineKeyboardButton as IKB
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, InlineQueryHandler
 from Bot.filter import *
 from Bot import utils
@@ -61,11 +62,8 @@ class LibraryBot:
         self.dispatcher.add_handler(cancel_handler)
 
     def add_admin_handlers(self):
-        get_key_handler = CommandHandler('get_key', utils.get_key, filters=UserFilter(3))
-        user_handler = MessageHandler(WordFilter("User management👥") & UserFilter(3), self.user_manage)
-
-        self.dispatcher.add_handler(get_key_handler)
-        self.dispatcher.add_handler(user_handler)
+        self.dispatcher.add_handler(CommandHandler('get_key', utils.get_key, filters=UserFilter(3)))
+        self.dispatcher.add_handler(MessageHandler(WordFilter("User management👥") & UserFilter(3), self.user_manage))
 
     # Main menu
     # params:
@@ -154,17 +152,41 @@ class LibraryBot:
                 bot.send_message(chat_id=chat, text="Enter your name", reply_markup=KeyboardR([[]]))
 
     def user_manage(self, bot, update):
+        print(2)
         keyboard = self.keyboard_dict["user_management"]
         bot.send_message(chat_id=update.message.chat_id, text="Choose option",
                          reply_markup=KeyboardM(keyboard, True))
+        self.dispatcher.add_handler(MessageHandler(WordFilter("Confirm application📝") & UserFilter(3), self.confirm))
+        self.dispatcher.add_handler(MessageHandler(WordFilter("Check overdue📋") & UserFilter(3), self.check_overdue))
+        self.dispatcher.add_handler(MessageHandler(WordFilter("Show users👥") & UserFilter(3), self.show_users))
 
-        t = self.cntrl.get_all_unconfirmed()
-        print(t)
+    def confirm(self, bot, update):
+        n = 7
+        print(n)
+        unconf_users = self.cntrl.get_all_unconfirmed()
+        unconf_users = [unconf_users[i * n:(i + 1) * n] for i in range(len(unconf_users) // n + 1)]
+        cur_page = 0
+        max_page = len(unconf_users) - 1
+        text_message = ("\n" + "-" * 101 + "\n").join(
+            ["{}) {} - {}".format(i+1, user['name'], user["status"]) for i, user in enumerate(unconf_users[cur_page])])
+
+        keyboard = [[IKB("Option 1", callback_data='0'),
+                     IKB("Option 2", callback_data='1')],
+                    [IKB("Option 3", callback_data='2')]]
+        bot.send_message(chat_id=update.message.chat_id, text=text_message)
+                         # reply_markup=KeyboardM(keyboard, True))
+
+    def check_overdue(self, bot, update):
+        pass
+
+    def show_users(self, bot, update):
+        pass
 
     # Main menu of library
     # params:
     #  bot -- This object represents a Bot's commands
     #  update -- This object represents an incoming update
+
     def library(self, bot, update):
         book_handler = MessageHandler(WordFilter('Books📖'), self.cancel)
         article_handler = MessageHandler(WordFilter('Journal Articles📰️'), self.cancel)
