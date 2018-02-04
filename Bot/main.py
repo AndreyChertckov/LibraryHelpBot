@@ -34,6 +34,7 @@ class LibraryBot:
             "cancel": [['Cancel⤵']],
             "status": [['Student', 'Faculty (professor, instructor, TA)']]
         }
+        self.types = ['unauth', "unconf", "auth", 'admin']
         self.is_in_reg = {}
 
         self.add_user_handlers()
@@ -72,8 +73,7 @@ class LibraryBot:
     #  update -- This object represents an incoming update
     def start(self, bot, update):
         user_type = self.cntrl.user_type(update.message.chat_id)
-        types = ['unauth', "unconf", "auth", 'admin']
-        keyboard = self.keyboard_dict[types[user_type]]
+        keyboard = self.keyboard_dict[self.types[user_type]]
 
         bot.send_message(chat_id=update.message.chat_id, text="I'm bot, Hello",
                          reply_markup=KeyboardM(keyboard, True))
@@ -161,8 +161,6 @@ class LibraryBot:
         t = self.cntrl.get_all_unconfirmed()
         print(t)
 
-
-
     # Main menu of library
     # params:
     #  bot -- This object represents a Bot's commands
@@ -192,14 +190,7 @@ class LibraryBot:
     #  update -- This object represents an incoming update
     def cancel(self, bot, update):
         user_type = self.cntrl.user_type(update.message.chat_id)
-        if user_type == 0:
-            keyboard = self.keyboard_dict["unauth"]
-        elif user_type == 1:
-            keyboard = self.keyboard_dict["unconf"]
-        elif user_type == 2:
-            keyboard = self.keyboard_dict["auth"]
-        else:
-            keyboard = self.keyboard_dict["admin"]
+        keyboard = self.keyboard_dict[self.types[user_type]]
 
         bot.send_message(chat_id=update.message.chat_id, text="Main menu", reply_markup=KeyboardM(keyboard, True))
 

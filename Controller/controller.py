@@ -29,15 +29,18 @@ class Controller:
 
     def get_all_patrons(self):
         rows = self.BDmanager.select_all("patrons")
-        return [{'name':user[1], 'address':user[3], 'id': user[0], 'phone':user[2], 'history':user[4], 'current_books':user[5], 'check_out_time':2} for user in rows]
+        return [{'id': user[0], 'name': user[1], 'phone': user[2], 'address': user[3], 'history': user[4],
+                 'current_books': user[5], 'check_out_time': 2} for user in rows]
 
     def get_all_librarians(self):
         rows = self.BDmanager.select_all("librarians")
-        return [{'name':user[1], 'address':user[3], 'id':user[0], 'phone':user[2], 'status':user[4]} for user in rows]
+        return [{'id': user[0], 'name': user[1], 'phone': user[2], 'address': user[3], 'status': user[4]} for user in
+                rows]
 
     def get_all_unconfirmed(self):
         rows = self.BDmanager.select_all("unconfirmed")
-        return [{'name':user[1], 'address':user[3], 'id':user[0], 'phone':user[2], 'status':user[4]} for user in rows]
+        return [{'id': user[0], 'phone': user[2], 'name': user[1], 'address': user[3], 'status': user[4]} for user in
+                rows]
 
     def get_all_books(self):
         rows = self.BDmanager.select_all("books")
@@ -45,7 +48,8 @@ class Controller:
 
     def get_all_articles(self):
         rows = self.BDmanager.select_all("articles")
-        return [JournalArticle(article[1], article[2], article[3], article[4], article[0], article[5], article[6], article[7]) for article in rows]
+        return [JournalArticle(article[1], article[2], article[3], article[4], article[0], article[5], article[6],
+                               article[7]) for article in rows]
 
     def get_all_media(self):
         rows = self.BDmanager.select_all("media")
