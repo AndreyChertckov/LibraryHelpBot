@@ -103,4 +103,11 @@ class Controller:
     # Функция должна возвращать от 0 до 3 в зависимости от того, в какой таблице пользователь
     def user_type(self, user_id):
         d = {"unauthorized": 0, 'unconfirmed': 1, 'patron': 2, 'admin': 3}
-        return True
+        if self.BDmanager.select_label('librarians', user_id):
+            return d['admin']
+        elif self.BDmanager.select_label('patrons',user_id):
+            return d['patron']
+        elif self.BDmanager.select_label('unconfirmed',user_id):
+            return d['unconfirmed']
+        else:
+            return d['unauthorized']
