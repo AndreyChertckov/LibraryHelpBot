@@ -100,8 +100,7 @@ class Controller:
         librarian = Librarian(user_info['name'], user_info['address'], user_info['id'], user_info['phone'], 'librarian')
         self.BDmanager.add_librarian(librarian)
 
-    # Функция должна возвращать от 0 до 3 в зависимости от того, в какой таблице лежит пользователь
-    # unconfirmed
+    # Функция должна возвращать от 0 до 3 в зависимости от того, в какой таблице пользователь
     def user_type(self, user_id):
         d = {"unauthorized": 0, 'unconfirmed': 1, 'patron': 2, 'admin': 3}
         return True
