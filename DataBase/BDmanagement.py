@@ -88,7 +88,7 @@ class BDManagement:
 
         cur = self.__create_connection(self.file).cursor()
         cur.execute(sql,
-                    (newDoc.id, newDoc.name, newDoc.authors, newDoc.description, newDoc.count, newDoc.free_count,
+                    (self.get_max_id("books")+1, newDoc.name, newDoc.authors, newDoc.description, newDoc.count, newDoc.free_count,
                      newDoc.price,))
 
     # Add new media to DB
@@ -99,7 +99,7 @@ class BDManagement:
         sql = """INSERT INTO media(id,name,authors,type,count,free_count,price)
         VALUES(?,?,?,?,?,?,?)"""
         self.__bd.cursor().execute(sql, (
-            newMed.id, newMed.name, newMed.authors, newMed.type, newMed.count, newMed.free_count, newMed.price))
+            self.get_max_id("media") + 1, newMed.name, newMed.authors, newMed.type, newMed.count, newMed.free_count, newMed.price))
 
     # Add new article to DB
     # params:
@@ -110,7 +110,7 @@ class BDManagement:
         VALUES(?,?,?,?,?,?,?,?)"""
         cur = self.__bd.cursor()  # cursor()
 
-        cur.execute(sql, (newArticle.id, newArticle.name, newArticle.authors, newArticle.journal_name,
+        cur.execute(sql, (self.get_max_id("articles")+1, newArticle.name, newArticle.authors, newArticle.journal_name,
                           newArticle.journal_publisher, newArticle.count, newArticle.free_count, newArticle.price,))
 
     # Add new 'patron' to DB
@@ -255,3 +255,10 @@ class BDManagement:
         cur = self.__create_connection(self.file).cursor()
         cur.execute(sql, new.get_info())
         return cur.lastrowid
+
+    def get_max_id(self, table):
+        a = self.__create_connection(self.file).execute("SELECT max(id) from " + table).fetchone()[0]
+        if (a == None):
+            return 0;
+        else:
+            return a;
