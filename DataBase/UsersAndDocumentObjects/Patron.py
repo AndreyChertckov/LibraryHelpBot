@@ -1,18 +1,17 @@
 from DataBase.UsersAndDocumentObjects.user import userBase
-from enum import Enum
 
 
-# некоторый костыль(передалать их в классы)
-class PatronType(Enum):
-    student = 1
-    proffessor = 2
-
-
+# Class representing 'Patron' object
+# inherits from class 'UserBase'
+# addes new attributes:
+# --- history[] - documents which user took in the past
+# --- current_books[] - documents which user has now
+# --- check_out_time - on how much time user can take materials
 class Patron(userBase):
     __metaclass__ = type
 
-    def __init__(self, name, address,  id, phone=None, history=None, current_books=None, check_out_time=None):
-        type="patron"
+    def __init__(self, name, address, id, phone=None, history=None, current_books=None, check_out_time=None):
+        type = "patron"
         userBase.__init__(self, name, address, type, id, phone)
         self.__history = history
         self.__current_books = current_books
