@@ -30,10 +30,10 @@ class Controller:
 
     # Delete user by user_info
     # param: user_info: dictionary {id,name,address,status,phone}
-    def delete_user(self, user_info):
-        table = ['unauthorized', 'unconfirmed', 'patrons', 'librarians'][self.user_type(user_info['id'])]
+    def delete_user(self, user_id):
+        table = ['unauthorized', 'unconfirmed', 'patrons', 'librarians'][self.user_type(user_id)]
         if table != 'unauthorized':
-            self.remove_user(user_info['id'], table)
+            self.remove_user(user_id, table)
 
     # Return all patrons from database
     def get_all_patrons(self):
