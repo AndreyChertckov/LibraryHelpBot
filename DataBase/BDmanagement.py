@@ -19,6 +19,7 @@ class BDManagement:
     # initializion of object
     def __init__(self):
         self.file = 'DataBase.db'
+
         self.__create_tables()
 
     # Get all data from some table
@@ -207,7 +208,7 @@ class BDManagement:
               description text NOT NULL,
               count integer,
              free_count integer,
-             price);
+             price integer);
         """)
         self.__create_table("""CREATE TABLE IF NOT EXISTS articles(
              id integer PRIMARY KEY,
@@ -217,7 +218,7 @@ class BDManagement:
             journal_publisher text,
             count integer,
             free_count integer,
-            price);
+            price integer);
         """)
         self.__create_table("""CREATE TABLE IF NOT EXISTS media(
                 id integer PRIMARY KEY,
@@ -226,7 +227,7 @@ class BDManagement:
                 type text,
                 count integer,
                 free_count integer,
-                price);
+                price integer);
                 """)
         self.__create_table("""
             CREATE TABLE IF NOT EXISTS chats (
