@@ -28,7 +28,7 @@ class LibraryBot:
             "unconf": [['Library🏤', 'Search🔎', 'Help👤']],
             "auth": [['Library🏤', 'Search🔎', 'My Books📚', 'Help👤']],
             "admin": [["Check material📆", "Material management📚", "User management👥"]],
-            "mat_management": [[]],
+            "mat_management": [["Add material🗄", "Search🔎", "Cancel⤵"]],
             "user_management": [["Confirm application📝", "Check overdue📋", "Show users👥", "Cancel⤵️"]],
             "reg_confirm": [["All is correct✅", "Something is incorrect❌"]],
             "lib_main": [['Books📖', 'Journal Articles📰', "Audio/Video materials📼", "Cancel⤵️"]],
@@ -73,6 +73,8 @@ class LibraryBot:
     def add_admin_handlers(self):
         self.dispatcher.add_handler(CommandHandler('get_key', utils.get_key, filters=UserFilter(3)))
         self.dispatcher.add_handler(MessageHandler(WordFilter("User management👥") & UserFilter(3), self.user_manage))
+        self.dispatcher.add_handler(
+            MessageHandler(WordFilter("Material management📚") & UserFilter(3), self.mat_manage))
         self.dispatcher.add_handler(CallbackQueryHandler(self.conf_user))
 
     # Main menu
@@ -166,8 +168,8 @@ class LibraryBot:
         bot.send_message(chat_id=update.message.chat_id, text="Choose option",
                          reply_markup=KeyboardM(keyboard, True))
         self.dispatcher.add_handler(MessageHandler(WordFilter("Confirm application📝") & UserFilter(3), self.confirm))
-        self.dispatcher.add_handler(MessageHandler(WordFilter("Check overdue📋") & UserFilter(3), self.check_overdue))
-        self.dispatcher.add_handler(MessageHandler(WordFilter("Show users👥") & UserFilter(3), self.show_users))
+        self.dispatcher.add_handler(MessageHandler(WordFilter("Check overdue📋") & UserFilter(3), self.cancel))
+        self.dispatcher.add_handler(MessageHandler(WordFilter("Show users👥") & UserFilter(3), self.cancel))
 
     def confirm(self, bot, update):
         chat = update.message.chat_id
@@ -203,7 +205,8 @@ class LibraryBot:
                     self.admins[chat] -= 1
 
             text_message = ("\n" + "-" * 50 + "\n").join(
-                ["{}) {} - {}".format(i + 1, user['name'], user["status"]) for i, user in enumerate(unconf_users[self.admins[chat]])])
+                ["{}) {} - {}".format(i + 1, user['name'], user["status"]) for i, user in
+                 enumerate(unconf_users[self.admins[chat]])])
             keyboard = [[IKB(str(i + 1), callback_data=str(i)) for i in range(len(unconf_users[self.admins[chat]]))]]
             keyboard += [[IKB("⬅", callback_data='prev'), IKB("➡️", callback_data='next')]]
             reply_markup = InlineKeyboardMarkup(keyboard)
@@ -215,7 +218,8 @@ class LibraryBot:
             text = """
             Check whether all data is correct:\nName: {name}\nAddress: {address}\nPhone: {phone}\nStatus: {status}
             """.format(**user)
-            keyboard = [[IKB("Accept✅", callback_data='accept ' + query.data), IKB("Reject️❌", callback_data='reject ' + query.data)]]
+            keyboard = [[IKB("Accept✅", callback_data='accept ' + query.data),
+                         IKB("Reject️❌", callback_data='reject ' + query.data)]]
             reply_markup = InlineKeyboardMarkup(keyboard)
             bot.edit_message_text(text=text, chat_id=chat, message_id=query.message.message_id,
                                   reply_markup=reply_markup)
@@ -240,11 +244,34 @@ class LibraryBot:
     def show_users(self, bot, update):
         pass
 
+    def mat_manage(self, bot, update):
+        keyboard = self.keyboard_dict["mat_management"]
+        bot.send_message(chat_id=update.message.chat_id, text="Choose option",
+                         reply_markup=KeyboardM(keyboard, True))
+        self.dispatcher.add_handler(MessageHandler(WordFilter("Add material🗄") & UserFilter(3), self.add_book))
+        self.dispatcher.add_handler(MessageHandler(WordFilter("Search🔎") & UserFilter(3), self.cancel))
+
+    def add_book(self, bot, update):
+        chat = update.message.chat_id
+        self.is_in_reg[chat] = [0, {"id": update.message.chat_id}]
+        text_for_message = """
+        During book addition you should to provide book's title, authors, edition, overview, keywords,\
+        price (in rubles).\nExample:\nIntroduction to Algorithms\nThomas H. Cormen;Charles E. Leiserson;Ronald L. Rivest;Clifford Stein\n The third edition, 2009\nThis book is about algorithms\nalgorithms;java\n3000
+        """
+        bot.send_message(chat_id=chat, text=text_for_message)
+        bot.send_message(chat_id=chat, text="Enter article", reply_markup=KeyboardR([[]]))
+
+    # Steps of the material addition
+    # params:
+    #  bot -- This object represents a Bot's commands
+    #  update -- This object represents an incoming update
+    def add_material_steps(self, bot, update):
+        pass
+
     # Main menu of library
     # params:
     #  bot -- This object represents a Bot's commands
     #  update -- This object represents an incoming update
-
     def library(self, bot, update):
 
         bot.send_message(chat_id=update.message.chat_id, text="Choose type of material",
