@@ -97,8 +97,8 @@ class Controller:
     # Return user by id
     # param : user_id - id of user
     # return : dictionary user {id,name,address,phone,status} if user librarian or unconfirmed,
-    # or {id,name,address,phone,history,current_books,status}, 
-    # or false if user doesn`t exist 
+    # or {id,name,address,phone,history,current_books,status},
+    # or false if user doesn`t exist
     def get_user(self, user_id):
         user = {}
         if self.BDmanager.select_label('patrons', user_id):
@@ -154,3 +154,10 @@ class Controller:
             return d['unconfirmed']
         else:
             return d['unauthorized']
+
+
+    # Check out book
+    # param : user_id - id of user
+    # param : book_id - id of book
+    def check_out_book(self,user_id,book_id):
+        pass
