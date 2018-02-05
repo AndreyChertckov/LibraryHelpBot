@@ -17,9 +17,7 @@ class Controller:
     def confirm_user(self, user_id):
         user = self.BDmanager.select_label("unconfirmed", user_id)
         self.remove_user(user_id, 'unconfirmed')
-        self.BDmanager.add_patron(
-            Patron(user[1], user[3], user_id, user[4],user[2], [], [],
-                   2))
+        self.BDmanager.add_patron(Patron(user[1], user[3], user_id, user[4], user[2], [], [], 2))
 
     # Put user in queue for accepting to the library
     # param: user_info: dictionary {id,name,address,status,phone}
@@ -38,7 +36,7 @@ class Controller:
     def get_all_patrons(self):
         rows = self.BDmanager.select_all("patrons")
         return [{'id': user[0], 'name': user[1], 'phone': user[2], 'address': user[3], 'history': user[4],
-                 'current_books': user[5],'status':user[6]} for user in rows]
+                 'current_books': user[5], 'status': user[6]} for user in rows]
 
     # Return all librarians from database
     def get_all_librarians(self):
@@ -55,12 +53,12 @@ class Controller:
     # Return all books from database
     def get_all_books(self):
         rows = self.BDmanager.select_all("books")
-        return [Document(book[0],book[1], book[3], book[2], book[4], book[5], book[6]) for book in rows]
+        return [Document(book[0], book[1], book[3], book[2], book[4], book[5], book[6]) for book in rows]
 
     # Return all articles from database
     def get_all_articles(self):
         rows = self.BDmanager.select_all("articles")
-        return [JournalArticle(article[0],article[1], article[2], article[3], article[4],  article[5], article[6],
+        return [JournalArticle(article[0], article[1], article[2], article[3], article[4], article[5], article[6],
                                article[7]) for article in rows]
 
     # Return all media from database
@@ -134,8 +132,8 @@ class Controller:
     # param: user_id : id of user
     def upto_librarian(self, user_id):
         user_info = self.get_user(user_id)
-        user_info.pop('current_books',0)
-        user_info.pop('history',0)
+        user_info.pop('current_books', 0)
+        user_info.pop('history', 0)
         self.remove_user(user_id, 'patrons')
         user_info["status"] = 'librarian'
         self.BDmanager.add_librarian(Librarian(**user_info))
