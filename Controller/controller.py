@@ -10,21 +10,26 @@ import datetime;
 
 # Class booking system
 class Controller:
+
+
     def __init__(self):
         self.BDmanager = BDManagement()
+
 
     # Accept user to the library
     # param: user_id - id of user
     def confirm_user(self, user_id):
         user = self.BDmanager.select_label("unconfirmed", user_id)
         self.remove_user(user_id, 'unconfirmed')
-        self.BDmanager.add_patron(Patron(user[1], user[3], user_id, user[4], user[2], [], [], 2))
+        self.BDmanager.add_patron(Patron(user[1], user[3], user_id, user[4], user[2], [], []))
+
 
     # Put user in queue for accepting to the library
     # param: user_info: dictionary {id,name,address,status,phone}
     def registration(self, user_info):
         unconfirmed_patron = Librarian(**user_info)
         self.BDmanager.add_unconfirmed(unconfirmed_patron)
+
 
     # Delete user by user_info
     # param: user_info: dictionary {id,name,address,status,phone}
@@ -33,11 +38,13 @@ class Controller:
         if table != 'unauthorized':
             self.remove_user(user_id, table)
 
+
     # Return all patrons from database
     def get_all_patrons(self):
         rows = self.BDmanager.select_all("patrons")
         return [{'id': user[0], 'name': user[1], 'phone': user[2], 'address': user[3], 'history': user[4],
                  'current_books': user[5], 'status': user[6]} for user in rows]
+
 
     # Return all librarians from database
     def get_all_librarians(self):
@@ -45,16 +52,19 @@ class Controller:
         return [{'id': user[0], 'name': user[1], 'phone': user[2], 'address': user[3], 'status': user[4]} for user in
                 rows]
 
+
     # Return all users who don`t confirmed
     def get_all_unconfirmed(self):
         rows = self.BDmanager.select_all("unconfirmed")
         return [{'id': user[0], 'name': user[1], 'phone': user[2], 'address': user[3], 'status': user[4]} for user in
                 rows]
 
+
     # Return all books from database
     def get_all_books(self):
         rows = self.BDmanager.select_all("books")
         return [Document(book[0], book[1], book[3], book[2], book[4], book[5], book[6]) for book in rows]
+
 
     # Return all articles from database
     def get_all_articles(self):
@@ -62,10 +72,12 @@ class Controller:
         return [JournalArticle(article[0], article[1], article[2], article[3], article[4], article[5], article[6],
                                article[7]) for article in rows]
 
+
     # Return all media from database
     def get_all_media(self):
         rows = self.BDmanager.select_all("media")
         return [BaseDoc(media[0], media[2], media[1], media[4], media[5], media[6], media[3]) for media in rows]
+
 
     # Return true if chat with user exist, false if not
     # param : user_id - id of user
@@ -73,6 +85,7 @@ class Controller:
     def chat_exists(self, user_id):
         return any(
             [self.BDmanager.select_label('librarians', user_id), self.BDmanager.select_label('patrons', user_id)])
+
 
     # Removes a user from the database
     # param : user_id - id of user
@@ -94,6 +107,7 @@ class Controller:
                 return True
             else:
                 return False
+
 
     # Return user by id
     # param : user_id - id of user
@@ -129,6 +143,7 @@ class Controller:
             return False
         return user
 
+
     # Move patron from table patrons to table librarians
     # param: user_id : id of user
     def upto_librarian(self, user_id):
@@ -138,6 +153,7 @@ class Controller:
         self.remove_user(user_id, 'patrons')
         user_info["status"] = 'librarian'
         self.BDmanager.add_librarian(Librarian(**user_info))
+
 
     # Returns in which table the user is located
     # param : user_id - id of user
@@ -156,6 +172,7 @@ class Controller:
         else:
             return d['unauthorized']
 
+
     # Check out book
     # param : user_id - id of user
     # param : book_id - id of book
@@ -173,6 +190,7 @@ class Controller:
             self.BDmanager.edit_label("books", "free_count", free_count, book_id)
             self.BDmanager.edit_label("patrons", "history", str(history), user_id)
             self.BDmanager.edit_label("patrons", "current_books", str(current_books), user_id)
+
 
     # Method for adding the book in database
     # param: name - Name of the book
