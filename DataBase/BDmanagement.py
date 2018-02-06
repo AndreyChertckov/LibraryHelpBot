@@ -264,11 +264,8 @@ class BDManagement:
         else:
             return a;
 
-    def get_by(self, get_by_what, get_from, get_value, is_string=True):
-        if (is_string):
-            sql = "SELECT * from " + get_from + " WHERE " + get_by_what + "=?"
-        else:
-            sql = "SELECT * from " + get_from + " WHERE " + get_by_what + "=?"
+    def get_by(self, get_by_what, get_from, get_value):
+        sql = "SELECT * from " + get_from + " WHERE " + get_by_what + "=?"
         print(sql)
         return self.__create_connection(self.file).execute(
             sql,(get_value,)).fetchall()
