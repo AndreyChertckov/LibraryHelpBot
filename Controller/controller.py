@@ -12,8 +12,8 @@ import datetime;
 class Controller:
 
 
-    def __init__(self):
-        self.BDmanager = BDManagement()
+    def __init__(self,file_bd = 'DataBase.db'):
+        BDmanager = BDManagement(file_bd)
 
 
     # Accept user to the library

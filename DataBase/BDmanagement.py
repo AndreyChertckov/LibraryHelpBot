@@ -17,8 +17,8 @@ from sqlite3 import Error
 
 class BDManagement:
     # initializion of object
-    def __init__(self):
-        self.file = 'DataBase.db'
+    def __init__(self, file = 'DataBase.db'):
+        self.file = file
 
         self.__create_tables()
 

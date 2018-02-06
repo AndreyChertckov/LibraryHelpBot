@@ -1,6 +1,11 @@
 from Controller.controller import Controller
 from DataBase.BDmanagement import BDManagement
 
+
+def first_test(cntrl):
+	pass
+
+
 def test_registration_confirm_uptolibrarian(cntrl):
 	
 	test_user = {'id':1,'name':'test','address':'test','status':'Student','phone':'987'}
@@ -49,7 +54,7 @@ def check_in_db_users(dbmanage,table,user):
 	return True
 
 def test_controller():
-    cntrl = Controller()
+    cntrl = Controller('test.bd')
     msg,err = test_registration_confirm_uptolibrarian(cntrl)
     print("test_registration_confirm_uptolibrarian : " + msg)
 
