@@ -5,6 +5,7 @@ from DataBase.UsersAndDocumentObjects.Document import Document
 from DataBase.UsersAndDocumentObjects.OrderHistory import OrderHistoryObject
 from DataBase.UsersAndDocumentObjects.JournalArticle import JournalArticle
 from DataBase.UsersAndDocumentObjects.BaseDoc import BaseDoc
+import datetime;
 
 
 # Class booking system
@@ -155,9 +156,16 @@ class Controller:
         else:
             return d['unauthorized']
 
-
     # Check out book
     # param : user_id - id of user
     # param : book_id - id of book
-    def check_out_book(self,user_id,book_id):
-        pass
+    def check_out_book(self, user_id, book_id):
+        order = OrderHistoryObject(self.BDmanager.get_max_id("orders") + 1, str(datetime.datetime.now()),"books",
+                                   user_id, book_id)
+        self.BDmanager.add_order(order)
+        current_books = eval(self.BDmanager.get_label("current_books", "patrons", user_id))
+        history = eval(self.BDmanager.get_label("history", "patrons", user_id))
+        current_books += [order.id]
+        history += [order.id]
+        self.BDmanager.edit_label("patrons", "history", str(history), user_id)
+        self.BDmanager.edit_label("patrons", "current_books", str(current_books), user_id)

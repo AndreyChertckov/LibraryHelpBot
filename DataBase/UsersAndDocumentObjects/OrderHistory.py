@@ -3,11 +3,11 @@
 
 class OrderHistoryObject:
     def __init__(self, id, time, table, userId, docId):
-        self.__userId = userId
-        self.__docId = docId
-        self.__time = time
-        self.__id = id
-        self.__table = table
+        self.userId = userId
+        self.docId = docId
+        self.time = time
+        self.id = id
+        self.table = table
 
     def get_info(self):
-        return (self.__id, self.__time, self.__table, self.__docId, self.__userId,)
+        return (self.id, self.time, self.table, self.docId, self.userId,)
