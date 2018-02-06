@@ -266,12 +266,12 @@ class BDManagement:
 
     def get_by(self, get_by_what, get_from, get_value, is_string=True):
         if (is_string):
-            sql = "SELECT * from " + get_from + " WHERE " + get_by_what + "='" + str(get_value) + "'"
+            sql = "SELECT * from " + get_from + " WHERE " + get_by_what + "=?"
         else:
-            sql = "SELECT * from " + get_from + " WHERE " + get_by_what + "=" + str(get_value) + ""
+            sql = "SELECT * from " + get_from + " WHERE " + get_by_what + "=?"
         print(sql)
         return self.__create_connection(self.file).execute(
-            sql).fetchall()
+            sql,(get_value,)).fetchall()
 
     def get_label(self, what_to_select, from_table, id):
         return self.__create_connection(self.file).execute(
