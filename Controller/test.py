@@ -1,3 +1,5 @@
+import os
+
 from Controller.controller import Controller
 from DataBase.BDmanagement import BDManagement
 
@@ -54,9 +56,11 @@ def check_in_db_users(dbmanage,table,user):
 	return True
 
 def test_controller():
-    cntrl = Controller('test.bd')
+    cntrl = Controller('test.db')
     msg,err = test_registration_confirm_uptolibrarian(cntrl)
     print("test_registration_confirm_uptolibrarian : " + msg)
+
+    os.remove('test.db')
 
 if __name__ == '__main__':
     test_controller()

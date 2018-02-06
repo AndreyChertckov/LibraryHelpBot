@@ -13,7 +13,7 @@ class Controller:
 
 
     def __init__(self,file_bd = 'DataBase.db'):
-        BDmanager = BDManagement(file_bd)
+        self.BDmanager = BDManagement(file_bd)
 
 
     # Accept user to the library
