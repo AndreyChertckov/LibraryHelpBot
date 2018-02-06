@@ -169,3 +169,13 @@ class Controller:
         history += [order.id]
         self.BDmanager.edit_label("patrons", "history", str(history), user_id)
         self.BDmanager.edit_label("patrons", "current_books", str(current_books), user_id)
+
+
+    # Method for adding the book in database
+    # param: name - Name of the book
+    # param: description - about what this book
+    # param: author - author of the book
+    # param: count - amount of books
+    # param: price - price of the book
+    def add_book(self,name,description,author,count,price):
+        self.BDmanager.add_document(Document(0,name,description,author,count,count,price)) # TODO: заменить 0 на ничего
