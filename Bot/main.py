@@ -1,4 +1,3 @@
-import telegram
 from telegram import InlineQueryResultArticle, InputTextMessageContent, InlineKeyboardMarkup, KeyboardButton, \
     CallbackQuery
 from telegram import ReplyKeyboardMarkup as KeyboardM
@@ -94,7 +93,7 @@ class LibraryBot:
     #  update -- This object represents an incoming update
     #  args -- Arguments
     def reg_admin(self, bot, update, args):
-        if args[0] == open('Bot/key.txt').read():
+        if args and args[0] == open('Bot/key.txt').read():
             self.cntrl.upto_librarian(update.message.chat_id)
             bot.send_message(chat_id=update.message.chat_id, text="You have been update to Librarian",
                              reply_markup=KeyboardM(self.keyboard_dict["admin"], True))
@@ -175,6 +174,9 @@ class LibraryBot:
         chat = update.message.chat_id
         n = 3
         unconf_users = self.cntrl.get_all_unconfirmed()
+        if len(unconf_users) == 0:
+            bot.send_message(chat_id=chat, text="There are no application to confirm")
+            return
         unconf_users = [unconf_users[i * n:(i + 1) * n] for i in range(len(unconf_users) // n + 1)]
         if not (chat in self.admins):
             self.admins[chat] = 0
@@ -253,7 +255,7 @@ class LibraryBot:
 
     def add_book(self, bot, update):
         chat = update.message.chat_id
-        self.is_in_reg[chat] = [0, {"id": update.message.chat_id}]
+        # self.is_in_reg[chat] = [0, {"id": update.message.chat_id}]
         text_for_message = """
         During book addition you should to provide book's title, authors, edition, overview, keywords,\
         price (in rubles).\nExample:\nIntroduction to Algorithms\nThomas H. Cormen;Charles E. Leiserson;Ronald L. Rivest;Clifford Stein\n The third edition, 2009\nThis book is about algorithms\nalgorithms;java\n3000
