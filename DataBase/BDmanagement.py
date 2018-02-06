@@ -127,10 +127,10 @@ class BDManagement:
     # ---table - table to update record from(string)
     # ---set - what to update(string)
     # ---newLabel - cortege , containing updated information
-    def edit_label(self, table, set, newLabel,id):
+    def edit_label(self, table, set, newLabel, id):
         sql = "UPDATE " + table + " SET " + set + "=? WHERE id=?"
         cur = self.__create_connection(self.file).cursor()
-        cur.execute(sql,(newLabel,id))
+        cur.execute(sql, (newLabel, id))
 
     # Deletes some record
     # params:
@@ -264,6 +264,15 @@ class BDManagement:
         else:
             return a;
 
+    def get_by(self, get_by_what, get_from, get_value, is_string=True):
+        if (is_string):
+            sql = "SELECT * from " + get_from + " WHERE " + get_by_what + "='" + str(get_value) + "'"
+        else:
+            sql = "SELECT * from " + get_from + " WHERE " + get_by_what + "=" + str(get_value) + ""
+        print(sql)
+        return self.__create_connection(self.file).execute(
+            sql).fetchall()
+
     def get_label(self, what_to_select, from_table, id):
         return self.__create_connection(self.file).execute(
-            "SELECT " + what_to_select + " from " + from_table + " where id=" + str(id)).fetchone()[0]
+            "SELECT " + what_to_select + " from " + from_table + " WHERE id=" + str(id)).fetchone()[0]

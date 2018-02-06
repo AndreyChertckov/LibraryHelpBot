@@ -160,16 +160,19 @@ class Controller:
     # param : user_id - id of user
     # param : book_id - id of book
     def check_out_book(self, user_id, book_id):
-        order = OrderHistoryObject(self.BDmanager.get_max_id("orders") + 1, str(datetime.datetime.now()),"books",
+        free_count = int(self.BDmanager.get_label("free_count", "books", book_id))
+        if (free_count>0):
+            free_count-=1;
+            order = OrderHistoryObject(self.BDmanager.get_max_id("orders") + 1, str(datetime.datetime.now()), "books",
                                    user_id, book_id)
-        self.BDmanager.add_order(order)
-        current_books = eval(self.BDmanager.get_label("current_books", "patrons", user_id))
-        history = eval(self.BDmanager.get_label("history", "patrons", user_id))
-        current_books += [order.id]
-        history += [order.id]
-        self.BDmanager.edit_label("patrons", "history", str(history), user_id)
-        self.BDmanager.edit_label("patrons", "current_books", str(current_books), user_id)
-
+            self.BDmanager.add_order(order)
+            current_books = eval(self.BDmanager.get_label("current_books", "patrons", user_id))
+            history = eval(self.BDmanager.get_label("history", "patrons", user_id))
+            current_books += [order.id]
+            history += [order.id]
+            self.BDmanager.edit_label("books", "free_count", free_count, book_id)
+            self.BDmanager.edit_label("patrons", "history", str(history), user_id)
+            self.BDmanager.edit_label("patrons", "current_books", str(current_books), user_id)
 
     # Method for adding the book in database
     # param: name - Name of the book
@@ -177,5 +180,6 @@ class Controller:
     # param: author - author of the book
     # param: count - amount of books
     # param: price - price of the book
-    def add_book(self,name,description,author,count,price):
-        self.BDmanager.add_document(Document(0,name,description,author,count,count,price)) # TODO: заменить 0 на ничего
+    def add_book(self, name, description, author, count, price):
+        self.BDmanager.add_document(
+            Document(0, name, description, author, count, count, price))  # TODO: заменить 0 на ничего
