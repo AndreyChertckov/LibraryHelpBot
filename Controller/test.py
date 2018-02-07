@@ -11,6 +11,57 @@ def first_test(cntrl):
 
 	cntrl.BDmanager.add_patron(Patron(**test_user))
 	cntrl.add_book(**test_book)
+	book_id = cntrl.BDmanager.get_by('name','books',test_book['name'])[0][0]
+	
+	cntrl.check_out_book(test_user['id'],book_id)
+	
+	user_db = cntrl.get_user(test_user['id'])
+	book_db_t = list(cntrl.BDmanager.get_by('name','books',test_book['name'])[0])
+	book_db = dict(zip(['id','name','author','description','count','free_count','price'],book_db_t))
+	is_user_have_book = int(user_db['current_books'][1]) == book_id 
+	is_book_free_count_decremented = book_db['free_count'] == book_db['count'] - 1
+	if  not is_user_have_book or not is_book_free_count_decremented:
+		return 'Can`t check out book, is user have book: ' + str(is_user_have_book) + ' , is book free count decremented: ' + str(is_book_free_count_decremented), False
+
+	cntrl.BDmanager.clear_table('books')
+	cntrl.BDmanager.clear_table('patrons')
+
+	return 'OK', True
+
+
+def second_test(cntrl):
+	
+	book_db_t = cntrl.BDmanager.get_by('author','books', 'A')
+	
+	if book_db_t != None:
+		return 'Book found', False
+
+	return 'OK', True
+
+
+def third_test(cntrl):
+	
+	test_user = {'id':1,'name':'test','address':'test','status':'Faculty','phone':'987', 'history':[],'current_books':[],'check_out_time':4}
+	test_book = {'name': 'Test','description':'TESTTEST','author':'tEsT','count':2,'price':123}
+
+	cntrl.BDmanager.add_patron(Patron(**test_user))
+	cntrl.add_book(**test_book)
+	book_id = cntrl.BDmanager.get_by('name','books',test_book['name'])[0][0]
+	
+	cntrl.check_out_book(test_user['id'],book_id)
+	
+	user_db = cntrl.get_user(test_user['id'])
+	book_db_t = list(cntrl.BDmanager.get_by('name','books',test_book['name'])[0])
+	book_db = dict(zip(['id','name','author','description','count','free_count','price'],book_db_t))
+	is_user_have_book = int(user_db['current_books'][1]) == book_id 
+	is_book_free_count_decremented = book_db['free_count'] == book_db['count'] - 1
+	if  not is_user_have_book or not is_book_free_count_decremented:
+		return 'Can`t check out book, is user have book: ' + str(is_user_have_book) + ' , is book free count decremented: ' + str(is_book_free_count_decremented), False
+
+	cntrl.BDmanager.clear_table('books')
+	cntrl.BDmanager.clear_table('patrons')
+
+	return 'OK', True
 
 
 def test_add_book(cntrl):
@@ -24,7 +75,9 @@ def test_add_book(cntrl):
 	is_in_db_first_book = check_in_db_books(cntrl.BDmanager,test_book_1)
 	is_in_db_second_book = check_in_db_books(cntrl.BDmanager,test_book_2)
 	if not is_in_db_first_book or not is_in_db_second_book:
-		return 'Can`t add book in db. First book added: ' + is_in_db_first_book + ' , Second book added : ' + is_in_db_second_book,False
+		return 'Can`t add book in db. First book added: ' + str(is_in_db_first_book) + ' , Second book added : ' + str(is_in_db_second_book),False
+
+	cntrl.BDmanager.clear_table('books')
 
 	return 'OK',True
 
@@ -47,7 +100,7 @@ def test_registration_confirm_uptolibrarian(cntrl):
 	if check_in_db_users(cntrl.BDmanager,'patrons',test_user) or not check_in_db_users(cntrl.BDmanager,'librarians',test_user):
 		return 'Can`t up to librarian',False
 
-	cntrl.remove_user(test_user['id'],'librarians')
+	cntrl.BDmanager.clear_table('patrons')
 
 	return 'OK',True
 
@@ -87,11 +140,18 @@ def check_in_db_books(dbmanage,book):
 
 
 def test_controller():
+
     cntrl = Controller('test.db')
+    
     msg,err = test_registration_confirm_uptolibrarian(cntrl)
     print("test_registration_confirm_uptolibrarian : " + msg)
+    
     msg,err = test_add_book(cntrl)
     print('test_add_book : ' + msg)
+
+    msg,err = first_test(cntrl)
+    print('First test : ' + msg)
+
     os.remove('test.db')
 
 if __name__ == '__main__':

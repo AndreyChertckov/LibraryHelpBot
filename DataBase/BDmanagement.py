@@ -144,7 +144,7 @@ class BDManagement:
     # params:
     # ---table - table to clear(string)
     def clear_table(self, table):
-        self.__create_connection(self.file).cursor().execute(table)
+        self.__create_connection(self.file).cursor().execute("DELETE FROM " + table)
 
     # Deletes some table
     # params:
