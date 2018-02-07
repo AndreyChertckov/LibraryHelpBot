@@ -7,6 +7,10 @@ from DataBase.BDmanagement import BDManagement
 from DataBase.UsersAndDocumentObjects.Patron import Patron
 
 def first_test(cntrl):
+
+	cntrl.BDmanager.clear_table('books')
+	cntrl.BDmanager.clear_table('patrons')
+	cntrl.BDmanager.clear_table('orders')
 	
 	test_user = {'id':1,'name':'test','address':'test','status':'Student','phone':'987', 'history':[],'current_books':[]}
 	test_book = {'name': 'Test','description':'TESTTEST','author':'tEsT','count':2,'price':123}
@@ -37,14 +41,30 @@ def first_test(cntrl):
 
 def second_test(cntrl):
 	
-	book_db_t = cntrl.BDmanager.get_by('author','books', 'A')
-	if book_db_t != []:
+	cntrl.BDmanager.clear_table('books')
+	cntrl.BDmanager.clear_table('patrons')
+	cntrl.BDmanager.clear_table('orders')
+
+	id_book_A = 1
+	test_user = {'id':1,'name':'test','address':'test','status':'Student','phone':'987', 'history':[],'current_books':[]}
+	cntrl.BDmanager.add_patron(Patron(**test_user))
+	can_get_book = cntrl.check_out_book(test_user['id'],id_book_A)
+	
+	cntrl.BDmanager.clear_table('books')
+	cntrl.BDmanager.clear_table('patrons')
+	cntrl.BDmanager.clear_table('orders')
+
+	if can_get_book:
 		return 'Book found', False
 
 	return 'OK', True
 
 
 def third_test(cntrl):
+
+	cntrl.BDmanager.clear_table('books')
+	cntrl.BDmanager.clear_table('patrons')
+	cntrl.BDmanager.clear_table('orders')
 	
 	test_user = {'id':1,'name':'test','address':'test','status':'Faculty','phone':'987', 'history':[],'current_books':[]}
 	test_book = {'name': 'Test','description':'TESTTEST','author':'tEsT','count':2,'price':123}
@@ -80,6 +100,10 @@ def third_test(cntrl):
 
 def fourth_test(cntrl):
 	
+	cntrl.BDmanager.clear_table('books')
+	cntrl.BDmanager.clear_table('patrons')
+	cntrl.BDmanager.clear_table('orders')
+
 	test_user = {'id':1,'name':'test','address':'test','status':'Student','phone':'987', 'history':[],'current_books':[]}
 	test_book = {'name': 'Test','description':'TESTTEST','author':'tEsT','count':2,'price':123,'best_seller':1}
 
@@ -112,6 +136,10 @@ def fourth_test(cntrl):
 
 
 def fifth_test(cntrl):
+
+	cntrl.BDmanager.clear_table('books')
+	cntrl.BDmanager.clear_table('patrons')
+	cntrl.BDmanager.clear_table('orders')
 	
 	test_user_1 = {'id':1,'name':'test','address':'test','status':'Student','phone':'987', 'history':[],'current_books':[]}
 	test_user_2 = {'id':2,'name':'test','address':'test','status':'Student','phone':'987', 'history':[],'current_books':[]}
@@ -144,6 +172,10 @@ def fifth_test(cntrl):
 
 
 def sixth_test(cntrl):
+
+	cntrl.BDmanager.clear_table('books')
+	cntrl.BDmanager.clear_table('patrons')
+	cntrl.BDmanager.clear_table('orders')
 	
 	test_user = {'id':1,'name':'test','address':'test','status':'Student','phone':'987', 'history':[],'current_books':[]}
 	test_book = {'name': 'Test','description':'TESTTEST','author':'tEsT','count':2,'price':123}
@@ -167,6 +199,10 @@ def sixth_test(cntrl):
 
 def seventh_test(cntrl):
 	
+	cntrl.BDmanager.clear_table('books')
+	cntrl.BDmanager.clear_table('patrons')
+	cntrl.BDmanager.clear_table('orders')
+
 	test_user_1 = {'id':1,'name':'test','address':'test','status':'Student','phone':'987', 'history':[],'current_books':[]}
 	test_user_2 = {'id':2,'name':'test','address':'test','status':'Student','phone':'987', 'history':[],'current_books':[]}
 
@@ -194,6 +230,10 @@ def seventh_test(cntrl):
 
 
 def eighth_test(cntrl):
+
+	cntrl.BDmanager.clear_table('books')
+	cntrl.BDmanager.clear_table('patrons')
+	cntrl.BDmanager.clear_table('orders')
 	
 	test_user = {'id':1,'name':'test','address':'test','status':'Student','phone':'987', 'history':[],'current_books':[]}
 	test_book = {'name': 'Test','description':'TESTTEST','author':'tEsT','count':2,'price':123}
@@ -227,7 +267,11 @@ def eighth_test(cntrl):
 
 
 def ninth_test(cntrl):
-		
+	
+	cntrl.BDmanager.clear_table('books')
+	cntrl.BDmanager.clear_table('patrons')
+	cntrl.BDmanager.clear_table('orders')
+
 	test_user = {'id':1,'name':'test','address':'test','status':'Student','phone':'987', 'history':[],'current_books':[]}
 	test_book = {'name': 'Test','description':'TESTTEST','author':'tEsT','count':2,'price':123}
 
@@ -260,6 +304,10 @@ def ninth_test(cntrl):
 
 
 def tenth_test(cntrl):
+
+	cntrl.BDmanager.clear_table('books')
+	cntrl.BDmanager.clear_table('patrons')
+	cntrl.BDmanager.clear_table('orders')
 
 	test_user = {'id':1,'name':'test','address':'test','status':'Student','phone':'987', 'history':[],'current_books':[]}
 	test_book_1 = {'name': 'Test','description':'TESTTEST','author':'tEsT','count':2,'price':123}
@@ -365,41 +413,37 @@ def test_controller():
 
 	cntrl = Controller('test.db')
 	try:
-		msg,err = test_registration_confirm_uptolibrarian(cntrl)
-		print("test_registration_confirm_uptolibrarian : " + msg)
-		
-		msg,err = test_add_book(cntrl)
-		print('test_add_book : ' + msg)
-
-		msg,err = first_test(cntrl)
-		print('First test : ' + msg)
-
-		msg,err = second_test(cntrl)
-		print('Second test : ' + msg)
-
-		msg,err = third_test(cntrl)
-		print('Third test : ' + msg)
-
-		msg,err = fourth_test(cntrl)
-		print('Fourth test : ' + msg)  
-
-		msg,err = fifth_test(cntrl)
-		print('Fifth test : ' + msg)
-
-		msg,err = sixth_test(cntrl)
-		print('Sixth test : ' + msg)
-		
-		msg,err = seventh_test(cntrl)
-		print('Seventh test : ' + msg)
-
-		msg,err = eighth_test(cntrl)
-		print('Eighth test : ' + msg)
-		
-		msg,err = ninth_test(cntrl)
-		print('Ninth test : ' + msg)
-		
-		msg,err = tenth_test(cntrl)
-		print('Tenth test : ' + msg)
+		num_test_case = int(input("Enter test case : "))
+		if num_test_case == 1:
+			msg,err = first_test(cntrl)
+			print('First test : ' + msg)
+		elif num_test_case == 2:
+			msg,err = second_test(cntrl)
+			print('Second test : ' + msg)
+		elif num_test_case == 3:
+			msg,err = third_test(cntrl)
+			print('Third test : ' + msg)
+		elif num_test_case == 4:
+			msg,err = fourth_test(cntrl)
+			print('Fourth test : ' + msg)  
+		elif num_test_case == 5:
+			msg,err = fifth_test(cntrl)
+			print('Fifth test : ' + msg)
+		elif num_test_case == 6:
+			msg,err = sixth_test(cntrl)
+			print('Sixth test : ' + msg)
+		elif num_test_case == 7:
+			msg,err = seventh_test(cntrl)
+			print('Seventh test : ' + msg)
+		elif num_test_case == 8:
+			msg,err = eighth_test(cntrl)
+			print('Eighth test : ' + msg)
+		elif num_test_case == 9:
+			msg,err = ninth_test(cntrl)
+			print('Ninth test : ' + msg)
+		elif num_test_case == 10:
+			msg,err = tenth_test(cntrl)
+			print('Tenth test : ' + msg)
 
 	except Exception as e:
 		raise e

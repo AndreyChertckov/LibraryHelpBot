@@ -162,6 +162,10 @@ class Controller:
     # param : user_id - id of user
     # param : book_id - id of book
     def check_out_book(self, user_id, book_id,returning_time = 0):
+        
+        if self.BDmanager.select_label('books',book_id) == None:
+            return False
+
         if returning_time == 0:
             is_best_seller = self.BDmanager.get_label('best_seller','books',book_id) == 1
             user_status = self.BDmanager.get_label('type','patrons',user_id)
