@@ -10,4 +10,4 @@ class OrderHistoryObject:
         self.table = table
         self.out_of_time=out_of_time
     def get_info(self):
-        return (self.id, self.time, self.table, self.docId, self.userId,self.out_of_time)
+        return (self.id, self.time, self.table, self.docId, self.userId,self.out_of_time,)

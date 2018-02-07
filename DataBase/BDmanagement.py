@@ -19,6 +19,7 @@ class BDManagement:
     # initializion of object
     def __init__(self, file = 'DataBase.db'):
         self.file = file
+        #self.drop_table("orders")
         self.__create_tables()
 
     # Get all data from some table
@@ -44,7 +45,7 @@ class BDManagement:
     #  ---newOrder -  'Order' Object
 
     def add_order(self, newOrder):
-        sql = """INSERT INTO orders(id,date,storing_table,doc_id,user_id) VALUES(?,?,?,?,?)"""
+        sql = """INSERT INTO orders(id,date,storing_table,doc_id,user_id,out_of_time) VALUES(?,?,?,?,?,?)"""
         self.__add_new(sql, newOrder)
 
     # Add new Librarian to DB
@@ -244,7 +245,7 @@ class BDManagement:
              storing_table text,
              doc_id integer,
              user_id integer,
-             out_of_time real,
+             out_of_time string,
              FOREIGN KEY (user_id) REFERENCES patrons (id)
              );
         """)

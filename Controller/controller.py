@@ -5,7 +5,8 @@ from DataBase.UsersAndDocumentObjects.Document import Document
 from DataBase.UsersAndDocumentObjects.OrderHistory import OrderHistoryObject
 from DataBase.UsersAndDocumentObjects.JournalArticle import JournalArticle
 from DataBase.UsersAndDocumentObjects.BaseDoc import BaseDoc
-import datetime;
+from datetime import timedelta
+from datetime import datetime
 
 
 # Class booking system
@@ -169,8 +170,8 @@ class Controller:
             if book_id in current_books_id:
                 return False
 
-            order = OrderHistoryObject(self.BDmanager.get_max_id("orders") + 1, str(datetime.datetime.now()), "books",
-                                       user_id, book_id)
+            order = OrderHistoryObject(self.BDmanager.get_max_id("orders") + 1, str(datetime.now()), "books",
+                                       user_id, book_id, str(datetime.now() + timedelta(weeks=returning_time)))
 
             self.BDmanager.add_order(order)
 
@@ -195,6 +196,6 @@ class Controller:
     # param: author - author of the book
     # param: count - amount of books
     # param: price - price of the book
-    def add_book(self, name, description, author, count, price,best_seller):
+    def add_book(self, name, description, author, count, price, best_seller):
         self.BDmanager.add_document(
-            Document(0, name, description, author, count, count, price,best_seller))  # TODO: заменить 0 на ничего
+            Document(0, name, description, author, count, count, price, best_seller))  # TODO: заменить 0 на ничего

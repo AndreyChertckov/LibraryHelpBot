@@ -10,11 +10,11 @@ from DataBase.UsersAndDocumentObjects.user import userBase
 class Patron(userBase):
     __metaclass__ = type
 
-    def __init__(self, name, address, id, status,phone=None,history=None, current_books=None, check_out_time=None):
+    def __init__(self, name, address, id, status,phone=None,history=None, current_books=None):
         userBase.__init__(self, name, address, status, id, phone)
         self.__history = history
         self.__current_books = current_books
-        self.__check_out_time = check_out_time
+        #self.__check_out_time = check_out_time
 
 
 
