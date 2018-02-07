@@ -19,7 +19,6 @@ class BDManagement:
     # initializion of object
     def __init__(self, file = 'DataBase.db'):
         self.file = file
-
         self.__create_tables()
 
     # Get all data from some table
@@ -82,14 +81,14 @@ class BDManagement:
     #  ---newDoc -  'Document' Object
 
     def add_document(self, newDoc):
-        sql = """INSERT INTO books(id,name,author,description,count,free_count,price)
-            VALUES (?,?,?,?,?,?,?)"""
+        sql = """INSERT INTO books(id,name,author,description,count,free_count,price,best_seller)
+            VALUES (?,?,?,?,?,?,?,?)"""
 
         cur = self.__create_connection(self.file).cursor()
         cur.execute(sql,
                     (self.get_max_id("books") + 1, newDoc.name, newDoc.authors, newDoc.description, newDoc.count,
                      newDoc.free_count,
-                     newDoc.price,))
+                     newDoc.price,newDoc.best_seller))
 
     # Add new media to DB
     # params:
@@ -209,7 +208,8 @@ class BDManagement:
               description text NOT NULL,
               count integer,
              free_count integer,
-             price integer);
+             price integer,
+             best_seller);
         """)
         self.__create_table("""CREATE TABLE IF NOT EXISTS articles(
              id integer PRIMARY KEY,
@@ -233,7 +233,7 @@ class BDManagement:
         self.__create_table("""
             CREATE TABLE IF NOT EXISTS chats (
             chat_id integer PRIMARY KEY,
-            table_ text NOT NULL,
+            table_text NOT NULL,
             id integer);
         """)
 
@@ -244,6 +244,7 @@ class BDManagement:
              storing_table text,
              doc_id integer,
              user_id integer,
+             out_of_time real,
              FOREIGN KEY (user_id) REFERENCES patrons (id)
              );
         """)
