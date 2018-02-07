@@ -210,7 +210,7 @@ class BDManagement:
               count integer,
              free_count integer,
              price integer,
-             best_seller);
+             best_seller integer);
         """)
         self.__create_table("""CREATE TABLE IF NOT EXISTS articles(
              id integer PRIMARY KEY,

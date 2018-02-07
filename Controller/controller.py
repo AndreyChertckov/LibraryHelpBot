@@ -157,10 +157,16 @@ class Controller:
         else:
             return d['unauthorized']
 
+
     # Check out book
     # param : user_id - id of user
     # param : book_id - id of book
-    def check_out_book(self, user_id, book_id, returning_time=2):
+    def check_out_book(self, user_id, book_id,returning_time = 0):
+        if returning_time == 0:
+            is_best_seller = self.BDmanager.get_label('best_seller','books',book_id) == 1
+            user_status = self.BDmanager.get_label('type','patrons',user_id)
+            returning_time = 2 if user_status == 'Student' or is_best_seller else 4
+
         free_count = int(self.BDmanager.get_label("free_count", "books", book_id))
         if free_count > 0:
 
@@ -170,8 +176,15 @@ class Controller:
             if book_id in current_books_id:
                 return False
 
-            order = OrderHistoryObject(self.BDmanager.get_max_id("orders") + 1, str(datetime.now()), "books",
-                                       user_id, book_id, str(datetime.now() + timedelta(weeks=returning_time)))
+            time = datetime.now()
+            out_of_time = time + timedelta(weeks=returning_time)
+            time = str(time)
+            out_of_time = str(time)
+            time = time[:time.index(' ')]
+            out_of_time = out_of_time[:out_of_time.index(' ')]
+
+            order = OrderHistoryObject(self.BDmanager.get_max_id("orders") + 1, time, "books",
+                                       user_id, book_id, out_of_time    )
 
             self.BDmanager.add_order(order)
 
@@ -196,6 +209,6 @@ class Controller:
     # param: author - author of the book
     # param: count - amount of books
     # param: price - price of the book
-    def add_book(self, name, description, author, count, price, best_seller):
+    def add_book(self, name, description, author, count, price, best_seller = 0):
         self.BDmanager.add_document(
             Document(0, name, description, author, count, count, price, best_seller))  # TODO: заменить 0 на ничего
