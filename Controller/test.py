@@ -364,44 +364,47 @@ def check_in_db_books(dbmanage,book):
 def test_controller():
 
 	cntrl = Controller('test.db')
-	
-	msg,err = test_registration_confirm_uptolibrarian(cntrl)
-	print("test_registration_confirm_uptolibrarian : " + msg)
-	
-	msg,err = test_add_book(cntrl)
-	print('test_add_book : ' + msg)
+	try:
+		msg,err = test_registration_confirm_uptolibrarian(cntrl)
+		print("test_registration_confirm_uptolibrarian : " + msg)
+		
+		msg,err = test_add_book(cntrl)
+		print('test_add_book : ' + msg)
 
-	msg,err = first_test(cntrl)
-	print('First test : ' + msg)
+		msg,err = first_test(cntrl)
+		print('First test : ' + msg)
 
-	msg,err = second_test(cntrl)
-	print('Second test : ' + msg)
+		msg,err = second_test(cntrl)
+		print('Second test : ' + msg)
 
-	msg,err = third_test(cntrl)
-	print('Third test : ' + msg)
+		msg,err = third_test(cntrl)
+		print('Third test : ' + msg)
 
-	msg,err = fourth_test(cntrl)
-	print('Fourth test : ' + msg)  
+		msg,err = fourth_test(cntrl)
+		print('Fourth test : ' + msg)  
 
-	msg,err = fifth_test(cntrl)
-	print('Fifth test : ' + msg)
+		msg,err = fifth_test(cntrl)
+		print('Fifth test : ' + msg)
 
-	msg,err = sixth_test(cntrl)
-	print('Sixth test : ' + msg)
-	
-	msg,err = seventh_test(cntrl)
-	print('Seventh test : ' + msg)
+		msg,err = sixth_test(cntrl)
+		print('Sixth test : ' + msg)
+		
+		msg,err = seventh_test(cntrl)
+		print('Seventh test : ' + msg)
 
-	msg,err = eighth_test(cntrl)
-	print('Eighth test : ' + msg)
-	
-	msg,err = ninth_test(cntrl)
-	print('Ninth test : ' + msg)
-	
-	msg,err = tenth_test(cntrl)
-	print('Tenth test : ' + msg)
+		msg,err = eighth_test(cntrl)
+		print('Eighth test : ' + msg)
+		
+		msg,err = ninth_test(cntrl)
+		print('Ninth test : ' + msg)
+		
+		msg,err = tenth_test(cntrl)
+		print('Tenth test : ' + msg)
 
-	os.remove('test.db')
+	except Exception as e:
+		raise e
+	finally:
+		os.remove('test.db')
 
 if __name__ == '__main__':
 	test_controller()
