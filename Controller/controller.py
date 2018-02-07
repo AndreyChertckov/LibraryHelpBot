@@ -176,21 +176,36 @@ class Controller:
     # Check out book
     # param : user_id - id of user
     # param : book_id - id of book
-    def check_out_book(self, user_id, book_id):
+    def check_out_book(self, user_id, book_id, returning_time = 2):
         free_count = int(self.BDmanager.get_label("free_count", "books", book_id))
-        if (free_count>0):
-            free_count-=1;
+        if free_count>0:
+            
+            current_books = eval(self.BDmanager.get_label("current_books", "patrons", user_id))
+            current_books_id = [self.BDmanager.get_by('id','orders',order)[0][3] for order in current_books]
+            
+            if book_id in current_books_id:
+                return False
+            
             order = OrderHistoryObject(self.BDmanager.get_max_id("orders") + 1, str(datetime.datetime.now()), "books",
                                    user_id, book_id)
+
             self.BDmanager.add_order(order)
-            current_books = eval(self.BDmanager.get_label("current_books", "patrons", user_id))
+
             history = eval(self.BDmanager.get_label("history", "patrons", user_id))
             current_books += [order.id]
             history += [order.id]
+            free_count-=1
+
             self.BDmanager.edit_label("books", "free_count", free_count, book_id)
             self.BDmanager.edit_label("patrons", "history", str(history), user_id)
             self.BDmanager.edit_label("patrons", "current_books", str(current_books), user_id)
 
+
+            return True
+
+        else:
+
+            return False
 
     # Method for adding the book in database
     # param: name - Name of the book
