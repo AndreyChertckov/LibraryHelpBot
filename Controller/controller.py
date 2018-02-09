@@ -55,18 +55,18 @@ class Controller:
     # Return all books from database
     def get_all_books(self):
         rows = self.BDmanager.select_all("books")
-        return [Document(book[0], book[1], book[3], book[2], book[4], book[5], book[6], book[7]) for book in rows]
+        return [Document(book[0], book[1], book[3], book[2], book[4], book[5], book[6], book[7],book[8]) for book in rows]
 
     # Return all articles from database
     def get_all_articles(self):
         rows = self.BDmanager.select_all("articles")
         return [JournalArticle(article[0], article[1], article[2], article[3], article[4], article[5], article[6],
-                               article[7]) for article in rows]
+                               article[7],article[8]) for article in rows]
 
     # Return all media from database
     def get_all_media(self):
         rows = self.BDmanager.select_all("media")
-        return [BaseDoc(media[0], media[2], media[1], media[4], media[5], media[6], media[3]) for media in rows]
+        return [BaseDoc(media[0], media[2], media[1], media[4], media[5], media[6], media[3],media[7]) for media in rows]
 
     # Return true if chat with user exist, false if not
     # param : user_id - id of user
@@ -213,6 +213,6 @@ class Controller:
     # param: author - author of the book
     # param: count - amount of books
     # param: price - price of the book
-    def add_book(self, name, description, author, count, price, best_seller = 0):
+    def add_book(self, name, description, author, count, price,keywords, best_seller = 0):
         self.BDmanager.add_document(
-            Document(0, name, description, author, count, count, price, best_seller))  # TODO: заменить 0 на ничего
+            Document(0, name, description, author, count, count, price, best_seller,keywords))  # TODO: заменить 0 на ничего
