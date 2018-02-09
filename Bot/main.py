@@ -261,7 +261,6 @@ class LibraryBot:
             if step < len(fields):
                 bot.send_message(chat_id=update.message.chat_id, text="Enter {}".format(fields[step]))
             else:
-                print(key)
                 text_for_message = func_data.sample_messages['correctness_' + key].format(**doc)
                 bot.send_message(chat_id=update.message.chat_id, text=text_for_message,
                                  reply_markup=RKM(self.keyboard_dict["reg_confirm"], True))
@@ -270,7 +269,7 @@ class LibraryBot:
             if update.message.text == "All is correct✅":
                 # self.cntrl.add_document(doc, key)
                 self.is_adding.pop(chat)
-                bot.send_message(chat_id=chat, text="Your request has been sent.\n Wait for librarian confirmation",
+                bot.send_message(chat_id=chat, text="Document has been added",
                                  reply_markup=RKM(self.keyboard_dict["admin"], True))
             elif update.message.text == "Something is incorrect❌":
                 self.is_adding[chat] = [0, {"id": update.message.chat_id}]
