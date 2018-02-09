@@ -267,7 +267,7 @@ class LibraryBot:
         elif step == len(fields):
             print(doc)
             if update.message.text == "All is correct✅":
-                # self.cntrl.add_document(doc, key)
+                # self.cntrl.add_document(doc, key) нужный метод
                 self.is_adding.pop(chat)
                 bot.send_message(chat_id=chat, text="Document has been added",
                                  reply_markup=RKM(self.keyboard_dict["admin"], True))
