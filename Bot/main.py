@@ -20,6 +20,7 @@ class LibraryBot:
         self.cntrl = cntrl
         self.updater = Updater(token=token)
         self.dispatcher = self.updater.dispatcher
+        self.search = ""
         logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
         # self.logger = logging.getLogger(__name__)
         self.keyboard_dict = {
@@ -55,9 +56,9 @@ class LibraryBot:
         library_handler = MessageHandler(WordFilter('Library🏤'), self.library)
         cancel_handler = MessageHandler(WordFilter('Cancel⤵️'), self.cancel)
 
-        book_handler = MessageHandler(WordFilter('Books📖'), self.cancel)
-        article_handler = MessageHandler(WordFilter('Journal Articles📰️'), self.cancel)
-        av_handler = MessageHandler(WordFilter('Audio/Video materials📼'), self.cancel)
+        book_handler = MessageHandler(WordFilter('Books📖'), self.load_material)
+        article_handler = MessageHandler(WordFilter('Journal Articles📰'), self.load_material)
+        av_handler = MessageHandler(WordFilter('Audio/Video materials📼'), self.load_material)
 
         self.dispatcher.add_handler(book_handler)
         self.dispatcher.add_handler(article_handler)
@@ -284,7 +285,20 @@ class LibraryBot:
     #  bot -- This object represents a Bot's commands
     #  update -- This object represents an incoming update
     def load_material(self, bot, update):
-        pass
+        #'Books📖', 'Journal Articles📰', "Audio/Video materials📼", "Cancel⤵️"
+        flag = True
+        if (update.message.text == "Books📖"):
+            pages = self.cntrl.get_all_books()
+        elif (update.message.text == "Journal Articles📰"):
+            pages = self.cntrl.get_all_articles()
+        elif (update.message.text == "Audio/Video materials📼"):
+            pages = self.cntrl.get_all_media()
+        else:
+            flag = False
+            bot.send_message(chat_id=update.message.chat_id,text="Please choose one from current categories")
+        if flag:
+            print(pages)
+            bot.send_message(chat_id=update.message.chat_id, text="Nice",reply_markup=None)
 
     # Cancel the operation
     # params:
