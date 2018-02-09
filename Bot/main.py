@@ -1,11 +1,11 @@
-from telegram import InlineQueryResultArticle, InputTextMessageContent, InlineKeyboardMarkup, KeyboardButton, \
-    CallbackQuery
-from telegram import ReplyKeyboardMarkup as KeyboardM
+import telegram
+from telegram import InlineKeyboardMarkup as IKM
+from telegram import ReplyKeyboardMarkup as RKM
 from telegram import ReplyKeyboardRemove as KeyboardR
 from telegram import InlineKeyboardButton as IKB
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, InlineQueryHandler, CallbackQueryHandler
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
 from Bot.filter import *
-from Bot import utils
+from Bot import utils, func_data
 import logging
 import configs
 
@@ -22,19 +22,8 @@ class LibraryBot:
         self.dispatcher = self.updater.dispatcher
         logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
         # self.logger = logging.getLogger(__name__)
-        self.keyboard_dict = {
-            "unauth": [['Registration📝', 'Library🏤', 'Search🔎', 'Help👤']],
-            "unconf": [['Library🏤', 'Search🔎', 'Help👤']],
-            "auth": [['Library🏤', 'Search🔎', 'My Books📚', 'Help👤']],
-            "admin": [["Check material📆", "Material management📚", "User management👥"]],
-            "mat_management": [["Add material🗄", "Search🔎", "Cancel⤵"]],
-            "user_management": [["Confirm application📝", "Check overdue📋", "Show users👥", "Cancel⤵️"]],
-            "reg_confirm": [["All is correct✅", "Something is incorrect❌"]],
-            "lib_main": [['Books📖', 'Journal Articles📰', "Audio/Video materials📼", "Cancel⤵️"]],
-            "cancel": [['Cancel⤵']],
-            "status": [['Student', 'Faculty (professor, instructor, TA)']]
-        }
-        self.types = ['unauth', "unconf", "auth", 'admin']
+        self.keyboard_dict = func_data.keyboard_dict
+        self.types = func_data.user_types
         self.is_in_reg = {}
         self.admins = {}
 
@@ -55,9 +44,9 @@ class LibraryBot:
         library_handler = MessageHandler(WordFilter('Library🏤'), self.library)
         cancel_handler = MessageHandler(WordFilter('Cancel⤵️'), self.cancel)
 
-        book_handler = MessageHandler(WordFilter('Books📖'), self.cancel)
-        article_handler = MessageHandler(WordFilter('Journal Articles📰️'), self.cancel)
-        av_handler = MessageHandler(WordFilter('Audio/Video materials📼'), self.cancel)
+        book_handler = MessageHandler(WordFilter('Books📖') & UserFilter(3, True), self.cancel)
+        article_handler = MessageHandler(WordFilter('Journal Articles📰') & UserFilter(3, True), self.cancel)
+        av_handler = MessageHandler(WordFilter('Audio/Video materials📼') & UserFilter(3, True), self.cancel)
 
         self.dispatcher.add_handler(book_handler)
         self.dispatcher.add_handler(article_handler)
@@ -75,6 +64,9 @@ class LibraryBot:
         self.dispatcher.add_handler(
             MessageHandler(WordFilter("Material management📚") & UserFilter(3), self.mat_manage))
         self.dispatcher.add_handler(CallbackQueryHandler(self.conf_user))
+        self.dispatcher.add_handler(MessageHandler(WordFilter('Books📖') & UserFilter(3), self.add_book))
+        self.dispatcher.add_handler(MessageHandler(WordFilter('Journal Articles📰') & UserFilter(3), self.add_article))
+        self.dispatcher.add_handler(MessageHandler(WordFilter('Audio/Video materials📼') & UserFilter(3), self.add_av))
 
     # Main menu
     # params:
@@ -85,7 +77,7 @@ class LibraryBot:
         keyboard = self.keyboard_dict[self.types[user_type]]
 
         bot.send_message(chat_id=update.message.chat_id, text="I'm bot, Hello",
-                         reply_markup=KeyboardM(keyboard, True))
+                         reply_markup=RKM(keyboard, True))
 
     # Registration of admins
     # params:
@@ -96,7 +88,7 @@ class LibraryBot:
         if args and args[0] == open('Bot/key.txt').read():
             self.cntrl.upto_librarian(update.message.chat_id)
             bot.send_message(chat_id=update.message.chat_id, text="You have been update to Librarian",
-                             reply_markup=KeyboardM(self.keyboard_dict["admin"], True))
+                             reply_markup=RKM(self.keyboard_dict["admin"], True))
             utils.key_gen()
 
     # Registration of users
@@ -106,15 +98,7 @@ class LibraryBot:
     def registration(self, bot, update):
         chat = update.message.chat_id
         self.is_in_reg[chat] = [0, {"id": update.message.chat_id}]
-        text_for_message = """
-        During registration you have to provide your name, address, phone number and status (student or faculty).\n
-        Example:
-        Ivan Ivanov,
-        ul. Universitetskaya 1, 2-100,
-        +71234567890,
-        Student     
-        """
-        bot.send_message(chat_id=chat, text=text_for_message)
+        bot.send_message(chat_id=chat, text=func_data.sample_messages['reg'])
         bot.send_message(chat_id=chat, text="Enter your name", reply_markup=KeyboardR([[]]))
 
     # Steps of the registration
@@ -133,31 +117,25 @@ class LibraryBot:
             step += 1
             self.is_in_reg[chat][0] += 1
             if step < len(fields):
-                keyboard = KeyboardM(self.keyboard_dict["status"], True) if fields[step] == "status" else None
+                keyboard = RKM(self.keyboard_dict["status"], True) if fields[step] == "status" else None
                 bot.send_message(chat_id=update.message.chat_id, text="Enter your {}".format(fields[step]),
                                  reply_markup=keyboard)
             else:
-                text_for_message = """
-                Check whether all data is correct:
-                Name: {name}
-                Address: {address}
-                Phone: {phone}
-                Status: {status}
-                """.format(**user)
+                text_for_message = func_data.sample_messages['correctness'].format(**user)
                 bot.send_message(chat_id=update.message.chat_id, text=text_for_message,
-                                 reply_markup=KeyboardM(self.keyboard_dict["reg_confirm"], True))
+                                 reply_markup=RKM(self.keyboard_dict["reg_confirm"], True))
         elif step == len(fields):
             print(user)
             if update.message.text == "All is correct✅":
                 is_incorrect = utils.data_checker(self.is_in_reg[chat][1])
                 if is_incorrect[0]:
                     bot.send_message(chat_id=chat, text=is_incorrect[1],
-                                     reply_markup=KeyboardM(self.keyboard_dict["unauth"], True))
+                                     reply_markup=RKM(self.keyboard_dict["unauth"], True))
                 else:
                     self.cntrl.registration(user)
                     self.is_in_reg.pop(chat)
                     bot.send_message(chat_id=chat, text="Your request has been sent.\n Wait for librarian confirmation",
-                                     reply_markup=KeyboardM(self.keyboard_dict["unconf"], True))
+                                     reply_markup=RKM(self.keyboard_dict["unconf"], True))
             elif update.message.text == "Something is incorrect❌":
                 self.is_in_reg[chat] = [0, {"id": update.message.chat_id}]
                 bot.send_message(chat_id=chat, text="Enter your name", reply_markup=KeyboardR([[]]))
@@ -165,7 +143,7 @@ class LibraryBot:
     def user_manage(self, bot, update):
         keyboard = self.keyboard_dict["user_management"]
         bot.send_message(chat_id=update.message.chat_id, text="Choose option",
-                         reply_markup=KeyboardM(keyboard, True))
+                         reply_markup=RKM(keyboard, True))
         self.dispatcher.add_handler(MessageHandler(WordFilter("Confirm application📝") & UserFilter(3), self.confirm))
         self.dispatcher.add_handler(MessageHandler(WordFilter("Check overdue📋") & UserFilter(3), self.cancel))
         self.dispatcher.add_handler(MessageHandler(WordFilter("Show users👥") & UserFilter(3), self.cancel))
@@ -184,8 +162,7 @@ class LibraryBot:
             ["{}) {} - {}".format(i + 1, user['name'], user["status"]) for i, user in enumerate(unconf_users[0])])
         keyboard = [[IKB(str(i + 1), callback_data=str(i)) for i in range(len(unconf_users[0]))]]
         keyboard += [[IKB("⬅", callback_data='next'), IKB("➡️", callback_data='next')]]
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        update.message.reply_text(text=text_message + "\nCurrent page: " + str(1), reply_markup=reply_markup)
+        update.message.reply_text(text=text_message + "\nCurrent page: " + str(1), reply_markup=IKM(keyboard))
 
     def conf_user(self, bot, update):
         query = update.callback_query
@@ -211,9 +188,8 @@ class LibraryBot:
                  enumerate(unconf_users[self.admins[chat]])])
             keyboard = [[IKB(str(i + 1), callback_data=str(i)) for i in range(len(unconf_users[self.admins[chat]]))]]
             keyboard += [[IKB("⬅", callback_data='prev'), IKB("➡️", callback_data='next')]]
-            reply_markup = InlineKeyboardMarkup(keyboard)
             bot.edit_message_text(text=text_message + "\nCurrent page: " + str(self.admins[chat] + 1), chat_id=chat,
-                                  message_id=query.message.message_id, reply_markup=reply_markup)
+                                  message_id=query.message.message_id, reply_markup=IKM(keyboard))
         elif utils.is_int(query.data):
             k = int(query.data)
             user = unconf_users[self.admins[chat]][k]
@@ -222,23 +198,21 @@ class LibraryBot:
             """.format(**user)
             keyboard = [[IKB("Accept✅", callback_data='accept ' + query.data),
                          IKB("Reject️❌", callback_data='reject ' + query.data)]]
-            reply_markup = InlineKeyboardMarkup(keyboard)
-            bot.edit_message_text(text=text, chat_id=chat, message_id=query.message.message_id,
-                                  reply_markup=reply_markup)
+            bot.edit_message_text(text=text, chat_id=chat, message_id=query.message.message_id, reply_markup=IKM(keyboard))
         elif query.data.split(" ")[0] == 'accept':
             k = int(query.data.split(" ")[1])
             user_id = unconf_users[self.admins[chat]][k]["id"]
             self.cntrl.confirm_user(user_id)
             bot.edit_message_text(text="This user was confirmed", chat_id=chat, message_id=query.message.message_id)
             bot.send_message(chat_id=user_id, text="Your application was confirmed",
-                             reply_markup=KeyboardM(self.keyboard_dict[self.types[2]], True))
+                             reply_markup=RKM(self.keyboard_dict[self.types[2]], True))
         elif query.data.split(" ")[0] == 'reject':
             k = int(query.data.split(" ")[1])
             user_id = unconf_users[self.admins[chat]][k]["id"]
             self.cntrl.delete_user(user_id)
             bot.edit_message_text(text="This user was rejected", chat_id=chat, message_id=query.message.message_id)
             bot.send_message(chat_id=user_id, text="Your application was rejected",
-                             reply_markup=KeyboardM(self.keyboard_dict[self.types[0]], True))
+                             reply_markup=RKM(self.keyboard_dict[self.types[0]], True))
 
     def check_overdue(self, bot, update):
         pass
@@ -249,19 +223,27 @@ class LibraryBot:
     def mat_manage(self, bot, update):
         keyboard = self.keyboard_dict["mat_management"]
         bot.send_message(chat_id=update.message.chat_id, text="Choose option",
-                         reply_markup=KeyboardM(keyboard, True))
-        self.dispatcher.add_handler(MessageHandler(WordFilter("Add material🗄") & UserFilter(3), self.add_book))
+                         reply_markup=RKM(keyboard, True))
+        self.dispatcher.add_handler(MessageHandler(WordFilter("Add material🗄") & UserFilter(3), self.add_mat))
         self.dispatcher.add_handler(MessageHandler(WordFilter("Search🔎") & UserFilter(3), self.cancel))
+
+    def add_mat(self, bot, update):
+        bot.send_message(chat_id=update.message.chat_id, text="Choose type of material",
+                         reply_markup=RKM(self.keyboard_dict["lib_main"], True))
 
     def add_book(self, bot, update):
         chat = update.message.chat_id
-        # self.is_in_reg[chat] = [0, {"id": update.message.chat_id}]
-        text_for_message = """
-        During book addition you should to provide book's title, authors, edition, overview, keywords,\
-        price (in rubles).\nExample:\nIntroduction to Algorithms\nThomas H. Cormen;Charles E. Leiserson;Ronald L. Rivest;Clifford Stein\n The third edition, 2009\nThis book is about algorithms\nalgorithms;java\n3000
-        """
-        bot.send_message(chat_id=chat, text=text_for_message)
-        bot.send_message(chat_id=chat, text="Enter article", reply_markup=KeyboardR([[]]))
+        # self.is_adding[chat] = [0, {"id": chat}]
+        bot.send_message(chat_id=chat, text=func_data.sample_messages['book'])
+        # bot.send_message(chat_id=chat, text="Enter title", reply_markup=KeyboardR([[]]))
+
+    def add_article(self, bot, update):
+        chat = update.message.chat_id
+        bot.send_message(chat_id=chat, text="article")
+
+    def add_av(self, bot, update):
+        chat = update.message.chat_id
+        bot.send_message(chat_id=chat, text="audio")
 
     # Steps of the material addition
     # params:
@@ -277,7 +259,7 @@ class LibraryBot:
     def library(self, bot, update):
 
         bot.send_message(chat_id=update.message.chat_id, text="Choose type of material",
-                         reply_markup=KeyboardM(self.keyboard_dict["lib_main"], True))
+                         reply_markup=RKM(self.keyboard_dict["lib_main"], True))
 
     # Selected material
     # params:
@@ -294,7 +276,7 @@ class LibraryBot:
         user_type = self.cntrl.user_type(update.message.chat_id)
         keyboard = self.keyboard_dict[self.types[user_type]]
 
-        bot.send_message(chat_id=update.message.chat_id, text="Main menu", reply_markup=KeyboardM(keyboard, True))
+        bot.send_message(chat_id=update.message.chat_id, text="Main menu", reply_markup=RKM(keyboard, True))
 
     def error(self, bot, update, error):
         """Log Errors caused by Updates."""

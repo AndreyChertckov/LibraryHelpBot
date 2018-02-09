@@ -32,11 +32,12 @@ class WordFilter(BaseFilter):
 
 # Filter for type of users
 class UserFilter(BaseFilter):
-    def __init__(self, user_type):
+    def __init__(self, user_type, invert=False):
         self.user_type = user_type
+        self.invert = invert
 
     def filter(self, message):
-        return self.user_type == Controller().user_type(message.chat_id)
+        return (self.user_type == Controller().user_type(message.chat_id)) != self.invert
 
 
 # Filter for check registration of users
