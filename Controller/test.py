@@ -5,7 +5,9 @@ from datetime import timedelta
 from Controller.controller import Controller
 from DataBase.BDmanagement import BDManagement
 from DataBase.UsersAndDocumentObjects.Patron import Patron
-
+#There is at least one patron and one librarian in the system. Patron p has no item. In the
+#library, there are two copies of book b, which is not a reference book.
+#
 def first_test(cntrl):
 
 	cntrl.BDmanager.clear_table('books')
