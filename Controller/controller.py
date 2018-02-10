@@ -213,6 +213,22 @@ class Controller:
     # param: author - author of the book
     # param: count - amount of books
     # param: price - price of the book
-    def add_book(self, name, description, author, count, price,keywords, best_seller = 0):
+    def add_book(self, title, overview, authors, count, price,keywords, best_seller = 0):
         self.BDmanager.add_document(
-            Document(0, name, description, author, count, count, price, best_seller,keywords))  # TODO: заменить 0 на ничего
+            Document(0, title, overview, authors, count, count, price, best_seller,keywords))  # TODO: заменить 0 на ничего
+    
+    def add_media(self,title,authors,keywords,price):
+        self.BDmanager.add_media(BaseDoc(0,authors,title,0,0,price,'MEDIA',keywords))
+
+    def add_article(self,title,authors,journal,issue,editors,date,keywords,price):
+        #self.BDmanager.add_article(JournalArticle(0,title,authors,journal,editors,))
+        pass
+
+    def add_document(self,doc,key):
+        if key == 'book':
+            doc['best_seller'] = 0
+            self.add_book(**doc)
+        elif key == 'article':
+            self.add_article(**doc)
+        elif key == 'media':
+            self.add_media(**doc)
