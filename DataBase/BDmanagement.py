@@ -107,12 +107,12 @@ class BDManagement:
     # --- newArticle - 'JournalArticle' object
 
     def add_article(self, newArticle):
-        sql = """INSERT INTO articles(id,name,authors,journal_name,journal_publisher,count,free_count,price,keywords)
-        VALUES(?,?,?,?,?,?,?,?,?)"""
-        cur = self.__bd.cursor()  # cursor()
+        sql = """INSERT INTO articles(id,name,authors,journal_name,count,free_count,price,keywords,issue,editor,date)
+        VALUES(?,?,?,?,?,?,?,?,?,?,?)"""
+        cur = self.__create_connection(self.file).cursor()  # cursor()
 
         cur.execute(sql, (self.get_max_id("articles") + 1, newArticle.name, newArticle.authors, newArticle.journal_name,
-                          newArticle.journal_publisher, newArticle.count, newArticle.free_count, newArticle.price,newArticle.keywords))
+                          newArticle.count, newArticle.free_count, newArticle.price,newArticle.keywords,newArticle.issue,newArticle.editor,newArticle.date))
 
     # Add new 'patron' to DB
     # params:
@@ -218,11 +218,13 @@ class BDManagement:
              name text NOT NULL,
              authors text,
             journal_name text,
-            journal_publisher text,
             count integer,
             free_count integer,
             price integer,
-             keywords text);
+             keywords text,
+             issue text,
+             editor text,
+             date text);
         """)
         self.__create_table("""CREATE TABLE IF NOT EXISTS media(
                 id integer PRIMARY KEY,
