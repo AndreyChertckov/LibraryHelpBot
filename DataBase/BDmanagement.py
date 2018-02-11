@@ -82,37 +82,37 @@ class BDManagement:
     #  ---newDoc -  'Document' Object
 
     def add_document(self, newDoc):
-        sql = """INSERT INTO books(id,name,author,description,count,free_count,price,best_seller)
-            VALUES (?,?,?,?,?,?,?,?)"""
+        sql = """INSERT INTO books(id,name,author,description,count,free_count,price,best_seller,keywords)
+            VALUES (?,?,?,?,?,?,?,?,?)"""
 
         cur = self.__create_connection(self.file).cursor()
         cur.execute(sql,
                     (self.get_max_id("books") + 1, newDoc.name, newDoc.authors, newDoc.description, newDoc.count,
                      newDoc.free_count,
-                     newDoc.price,newDoc.best_seller))
+                     newDoc.price,newDoc.best_seller,newDoc.keywords))
 
     # Add new media to DB
     # params:
     # ---newMed - 'Media' object
 
     def add_media(self, newMed):
-        sql = """INSERT INTO media(id,name,authors,type,count,free_count,price)
-        VALUES(?,?,?,?,?,?,?)"""
+        sql = """INSERT INTO media(id,name,authors,type,count,free_count,price,keywords)
+        VALUES(?,?,?,?,?,?,?,?)"""
         self.__bd.cursor().execute(sql, (
             self.get_max_id("media") + 1, newMed.name, newMed.authors, newMed.type, newMed.count, newMed.free_count,
-            newMed.price))
+            newMed.price,newMed.keywords))
 
     # Add new article to DB
     # params:
     # --- newArticle - 'JournalArticle' object
 
     def add_article(self, newArticle):
-        sql = """INSERT INTO articles(id,name,authors,journal_name,journal_publisher,count,free_count,price)
-        VALUES(?,?,?,?,?,?,?,?)"""
-        cur = self.__bd.cursor()  # cursor()
+        sql = """INSERT INTO articles(id,name,authors,journal_name,count,free_count,price,keywords,issue,editor,date)
+        VALUES(?,?,?,?,?,?,?,?,?,?,?)"""
+        cur = self.__create_connection(self.file).cursor()  # cursor()
 
         cur.execute(sql, (self.get_max_id("articles") + 1, newArticle.name, newArticle.authors, newArticle.journal_name,
-                          newArticle.journal_publisher, newArticle.count, newArticle.free_count, newArticle.price,))
+                          newArticle.count, newArticle.free_count, newArticle.price,newArticle.keywords,newArticle.issue,newArticle.editor,newArticle.date))
 
     # Add new 'patron' to DB
     # params:
@@ -210,17 +210,21 @@ class BDManagement:
               count integer,
              free_count integer,
              price integer,
-             best_seller integer);
+             best_seller integer,
+             keywords text);
         """)
         self.__create_table("""CREATE TABLE IF NOT EXISTS articles(
              id integer PRIMARY KEY,
              name text NOT NULL,
              authors text,
             journal_name text,
-            journal_publisher text,
             count integer,
             free_count integer,
-            price integer);
+            price integer,
+             keywords text,
+             issue text,
+             editor text,
+             date text);
         """)
         self.__create_table("""CREATE TABLE IF NOT EXISTS media(
                 id integer PRIMARY KEY,
@@ -229,7 +233,8 @@ class BDManagement:
                 type text,
                 count integer,
                 free_count integer,
-                price integer);
+                price integer,
+                 keywords text);
                 """)
         self.__create_table("""
             CREATE TABLE IF NOT EXISTS chats (

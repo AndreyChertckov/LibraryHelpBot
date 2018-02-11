@@ -55,18 +55,20 @@ class Controller:
     # Return all books from database
     def get_all_books(self):
         rows = self.BDmanager.select_all("books")
-        return [Document(book[0], book[1], book[3], book[2], book[4], book[5], book[6], book[7]) for book in rows]
+        return [Document(book[0], book[1], book[3], book[2], book[4], book[5], book[6], book[7], book[8]) for book in
+                rows]
 
     # Return all articles from database
     def get_all_articles(self):
         rows = self.BDmanager.select_all("articles")
         return [JournalArticle(article[0], article[1], article[2], article[3], article[4], article[5], article[6],
-                               article[7]) for article in rows]
+                               article[7], article[8],article[9],article[10]) for article in rows]
 
     # Return all media from database
     def get_all_media(self):
         rows = self.BDmanager.select_all("media")
-        return [BaseDoc(media[0], media[2], media[1], media[4], media[5], media[6], media[3]) for media in rows]
+        return [BaseDoc(media[0], media[2], media[1], media[4], media[5], media[6], media[3], media[7]) for media in
+                rows]
 
     # Return true if chat with user exist, false if not
     # param : user_id - id of user
@@ -159,18 +161,17 @@ class Controller:
         else:
             return d['unauthorized']
 
-
     # Check out book
     # param : user_id - id of user
     # param : book_id - id of book
-    def check_out_book(self, user_id, book_id,returning_time = 0):
-        
-        if self.BDmanager.select_label('books',book_id) == None:
+    def check_out_book(self, user_id, book_id, returning_time=0):
+
+        if self.BDmanager.select_label('books', book_id) == None:
             return False
 
         if returning_time == 0:
-            is_best_seller = self.BDmanager.get_label('best_seller','books',book_id) == 1
-            user_status = self.BDmanager.get_label('type','patrons',user_id)
+            is_best_seller = self.BDmanager.get_label('best_seller', 'books', book_id) == 1
+            user_status = self.BDmanager.get_label('type', 'patrons', user_id)
             returning_time = 2 if user_status == 'Student' or is_best_seller else 4
 
         free_count = int(self.BDmanager.get_label("free_count", "books", book_id))
@@ -190,7 +191,7 @@ class Controller:
             out_of_time = out_of_time[:out_of_time.index(' ')]
 
             order = OrderHistoryObject(self.BDmanager.get_max_id("orders") + 1, time, "books",
-                                       user_id, book_id, out_of_time    )
+                                       user_id, book_id, out_of_time)
 
             self.BDmanager.add_order(order)
 
@@ -215,6 +216,25 @@ class Controller:
     # param: author - author of the book
     # param: count - amount of books
     # param: price - price of the book
-    def add_book(self, name, description, author, count, price, best_seller = 0):
+    def add_book(self, title, overview, authors, count, price, keywords, best_seller=0):
         self.BDmanager.add_document(
-            Document(0, name, description, author, count, count, price, best_seller))  # TODO: заменить 0 на ничего
+            Document(0, title, overview, authors, count, count, price, best_seller,
+                     keywords))  # TODO: заменить 0 на ничего
+
+    def add_media(self, title, authors, keywords, price):
+        self.BDmanager.add_media(BaseDoc(0, authors, title, 0, 0, price, 'MEDIA', keywords))
+
+    def add_article(self, title, authors, journal, issue, editors, date, keywords, price,count):
+        self.BDmanager.add_article(
+            JournalArticle(0, title, authors, journal,count,0,price, keywords, issue, editors, date))
+        # self.BDmanager.add_article(JournalArticle(0,title,authors,journal,editors,))
+        pass
+
+    def add_document(self, doc, key):
+        if key == 'book':
+            doc['best_seller'] = 0
+            self.add_book(**doc)
+        elif key == 'article':
+            self.add_article(**doc)
+        elif key == 'media':
+            self.add_media(**doc)
