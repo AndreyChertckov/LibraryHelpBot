@@ -36,6 +36,7 @@ sample_messages = {
         Overview: {overview}
         Keywords: {keywords}
         Price: {price}
+        Count: {count}
     """,
 
     'correctness_article': """
@@ -47,6 +48,7 @@ sample_messages = {
         Editors: {editors}
         Keywords: {keywords}
         Price: {price}
+        Count: {count}
     """,
 
     'correctness_media': """
@@ -55,12 +57,13 @@ sample_messages = {
         Authors: {authors}
         Keywords: {keywords}
         Price: {price}
+        Count: {count}
     """,
 
-    'book': "You have to provide book's title, authors, overview, list of keywords and price (in rubles).",
+    'book': "You have to provide book's title, authors, overview, list of keywords, price (in rubles) and count.",
 
     'article': "You have to provide article's title, one or more authors, title of journal and its issue with editors and a\
-        publication date. Also you need to provide list of keywords and price (in rubles).",
+        publication date. Also you need to provide list of keywords, price (in rubles).",
 
     'media': "You have to provide title, list of authors, list of keywords and price"
 }
@@ -68,11 +71,11 @@ sample_messages = {
 lists = {
     "user_types": ['unauth', "unconf", "auth", 'admin'],
     "reg_fields": ["name", "address", "phone", "status"],
-    "book": ['title', ' list of authors (separated by ";")', 'overview', 'keywords (separated by ";")', 'price'],
+    'book': ['title', 'list of authors (divided by ";")', 'overview', 'keywords (divided by ";")', 'price', 'count'],
     "article": ['title', ' list of authors (separated by ";")', 'journal title', 'issue', 'issue editors',
                 'date of publication', 'keywords (separated by ";")', 'price'],
     "media": ['title', ' list of authors (separated by ";")', 'keywords (separated by ";")', 'price'],
-    "book_bd": ['title', 'authors', 'overview', 'keywords', 'price'],
+    "book_bd": ['title', 'authors', 'overview', 'keywords', 'price', 'count'],
     "article_bd": ['title', 'authors', 'journal', 'issue', 'editors', 'date', 'keywords', 'price'],
     "media_bd": ['title', 'authors', 'keywords', 'price'],
 }

@@ -238,7 +238,7 @@ class LibraryBot:
 
     def start_adding(self, bot, update, key):
         chat = update.message.chat_id
-        self.is_adding[chat] = [0, {"id": utils.randint()}, key]
+        self.is_adding[chat] = [0, {}, key]
         bot.send_message(chat_id=chat, text=func_data.sample_messages[key])
         bot.send_message(chat_id=chat, text="Enter title", reply_markup=RKR([[]]))
 
@@ -251,11 +251,12 @@ class LibraryBot:
         step = self.is_adding[chat][0]
         doc = self.is_adding[chat][1]
         key = self.is_adding[chat][2]
-        fields = func_data.lists[key + "_bd"]
+        fields_bd = func_data.lists[key + "_bd"]
+        fields = func_data.lists[key]
 
         if step < len(fields):
             text = update.message.text
-            doc[fields[step]] = int(text) if utils.is_int(text) else text
+            doc[fields_bd[step]] = int(text) if utils.is_int(text) else text
             step += 1
             self.is_adding[chat][0] += 1
             if step < len(fields):
@@ -267,7 +268,7 @@ class LibraryBot:
         elif step == len(fields):
             print(doc)
             if update.message.text == "All is correct✅":
-                # self.cntrl.add_document(doc, key) нужный метод
+                self.cntrl.add_document(doc, key)
                 self.is_adding.pop(chat)
                 bot.send_message(chat_id=chat, text="Document has been added",
                                  reply_markup=RKM(self.keyboard_dict["admin"], True))
