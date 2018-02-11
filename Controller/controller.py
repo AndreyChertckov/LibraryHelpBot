@@ -102,7 +102,9 @@ class Controller:
     # param : user_id - id of user
     # return : dictionary user {id,name,address,phone,status} if user librarian or unconfirmed,
     # or {id,name,address,phone,history,current_books,status},
-    # or false if user doesn`t exist
+    # or false if user doesn`t existе
+
+    #Можно вынести user['id'] = user_bd[0] и тому подобное за if и кол-во строк уменьшится
     def get_user(self, user_id):
         user = {}
         if self.BDmanager.select_label('patrons', user_id):
