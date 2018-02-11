@@ -62,6 +62,11 @@ class LibraryBot:
     def add_admin_handlers(self):
         self.dispatcher.add_handler(CommandHandler('get_key', utils.get_key, filters=UserFilter(3)))
         self.dispatcher.add_handler(MHandler(WordFilter("User management👥") & UserFilter(3), self.user_manage))
+
+        self.dispatcher.add_handler(MHandler(WordFilter("Confirm application📝") & UserFilter(3), self.confirm))
+        self.dispatcher.add_handler(MHandler(WordFilter("Check overdue📋") & UserFilter(3), self.cancel))
+        self.dispatcher.add_handler(MHandler(WordFilter("Show users👥") & UserFilter(3), self.show_users))
+
         self.dispatcher.add_handler(
             MHandler(WordFilter("Material management📚") & UserFilter(3), self.mat_manage))
         self.dispatcher.add_handler(CallbackQueryHandler(self.conf_user))
@@ -149,11 +154,7 @@ class LibraryBot:
 
     def user_manage(self, bot, update):
         keyboard = self.keyboard_dict["user_management"]
-        bot.send_message(chat_id=update.message.chat_id, text="Choose option",
-                         reply_markup=RKM(keyboard, True))
-        self.dispatcher.add_handler(MHandler(WordFilter("Confirm application📝") & UserFilter(3), self.confirm))
-        self.dispatcher.add_handler(MHandler(WordFilter("Check overdue📋") & UserFilter(3), self.cancel))
-        self.dispatcher.add_handler(MHandler(WordFilter("Show users👥") & UserFilter(3), self.cancel))
+        bot.send_message(chat_id=update.message.chat_id, text="Choose option", reply_markup=RKM(keyboard, True))
 
     def confirm(self, bot, update):
         chat = update.message.chat_id
@@ -226,7 +227,20 @@ class LibraryBot:
         pass
 
     def show_users(self, bot, update):
-        pass
+        chat = update.message.chat_id
+        n = 3
+        patrons = self.cntrl.get_all_patrons()
+        if len(patrons) == 0:
+            bot.send_message(chat_id=chat, text="There are no users")
+            return
+        patrons = [patrons[i * n:(i + 1) * n] for i in range(len(patrons) // n + 1)]
+        if not (chat in self.admins):
+            self.admins[chat] = 0
+        text_message = ("\n" + "-" * 50 + "\n").join(
+            ["{}) {} - {}".format(i + 1, user['name'], user["status"]) for i, user in enumerate(patrons[0])])
+        keyboard = [[IKB(str(i + 1), callback_data=str(i)) for i in range(len(patrons[0]))]]
+        keyboard += [[IKB("⬅", callback_data='next'), IKB("➡️", callback_data='next')]]
+        update.message.reply_text(text=text_message + "\nCurrent page: " + str(1), reply_markup=IKM(keyboard))
 
     def mat_manage(self, bot, update):
         reply_markup = RKM(self.keyboard_dict["mat_management"], True)

@@ -73,9 +73,9 @@ lists = {
     "reg_fields": ["name", "address", "phone", "status"],
     'book': ['title', 'list of authors (divided by ";")', 'overview', 'keywords (divided by ";")', 'price', 'count'],
     "article": ['title', ' list of authors (separated by ";")', 'journal title', 'issue', 'issue editors',
-                'date of publication', 'keywords (separated by ";")', 'price'],
-    "media": ['title', ' list of authors (separated by ";")', 'keywords (separated by ";")', 'price'],
+                'date of publication', 'keywords (separated by ";")', 'price', 'count'],
+    "media": ['title', ' list of authors (separated by ";")', 'keywords (separated by ";")', 'price', 'count'],
     "book_bd": ['title', 'authors', 'overview', 'keywords', 'price', 'count'],
-    "article_bd": ['title', 'authors', 'journal', 'issue', 'editors', 'date', 'keywords', 'price'],
-    "media_bd": ['title', 'authors', 'keywords', 'price'],
+    "article_bd": ['title', 'authors', 'journal', 'issue', 'editors', 'date', 'keywords', 'price', 'count'],
+    "media_bd": ['title', 'authors', 'keywords', 'price', 'count'],
 }
