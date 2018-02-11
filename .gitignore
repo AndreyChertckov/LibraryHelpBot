@@ -1,9 +1,5 @@
 venv
 .idea
-DataBase.db
 __pycache__
-file.txt
-books.py
-configs.py
 key.txt
 experimental.py
