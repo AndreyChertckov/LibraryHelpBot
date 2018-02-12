@@ -26,7 +26,7 @@ class LibraryBot:
         self.keyboard_dict = func_data.keyboard_dict
         self.types = func_data.lists["user_types"]
         self.is_in_reg = {}
-        self.admins = {}
+        self.pages = {}
         self.is_adding = {}
         self.inline_key = {}
 
@@ -174,8 +174,8 @@ class LibraryBot:
             bot.send_message(chat_id=chat, text="There are no application to confirm")
             return
         unconf_users = [unconf_users[i * n:(i + 1) * n] for i in range(len(unconf_users) // n + 1)]
-        if not (chat in self.admins):
-            self.admins[chat] = 0
+        if not (chat in self.pages):
+            self.pages[chat] = 0
         text_message = ("\n" + "-" * 50 + "\n").join(
             ["{}) {} - {}".format(i + 1, user['name'], user["status"]) for i, user in enumerate(unconf_users[0])])
         keyboard = [[IKB(str(i + 1), callback_data=str(i)) for i in range(len(unconf_users[0]))]]
@@ -191,26 +191,26 @@ class LibraryBot:
         max_page = len(unconf_users) - 1
         if (query.data == "prev" or "next" == query.data) and max_page:
             if query.data == "next":
-                if self.admins[chat] == max_page:
-                    self.admins[chat] = 0
+                if self.pages[chat] == max_page:
+                    self.pages[chat] = 0
                 else:
-                    self.admins[chat] += 1
+                    self.pages[chat] += 1
             if query.data == "prev":
-                if self.admins[chat] == 0:
-                    self.admins[chat] = max_page
+                if self.pages[chat] == 0:
+                    self.pages[chat] = max_page
                 else:
-                    self.admins[chat] -= 1
+                    self.pages[chat] -= 1
 
             text_message = ("\n" + "-" * 50 + "\n").join(
                 ["{}) {} - {}".format(i + 1, user['name'], user["status"]) for i, user in
-                 enumerate(unconf_users[self.admins[chat]])])
-            keyboard = [[IKB(str(i + 1), callback_data=str(i)) for i in range(len(unconf_users[self.admins[chat]]))]]
+                 enumerate(unconf_users[self.pages[chat]])])
+            keyboard = [[IKB(str(i + 1), callback_data=str(i)) for i in range(len(unconf_users[self.pages[chat]]))]]
             keyboard += [[IKB("⬅", callback_data='prev'), IKB("➡️", callback_data='next')]]
-            bot.edit_message_text(text=text_message + "\nCurrent page: " + str(self.admins[chat] + 1), chat_id=chat,
+            bot.edit_message_text(text=text_message + "\nCurrent page: " + str(self.pages[chat] + 1), chat_id=chat,
                                   message_id=query.message.message_id, reply_markup=IKM(keyboard))
         elif utils.is_int(query.data):
             k = int(query.data)
-            user = unconf_users[self.admins[chat]][k]
+            user = unconf_users[self.pages[chat]][k]
             text = """
             Check whether all data is correct:\nName: {name}\nAddress: {address}\nPhone: {phone}\nStatus: {status}
             """.format(**user)
@@ -220,14 +220,14 @@ class LibraryBot:
                                   reply_markup=IKM(keyboard))
         elif query.data.split(" ")[0] == 'accept':
             k = int(query.data.split(" ")[1])
-            user_id = unconf_users[self.admins[chat]][k]["id"]
+            user_id = unconf_users[self.pages[chat]][k]["id"]
             self.cntrl.confirm_user(user_id)
             bot.edit_message_text(text="This user was confirmed", chat_id=chat, message_id=query.message.message_id)
             bot.send_message(chat_id=user_id, text="Your application was confirmed",
                              reply_markup=RKM(self.keyboard_dict[self.types[2]], True))
         elif query.data.split(" ")[0] == 'reject':
             k = int(query.data.split(" ")[1])
-            user_id = unconf_users[self.admins[chat]][k]["id"]
+            user_id = unconf_users[self.pages[chat]][k]["id"]
             self.cntrl.delete_user(user_id)
             bot.edit_message_text(text="This user was rejected", chat_id=chat, message_id=query.message.message_id)
             bot.send_message(chat_id=user_id, text="Your application was rejected",
@@ -245,8 +245,8 @@ class LibraryBot:
             bot.send_message(chat_id=chat, text="There are no users")
             return
         patrons = [patrons[i * n:(i + 1) * n] for i in range(len(patrons) // n + 1) if i * n < len(patrons)]
-        if not (chat in self.admins):
-            self.admins[chat] = 0
+        if not (chat in self.pages):
+            self.pages[chat] = 0
         text_message = ("\n" + "-" * 50 + "\n").join(
             ["{}) {} - {}".format(i + 1, user['name'], user["status"]) for i, user in enumerate(patrons[0])])
         keyboard = [[IKB(str(i + 1), callback_data=str(i)) for i in range(len(patrons[0]))]]
@@ -263,26 +263,26 @@ class LibraryBot:
         print(query.data, query.data in ["prev", "next", 'cancel'])
         if (query.data in ["prev", "next", 'cancel']) and (max_page or query.data == 'cancel'):
             if query.data == "next":
-                if self.admins[chat] == max_page:
-                    self.admins[chat] = 0
+                if self.pages[chat] == max_page:
+                    self.pages[chat] = 0
                 else:
-                    self.admins[chat] += 1
+                    self.pages[chat] += 1
             if query.data == "prev":
-                if self.admins[chat] == 0:
-                    self.admins[chat] = max_page
+                if self.pages[chat] == 0:
+                    self.pages[chat] = max_page
                 else:
-                    self.admins[chat] -= 1
+                    self.pages[chat] -= 1
 
             text_message = ("\n" + "-" * 50 + "\n").join(
                 ["{}) {} - {}".format(i + 1, user['name'], user["status"]) for i, user in
-                 enumerate(patrons[self.admins[chat]])])
-            keyboard = [[IKB(str(i + 1), callback_data=str(i)) for i in range(len(patrons[self.admins[chat]]))]]
+                 enumerate(patrons[self.pages[chat]])])
+            keyboard = [[IKB(str(i + 1), callback_data=str(i)) for i in range(len(patrons[self.pages[chat]]))]]
             keyboard += [[IKB("⬅", callback_data='prev'), IKB("➡️", callback_data='next')]]
-            bot.edit_message_text(text=text_message + "\nCurrent page: " + str(self.admins[chat] + 1), chat_id=chat,
+            bot.edit_message_text(text=text_message + "\nCurrent page: " + str(self.pages[chat] + 1), chat_id=chat,
                                   message_id=query.message.message_id, reply_markup=IKM(keyboard))
         elif utils.is_int(query.data):
             k = int(query.data)
-            user = patrons[self.admins[chat]][k]
+            user = patrons[self.pages[chat]][k]
             print(user)
             text = """
             Name: {name}\nAddress: {address}\nPhone: {phone}\nStatus: {status}\n Current book:{current_books}
