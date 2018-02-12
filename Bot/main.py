@@ -27,7 +27,6 @@ class LibraryBot:
         self.types = func_data.lists["user_types"]
         self.is_in_reg = {}
         self.pages = {}
-        self.libr_mat = {}
         self.is_adding = {}
         self.inline_key = {}
 
