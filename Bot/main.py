@@ -260,7 +260,7 @@ class LibraryBot:
         patrons = self.cntrl.get_all_patrons()
         patrons = [patrons[i * n:(i + 1) * n] for i in range(len(patrons) // n + 1)]
         max_page = len(patrons) - 1
-        if (query.data == "prev" or "next" == query.data) and max_page:
+        if (query.data in ["prev", "next", 'cancel']) and max_page:
             if query.data == "next":
                 if self.admins[chat] == max_page:
                     self.admins[chat] = 0
@@ -283,27 +283,12 @@ class LibraryBot:
             k = int(query.data)
             user = patrons[self.admins[chat]][k]
             print(user)
-            # text = """
-            # Check whether all data is correct:\nName: {name}\nAddress: {address}\nPhone: {phone}\nStatus: {status}
-            # """.format(**user)
-            # keyboard = [[IKB("Accept✅", callback_data='accept ' + query.data),
-            #              IKB("Reject️❌", callback_data='reject ' + query.data)]]
-            # bot.edit_message_text(text=text, chat_id=chat, message_id=query.message.message_id,
-            #                       reply_markup=IKM(keyboard))
-        # elif query.data.split(" ")[0] == 'accept':
-        #     k = int(query.data.split(" ")[1])
-        #     user_id = patrons[self.admins[chat]][k]["id"]
-        #     self.cntrl.confirm_user(user_id)
-        #     bot.edit_message_text(text="This user was confirmed", chat_id=chat, message_id=query.message.message_id)
-        #     bot.send_message(chat_id=user_id, text="Your application was confirmed",
-        #                      reply_markup=RKM(self.keyboard_dict[self.types[2]], True))
-        # elif query.data.split(" ")[0] == 'reject':
-        #     k = int(query.data.split(" ")[1])
-        #     user_id = patrons[self.admins[chat]][k]["id"]
-        #     self.cntrl.delete_user(user_id)
-        #     bot.edit_message_text(text="This user was rejected", chat_id=chat, message_id=query.message.message_id)
-        #     bot.send_message(chat_id=user_id, text="Your application was rejected",
-        #                      reply_markup=RKM(self.keyboard_dict[self.types[0]], True))
+            text = """
+            Name: {name}\nAddress: {address}\nPhone: {phone}\nStatus: {status}\n Current book:{current_books}
+            """.format(**user)
+            keyboard = [[IKB("Cancel", callback_data='cancel')]]
+            bot.edit_message_text(text=text, chat_id=chat, message_id=query.message.message_id,
+                                  reply_markup=IKM(keyboard))
 
     def mat_manage(self, bot, update):
         reply_markup = RKM(self.keyboard_dict["mat_management"], True)
