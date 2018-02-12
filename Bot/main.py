@@ -394,7 +394,6 @@ class LibraryBot:
                 else:
                     self.pages[chat][0] -= 1
 
-            print(max_page, self.pages[chat][0])
             text_message = ("\n" + "-" * 50 + "\n").join(
                 ["{}) {} - {}".format(i + 1, doc['title'], doc["authors"]) for i, doc in enumerate(docs[self.pages[chat][0]])])
             keyboard = [[IKB(str(i + 1), callback_data=str(i)) for i in range(len(docs[self.pages[chat][0]]))]]
@@ -403,21 +402,24 @@ class LibraryBot:
                                   message_id=query.message.message_id, reply_markup=IKM(keyboard))
         elif utils.is_int(query.data):
             k = int(query.data)
-            book = lirb_mat[self.pages[chat]][k]
+            book = self.pages[chat][0]
+            text = self.pages[chat][1]
             if text == "Books📖":
-                text = """   """
+                book = self.get_all_books()[book*n + k]
+                text = """Name: {};\nAuthors: {};\nDescription: {};\n Free copy: {};\n 
+                """.format(book.name, book.authors, book.description, book.free_count)
             elif text == "Journal Articles📰":
-                self.libr_mat[chat] = self.cntrl.get_all_articles()
+                text = """Title: {};\nAuthors: {};\nJournal: {};\n Free copy: {};\n Data : {}; 
+                """.format(book.name, book.authors, book.journal_name, book.free_count, book.date)
             elif text == "Audio/Video materials📼":
-                self.libr_mat[chat] = self.cntrl.get_all_media()
+                text = """Title: {};\nAuthors: {};\n Free copy: {};\n; 
+                """.format(book.name, book.authors, book.free_count)
 
-            text = """Name: {}\nAuthors: {}\nFree copy: {}""".format(
-                user)  ## вот тут доделать заменить юзера на книгу и поменять характеристики
             keyboard = [[IKB("Order the book", callback_data='Order ' + query.data),
                          IKB("Cancel", callback_data='Cancel ' + query.data)]]
             bot.edit_message_text(text=text, chat_id=chat, message_id=query.message.message_id,
                                   reply_markup=IKM(keyboard))
-        elif query.data.split(" ")[0] == 'accept':
+        elif query.data.split(" ")[0] == 'Order':
             k = int(query.data.split(" ")[1])
             user_id = unconf_users[self.pages[chat]][k]["id"]
             self.cntrl.confirm_user(user_id)
@@ -431,6 +433,7 @@ class LibraryBot:
             bot.edit_message_text(text="This user was rejected", chat_id=chat, message_id=query.message.message_id)
             bot.send_message(chat_id=user_id, text="Your application was rejected",
                              reply_markup=RKM(self.keyboard_dict[self.types[0]], True))
+
 
     # Cancel the operation
     # params:
