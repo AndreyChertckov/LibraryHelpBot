@@ -244,7 +244,7 @@ class LibraryBot:
         if len(patrons) == 0:
             bot.send_message(chat_id=chat, text="There are no users")
             return
-        patrons = [patrons[i * n:(i + 1) * n] for i in range(len(patrons) // n + 1)]
+        patrons = [patrons[i * n:(i + 1) * n] for i in range(len(patrons) // n + 1) if i * n < len(patrons)]
         if not (chat in self.admins):
             self.admins[chat] = 0
         text_message = ("\n" + "-" * 50 + "\n").join(
@@ -258,9 +258,10 @@ class LibraryBot:
         chat = query.message.chat_id
         n = 3
         patrons = self.cntrl.get_all_patrons()
-        patrons = [patrons[i * n:(i + 1) * n] for i in range(len(patrons) // n + 1)]
+        patrons = [patrons[i * n:(i + 1) * n] for i in range(len(patrons) // n + 1) if i * n < len(patrons)]
         max_page = len(patrons) - 1
-        if (query.data in ["prev", "next", 'cancel']) and max_page:
+        print(query.data, query.data in ["prev", "next", 'cancel'])
+        if (query.data in ["prev", "next", 'cancel']) and (max_page or query.data == 'cancel'):
             if query.data == "next":
                 if self.admins[chat] == max_page:
                     self.admins[chat] = 0
