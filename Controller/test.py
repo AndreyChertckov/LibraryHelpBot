@@ -423,8 +423,8 @@ def test_get_all_books(cntrl):
 	cntrl.add_book(**test_book_2)
 
 	books = cntrl.get_all_books()
-	first_book = test_book_1['title'] == books[0].name
-	second_book = test_book_2['title'] == books[1].name
+	first_book = test_book_1['title'] == books[0]['title']
+	second_book = test_book_2['title'] == books[1]['title']
 
 	if not first_book or not second_book:
 		return 'First book : ' + str(first_book) + ' Second book : ' + str(second_book),False
