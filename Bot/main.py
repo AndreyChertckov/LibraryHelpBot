@@ -336,8 +336,8 @@ class LibraryBot:
                 bot.send_message(chat_id=chat, text="Document has been added",
                                  reply_markup=RKM(self.keyboard_dict["admin"], True))
             elif update.message.text == "Something is incorrect❌":
-                self.is_adding[chat] = [0, {"id": update.message.chat_id}]
-                bot.send_message(chat_id=chat, text="Enter your name", reply_markup=RKR([[]]))
+                self.is_adding[chat] = [0, {}]
+                bot.send_message(chat_id=chat, text="Enter title", reply_markup=RKR([[]]))
 
     # Main menu of library
     # params:
