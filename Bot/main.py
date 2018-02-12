@@ -27,9 +27,10 @@ class LibraryBot:
         self.types = func_data.lists["user_types"]
         self.is_in_reg = {}
         self.pages = {}
+        self.libr_mat = {}
         self.is_adding = {}
         self.inline_key = {}
-
+        self.cho_cat = {}
         self.add_user_handlers()
         self.add_admin_handlers()
         start_handler = CommandHandler('start', self.start)
@@ -47,9 +48,9 @@ class LibraryBot:
         library_handler = MHandler(WordFilter('Library🏤'), self.library)
         cancel_handler = MHandler(WordFilter('Cancel⤵️'), self.cancel)
 
-        book_handler = MHandler(WordFilter('Books📖') & UserFilter(3, True), self.cancel)
-        article_handler = MHandler(WordFilter('Journal Articles📰') & UserFilter(3, True), self.cancel)
-        av_handler = MHandler(WordFilter('Audio/Video materials📼') & UserFilter(3, True), self.cancel)
+        book_handler = MHandler(WordFilter('Books📖') & UserFilter(3, True), self.load_material)
+        article_handler = MHandler(WordFilter('Journal Articles📰') & UserFilter(3, True), self.load_material)
+        av_handler = MHandler(WordFilter('Audio/Video materials📼') & UserFilter(3, True), self.load_material)
 
         self.dispatcher.add_handler(book_handler)
         self.dispatcher.add_handler(article_handler)
@@ -353,7 +354,87 @@ class LibraryBot:
     #  bot -- This object represents a Bot's commands
     #  update -- This object represents an incoming update
     def load_material(self, bot, update):
-        pass
+        chat = update.message.chat_id
+        text = update.message.text
+        self.inline_key[chat] = 'load_material'
+        n = 6
+        self.cho_cat[chat] = text
+        if text == "Books📖":
+            self.libr_mat[chat] = self.cntrl.get_all_books()
+        elif text == "Journal Articles📰":
+            self.libr_mat[chat] = self.cntrl.get_all_articles()
+        elif text == "Audio/Video materials📼":
+            self.libr_mat[chat] = self.cntrl.get_all_media()
+
+        if len(self.libr_mat[chat]) == 0 or self.libr_mat[chat] == None:
+            bot.send_message(chat_id=chat, text="There are no "+text + " to confirm")
+            return
+        self.libr_mat[chat] = [self.libr_mat[chat][i * n:(i + 1) * n] for i in range(len(self.libr_mat[chat]) // n + 1)]
+        if not (chat in self.pages):
+            self.pages[chat] = 0
+        text_message = ("\n" + "-" * 50 + "\n").join(
+            ["/{} , {} , {} , free copy {} ;\n".format(i + 1, mat.name, mat.authors,mat.free_count) for i, mat in enumerate(self.libr_mat[chat][0])])
+        self.libr_mat[chat] = [self.libr_mat[chat][i * n:(i + 1) * n] for i in range(len(self.libr_mat[chat]) // n + 1)]
+        keyboard = [[IKB(str(i + 1), callback_data=str(i)) for i in range(len(self.libr_mat[chat][0]))]]
+        keyboard += [[IKB("⬅", callback_data='prev'), IKB("➡️", callback_data='next')]]
+        update.message.reply_text(text=text_message + "\nCurrent page: " + str(1), reply_markup=IKM(keyboard))
+
+    def libr_con(self, bot, update):
+        query = update.callback_query
+        chat = query.message.chat_id
+        n = 6
+        lirb_mat = self.libr_mat[chat]
+        lirb_mat = [lirb_mat[i * n:(i + 1) * n] for i in range(len(lirb_mat) // n + 1)]
+        max_page = len(lirb_mat) - 1
+        if (query.data == "prev" or "next" == query.data) and max_page:
+            if query.data == "next":
+                if self.pages[chat] == max_page:
+                    self.pages[chat] = 0
+                else:
+                    self.pages[chat] += 1
+            if query.data == "prev":
+                if self.pages[chat] == 0:
+                    self.pages[chat] = max_page
+                else:
+                    self.pages[chat] -= 1
+
+            text_message = ("\n" + "-" * 50 + "\n").join(
+                ["/{} , {} , {} , free copy {} ;\n".format(i + 1, user.name, user.authors,user.free_count) for i, user in
+                 enumerate(lirb_mat[self.pages[chat]])])
+            keyboard = [[IKB(str(i + 1), callback_data=str(i)) for i in range(len(lirb_mat[self.pages[chat]]))]]
+            keyboard += [[IKB("⬅", callback_data='prev'), IKB("➡️", callback_data='next')]]
+            bot.edit_message_text(text=text_message + "\nCurrent page: " + str(self.pages[chat] + 1), chat_id=chat,
+                                  message_id=query.message.message_id, reply_markup=IKM(keyboard))
+        elif utils.is_int(query.data):
+            k = int(query.data)
+            book = lirb_mat[self.pages[chat]][k]
+            if text == "Books📖":
+                text = """   """
+            elif text == "Journal Articles📰":
+                self.libr_mat[chat] = self.cntrl.get_all_articles()
+            elif text == "Audio/Video materials📼":
+                self.libr_mat[chat] = self.cntrl.get_all_media()
+
+            text = """Name: {}\nAuthors: {}\nFree copy: {}""".format(user) ## вот тут доделать заменить юзера на книгу и поменять характеристики
+            keyboard = [[IKB("Order the book", callback_data='Order ' + query.data),
+                         IKB("Cancel", callback_data='Cancel ' + query.data)]]
+            bot.edit_message_text(text=text, chat_id=chat, message_id=query.message.message_id,
+                                  reply_markup=IKM(keyboard))
+        elif query.data.split(" ")[0] == 'accept':
+            k = int(query.data.split(" ")[1])
+            user_id = unconf_users[self.pages[chat]][k]["id"]
+            self.cntrl.confirm_user(user_id)
+            bot.edit_message_text(text="This user was confirmed", chat_id=chat, message_id=query.message.message_id)
+            bot.send_message(chat_id=user_id, text="Your application was confirmed",
+                             reply_markup=RKM(self.keyboard_dict[self.types[2]], True))
+        elif query.data.split(" ")[0] == 'reject':
+            k = int(query.data.split(" ")[1])
+            user_id = unconf_users[self.pages[chat]][k]["id"]
+            self.cntrl.delete_user(user_id)
+            bot.edit_message_text(text="This user was rejected", chat_id=chat, message_id=query.message.message_id)
+            bot.send_message(chat_id=user_id, text="Your application was rejected",
+                             reply_markup=RKM(self.keyboard_dict[self.types[0]], True))
+
 
     # Cancel the operation
     # params:
