@@ -286,7 +286,6 @@ class LibraryBot:
         elif utils.is_int(query.data):
             k = int(query.data)
             user = patrons[self.pages[chat]][k]
-            print(user)
             text = """
             Name: {name}\nAddress: {address}\nPhone: {phone}\nStatus: {status}\n Current book:{current_books}
             """.format(**user)
@@ -381,7 +380,6 @@ class LibraryBot:
         docs = self.cntrl.get_all_doctype(doc_type)
         docs = [docs[i * n:(i + 1) * n] for i in range(len(docs) // n + 1) if i * n < len(docs)]
         max_page = len(docs) - 1
-        print(max_page, self.pages[chat][0])
         if (query.data in ["prev", "next", 'cancel']) and (max_page or query.data == 'cancel'):
             if query.data == "next":
                 if self.pages[chat][0] == max_page:
@@ -402,37 +400,40 @@ class LibraryBot:
                                   message_id=query.message.message_id, reply_markup=IKM(keyboard))
         elif utils.is_int(query.data):
             k = int(query.data)
-            book = self.pages[chat][0]
-            text = self.pages[chat][1]
-            if text == "Books📖":
-                book = self.get_all_books()[book*n + k]
-                text = """Name: {};\nAuthors: {};\nDescription: {};\n Free copy: {};\n 
-                """.format(book.name, book.authors, book.description, book.free_count)
-            elif text == "Journal Articles📰":
-                text = """Title: {};\nAuthors: {};\nJournal: {};\n Free copy: {};\n Data : {}; 
-                """.format(book.name, book.authors, book.journal_name, book.free_count, book.date)
-            elif text == "Audio/Video materials📼":
-                text = """Title: {};\nAuthors: {};\n Free copy: {};\n; 
-                """.format(book.name, book.authors, book.free_count)
+            doc = docs[self.pages[chat][0]][k]
+            if doc_type == "book":
+                text = """
+                Title: {title}\nAuthors: {authors}\nDescription: {overview}\nFree copy: {free_count}
+                """.format(**doc)
+            elif doc_type == "article":
+                text = """
+                Title: {title}\nAuthors: {authors}\nJournal: {journal}\nIssue: {issue}\nDate: {date}\nFree copy: {free_count}
+                """.format(**doc)
+            elif doc_type == "media":
+                doc_type = """Title: {title};\nAuthors: {authors};\n Free copy: {free_copy};\n;
+                """.format(**doc)
+            if self.cntrl.user_type(chat) == 2:
+                keyboard = [[IKB("Order the book", callback_data='Order ' + query.data),
+                            IKB("Cancel", callback_data='cancel')]]
+            else:
+                keyboard = [[IKB("Cancel", callback_data='cancel')]]
 
-            keyboard = [[IKB("Order the book", callback_data='Order ' + query.data),
-                         IKB("Cancel", callback_data='Cancel ' + query.data)]]
             bot.edit_message_text(text=text, chat_id=chat, message_id=query.message.message_id,
                                   reply_markup=IKM(keyboard))
-        elif query.data.split(" ")[0] == 'Order':
-            k = int(query.data.split(" ")[1])
-            user_id = unconf_users[self.pages[chat]][k]["id"]
-            self.cntrl.confirm_user(user_id)
-            bot.edit_message_text(text="This user was confirmed", chat_id=chat, message_id=query.message.message_id)
-            bot.send_message(chat_id=user_id, text="Your application was confirmed",
-                             reply_markup=RKM(self.keyboard_dict[self.types[2]], True))
-        elif query.data.split(" ")[0] == 'reject':
-            k = int(query.data.split(" ")[1])
-            user_id = unconf_users[self.pages[chat]][k]["id"]
-            self.cntrl.delete_user(user_id)
-            bot.edit_message_text(text="This user was rejected", chat_id=chat, message_id=query.message.message_id)
-            bot.send_message(chat_id=user_id, text="Your application was rejected",
-                             reply_markup=RKM(self.keyboard_dict[self.types[0]], True))
+        # elif query.data.split(" ")[0] == 'Order':
+        #     k = int(query.data.split(" ")[1])
+        #     user_id = unconf_users[self.pages[chat]][k]["id"]
+        #     self.cntrl.confirm_user(user_id)
+        #     bot.edit_message_text(text="This user was confirmed", chat_id=chat, message_id=query.message.message_id)
+        #     bot.send_message(chat_id=user_id, text="Your application was confirmed",
+        #                      reply_markup=RKM(self.keyboard_dict[self.types[2]], True))
+        # elif query.data.split(" ")[0] == 'reject':
+        #     k = int(query.data.split(" ")[1])
+        #     user_id = unconf_users[self.pages[chat]][k]["id"]
+        #     self.cntrl.delete_user(user_id)
+        #     bot.edit_message_text(text="This user was rejected", chat_id=chat, message_id=query.message.message_id)
+        #     bot.send_message(chat_id=user_id, text="Your application was rejected",
+        #                      reply_markup=RKM(self.keyboard_dict[self.types[0]], True))
 
 
     # Cancel the operation
