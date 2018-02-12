@@ -185,7 +185,6 @@ class LibraryBot:
     def conf_user(self, bot, update):
         query = update.callback_query
         chat = query.message.chat_id
-        print(query)
         n = 3
         unconf_users = self.cntrl.get_all_unconfirmed()
         unconf_users = [unconf_users[i * n:(i + 1) * n] for i in range(len(unconf_users) // n + 1)]
