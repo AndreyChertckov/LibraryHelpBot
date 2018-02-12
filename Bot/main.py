@@ -160,6 +160,9 @@ class LibraryBot:
             self.conf_user(bot, update)
         elif key == 'show_user':
             self.show_user(bot, update)
+        elif key == 'load_material':
+            self.libr_con(bot, update)
+
 
     def user_manage(self, bot, update):
         keyboard = self.keyboard_dict["user_management"]
@@ -353,18 +356,17 @@ class LibraryBot:
     #  update -- This object represents an incoming update
     def load_material(self, bot, update):
         chat = update.message.chat_id
-        text = update.message.text
+        doc_type = func_data.analog[update.message.text]
         self.inline_key[chat] = 'load_material'
-        n = 6
-        docs = self.cntrl.get_all_doctype(func_data.analog[text])
-        self.pages[chat] = [0, func_data.analog[text]]
+        n = 2
+        docs = self.cntrl.get_all_doctype(doc_type)
+        self.pages[chat] = [0, doc_type]
 
         if len(docs) == 0:
-            bot.send_message(chat_id=chat, text="There are no " + text + " in the library")
+            bot.send_message(chat_id=chat, text="There are no " + doc_type + " in the library")
             return
 
         docs = [docs[i * n:(i + 1) * n] for i in range(len(docs) // n + 1) if i * n < len(docs)]
-        print(docs)
         text_message = ("\n" + "-" * 50 + "\n").join(
             ["{}) {} - {}".format(i + 1, doc['title'], doc["authors"]) for i, doc in enumerate(docs[0])])
         keyboard = [[IKB(str(i + 1), callback_data=str(i)) for i in range(len(docs[0]))]]
@@ -374,29 +376,30 @@ class LibraryBot:
     def libr_con(self, bot, update):
         query = update.callback_query
         chat = query.message.chat_id
-        n = 6
-        lirb_mat = self.libr_mat[chat]
-        lirb_mat = [lirb_mat[i * n:(i + 1) * n] for i in range(len(lirb_mat) // n + 1)]
-        max_page = len(lirb_mat) - 1
-        if (query.data == "prev" or "next" == query.data) and max_page:
+        doc_type = self.pages[chat][1]
+        n = 2
+        docs = self.cntrl.get_all_doctype(doc_type)
+        docs = [docs[i * n:(i + 1) * n] for i in range(len(docs) // n + 1) if i * n < len(docs)]
+        max_page = len(docs) - 1
+        print(max_page, self.pages[chat][0])
+        if (query.data in ["prev", "next", 'cancel']) and (max_page or query.data == 'cancel'):
             if query.data == "next":
-                if self.pages[chat] == max_page:
-                    self.pages[chat] = 0
+                if self.pages[chat][0] == max_page:
+                    self.pages[chat][0] = 0
                 else:
-                    self.pages[chat] += 1
+                    self.pages[chat][0] += 1
             if query.data == "prev":
-                if self.pages[chat] == 0:
-                    self.pages[chat] = max_page
+                if self.pages[chat][0] == 0:
+                    self.pages[chat][0] = max_page
                 else:
-                    self.pages[chat] -= 1
+                    self.pages[chat][0] -= 1
 
+            print(max_page, self.pages[chat][0])
             text_message = ("\n" + "-" * 50 + "\n").join(
-                ["/{} , {} , {} , free copy {} ;\n".format(i + 1, user.name, user.authors, user.free_count) for i, user
-                 in
-                 enumerate(lirb_mat[self.pages[chat]])])
-            keyboard = [[IKB(str(i + 1), callback_data=str(i)) for i in range(len(lirb_mat[self.pages[chat]]))]]
+                ["{}) {} - {}".format(i + 1, doc['title'], doc["authors"]) for i, doc in enumerate(docs[self.pages[chat][0]])])
+            keyboard = [[IKB(str(i + 1), callback_data=str(i)) for i in range(len(docs[self.pages[chat][0]]))]]
             keyboard += [[IKB("⬅", callback_data='prev'), IKB("➡️", callback_data='next')]]
-            bot.edit_message_text(text=text_message + "\nCurrent page: " + str(self.pages[chat] + 1), chat_id=chat,
+            bot.edit_message_text(text=text_message + "\nCurrent page: " + str(self.pages[chat][0] + 1), chat_id=chat,
                                   message_id=query.message.message_id, reply_markup=IKM(keyboard))
         elif utils.is_int(query.data):
             k = int(query.data)
