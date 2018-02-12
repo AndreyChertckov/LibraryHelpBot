@@ -28,6 +28,7 @@ class LibraryBot:
         self.is_in_reg = {}
         self.admins = {}
         self.is_adding = {}
+        self.inline_key = {}
 
         self.add_user_handlers()
         self.add_admin_handlers()
@@ -69,7 +70,8 @@ class LibraryBot:
 
         self.dispatcher.add_handler(
             MHandler(WordFilter("Material management📚") & UserFilter(3), self.mat_manage))
-        self.dispatcher.add_handler(CallbackQueryHandler(self.conf_user))
+        self.dispatcher.add_handler(CallbackQueryHandler(self.call_back))
+        # self.dispatcher.add_handler(CallbackQueryHandler(self.show_user))
 
         doc_type = lambda key: lambda bot, update: self.start_adding(bot, update, key)
         self.dispatcher.add_handler(MHandler(WordFilter('Books📖') & UserFilter(3), doc_type("book")))
@@ -152,12 +154,20 @@ class LibraryBot:
                 self.is_in_reg[chat] = [0, {"id": update.message.chat_id}]
                 bot.send_message(chat_id=chat, text="Enter your name", reply_markup=RKR([[]]))
 
+    def call_back(self, bot, update):
+        key = self.inline_key[update.callback_query.message.chat_id]
+        if key == 'conf_user':
+            self.conf_user(bot, update)
+        elif key == 'show_user':
+            self.show_user(bot, update)
+
     def user_manage(self, bot, update):
         keyboard = self.keyboard_dict["user_management"]
         bot.send_message(chat_id=update.message.chat_id, text="Choose option", reply_markup=RKM(keyboard, True))
 
     def confirm(self, bot, update):
         chat = update.message.chat_id
+        self.inline_key[chat] = 'conf_user'
         n = 3
         unconf_users = self.cntrl.get_all_unconfirmed()
         if len(unconf_users) == 0:
@@ -169,12 +179,13 @@ class LibraryBot:
         text_message = ("\n" + "-" * 50 + "\n").join(
             ["{}) {} - {}".format(i + 1, user['name'], user["status"]) for i, user in enumerate(unconf_users[0])])
         keyboard = [[IKB(str(i + 1), callback_data=str(i)) for i in range(len(unconf_users[0]))]]
-        keyboard += [[IKB("⬅", callback_data='next'), IKB("➡️", callback_data='next')]]
+        keyboard += [[IKB("⬅", callback_data='prev'), IKB("➡️", callback_data='next')]]
         update.message.reply_text(text=text_message + "\nCurrent page: " + str(1), reply_markup=IKM(keyboard))
 
     def conf_user(self, bot, update):
         query = update.callback_query
         chat = query.message.chat_id
+        print(query)
         n = 3
         unconf_users = self.cntrl.get_all_unconfirmed()
         unconf_users = [unconf_users[i * n:(i + 1) * n] for i in range(len(unconf_users) // n + 1)]
@@ -228,6 +239,7 @@ class LibraryBot:
 
     def show_users(self, bot, update):
         chat = update.message.chat_id
+        self.inline_key[chat] = 'show_user'
         n = 3
         patrons = self.cntrl.get_all_patrons()
         if len(patrons) == 0:
@@ -239,8 +251,60 @@ class LibraryBot:
         text_message = ("\n" + "-" * 50 + "\n").join(
             ["{}) {} - {}".format(i + 1, user['name'], user["status"]) for i, user in enumerate(patrons[0])])
         keyboard = [[IKB(str(i + 1), callback_data=str(i)) for i in range(len(patrons[0]))]]
-        keyboard += [[IKB("⬅", callback_data='next'), IKB("➡️", callback_data='next')]]
+        keyboard += [[IKB("⬅", callback_data='prev'), IKB("➡️", callback_data='next')]]
         update.message.reply_text(text=text_message + "\nCurrent page: " + str(1), reply_markup=IKM(keyboard))
+
+    def show_user(self, bot, update):
+        query = update.callback_query
+        chat = query.message.chat_id
+        n = 3
+        patrons = self.cntrl.get_all_patrons()
+        patrons = [patrons[i * n:(i + 1) * n] for i in range(len(patrons) // n + 1)]
+        max_page = len(patrons) - 1
+        if (query.data == "prev" or "next" == query.data) and max_page:
+            if query.data == "next":
+                if self.admins[chat] == max_page:
+                    self.admins[chat] = 0
+                else:
+                    self.admins[chat] += 1
+            if query.data == "prev":
+                if self.admins[chat] == 0:
+                    self.admins[chat] = max_page
+                else:
+                    self.admins[chat] -= 1
+
+            text_message = ("\n" + "-" * 50 + "\n").join(
+                ["{}) {} - {}".format(i + 1, user['name'], user["status"]) for i, user in
+                 enumerate(patrons[self.admins[chat]])])
+            keyboard = [[IKB(str(i + 1), callback_data=str(i)) for i in range(len(patrons[self.admins[chat]]))]]
+            keyboard += [[IKB("⬅", callback_data='prev'), IKB("➡️", callback_data='next')]]
+            bot.edit_message_text(text=text_message + "\nCurrent page: " + str(self.admins[chat] + 1), chat_id=chat,
+                                  message_id=query.message.message_id, reply_markup=IKM(keyboard))
+        elif utils.is_int(query.data):
+            k = int(query.data)
+            user = patrons[self.admins[chat]][k]
+            print(user)
+            # text = """
+            # Check whether all data is correct:\nName: {name}\nAddress: {address}\nPhone: {phone}\nStatus: {status}
+            # """.format(**user)
+            # keyboard = [[IKB("Accept✅", callback_data='accept ' + query.data),
+            #              IKB("Reject️❌", callback_data='reject ' + query.data)]]
+            # bot.edit_message_text(text=text, chat_id=chat, message_id=query.message.message_id,
+            #                       reply_markup=IKM(keyboard))
+        # elif query.data.split(" ")[0] == 'accept':
+        #     k = int(query.data.split(" ")[1])
+        #     user_id = patrons[self.admins[chat]][k]["id"]
+        #     self.cntrl.confirm_user(user_id)
+        #     bot.edit_message_text(text="This user was confirmed", chat_id=chat, message_id=query.message.message_id)
+        #     bot.send_message(chat_id=user_id, text="Your application was confirmed",
+        #                      reply_markup=RKM(self.keyboard_dict[self.types[2]], True))
+        # elif query.data.split(" ")[0] == 'reject':
+        #     k = int(query.data.split(" ")[1])
+        #     user_id = patrons[self.admins[chat]][k]["id"]
+        #     self.cntrl.delete_user(user_id)
+        #     bot.edit_message_text(text="This user was rejected", chat_id=chat, message_id=query.message.message_id)
+        #     bot.send_message(chat_id=user_id, text="Your application was rejected",
+        #                      reply_markup=RKM(self.keyboard_dict[self.types[0]], True))
 
     def mat_manage(self, bot, update):
         reply_markup = RKM(self.keyboard_dict["mat_management"], True)
