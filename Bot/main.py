@@ -28,7 +28,7 @@ class LibraryBot:
         self.is_in_reg = {}
         self.admins = {}
         self.is_adding = {}
-
+        self.flag = False
         self.add_user_handlers()
         self.add_admin_handlers()
         start_handler = CommandHandler('start', self.start)
@@ -44,11 +44,12 @@ class LibraryBot:
         reg_step_handler = MHandler(StateFilter(self.is_in_reg) & Filters.text, self.reg_steps)
         reg_admin_handler = CommandHandler('get_admin', self.reg_admin, filters=UserFilter(2), pass_args=True)
         library_handler = MHandler(WordFilter('Library🏤'), self.library)
+        libr_pages = MHandler((WordFilter('prev') | WordFilter('next')) & BooleanFilter(self.flag),self.scrollingPages)
         cancel_handler = MHandler(WordFilter('Cancel⤵️'), self.cancel)
 
-        book_handler = MHandler(WordFilter('Books📖') & UserFilter(3, True), self.cancel)
-        article_handler = MHandler(WordFilter('Journal Articles📰') & UserFilter(3, True), self.cancel)
-        av_handler = MHandler(WordFilter('Audio/Video materials📼') & UserFilter(3, True), self.cancel)
+        book_handler = MHandler(WordFilter('Books📖') & UserFilter(3, True), self.load_material)
+        article_handler = MHandler(WordFilter('Journal Articles📰') & UserFilter(3, True), self.load_material)
+        av_handler = MHandler(WordFilter('Audio/Video materials📼') & UserFilter(3, True), self.load_material)
 
         self.dispatcher.add_handler(book_handler)
         self.dispatcher.add_handler(article_handler)
@@ -304,7 +305,38 @@ class LibraryBot:
     #  bot -- This object represents a Bot's commands
     #  update -- This object represents an incoming update
     def load_material(self, bot, update):
+        self.flag = "True"
+        self.pages = None
+        text = update.message.text
+        forma = "/{} , {} , {} , free copy {} ;\n".format
+        if text == "Books📖":
+            self.pages = self.cntrl.get_all_books()
+        elif text == "Journal Articles📰":
+            self.pages = self.cntrl.get_all_articles()
+        elif text == "Audio/Video materials📼":
+            self.pages = self.cntrl.get_all_media()
+        else:
+            text = None
+            bot.send_message(chat_id=update.message.chat_id, text="Incorrect data.", reply_markup= None)
+            self.cancel()
+        if pages ==  None or len(pages) == 0:
+            bot.send_message(chat_id=update.message.chat_id, text="Library have not " + text[:len(text)-1] + " now.", reply_markup= None)
+            self.cancel()
+
+        out_text1 = "Choose " + text[:len(text)-2] + ",using buttons:"
+        out_text = []
+        out_buttons = []
+        for mat in pages:
+            out_text += [forma(mat.id,mat.name,mat.authors,mat.free_count)]
+
+        keyboard = [[IKB(str(i + 1), callback_data=str(pages[i].id)) for i in range(min(6,len(pages)))]]
+        keyboard += [[IKB("⬅", callback_data='prev'), IKB("➡️", callback_data='next'), IKB("Cancel", callback_data='Cancel⤵️')]]
+        update.message.reply_text(text=out_text1 , reply_markup=IKM(keyboard))
+
+            #Редактировать текст сообщения по ходу выбора книги.и тд
+    def scrollingPages(self,bot,update):
         pass
+
 
     # Cancel the operation
     # params:
@@ -313,7 +345,7 @@ class LibraryBot:
     def cancel(self, bot, update):
         user_type = self.cntrl.user_type(update.message.chat_id)
         keyboard = self.keyboard_dict[self.types[user_type]]
-
+        self.flag = False
         bot.send_message(chat_id=update.message.chat_id, text="Main menu", reply_markup=RKM(keyboard, True))
 
     def error(self, bot, update, error):
