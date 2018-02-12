@@ -55,18 +55,31 @@ class Controller:
     # Return all books from database
     def get_all_books(self):
         rows = self.BDmanager.select_all("books")
-        return [dict(zip(['id','title','authors','overview','count','free_count','price','best_seller','keywords'],list(book))) for book in
+        return [dict(
+            zip(['id', 'title', 'authors', 'overview', 'count', 'free_count', 'price', 'best_seller', 'keywords'],
+                list(book))) for book in
                 rows]
 
     # Return all articles from database
     def get_all_articles(self):
         rows = self.BDmanager.select_all("articles")
-        return [dict(zip(['id','title','authors','journal','count','free_count','price','keywords','issue','editors','date'],list(article))) for article in rows]
+        return [dict(zip(
+            ['id', 'title', 'authors', 'journal', 'count', 'free_count', 'price', 'keywords', 'issue', 'editors',
+             'date'], list(article))) for article in rows]
 
     # Return all media from database
     def get_all_media(self):
         rows = self.BDmanager.select_all("media")
-        return [dict(zip(['id','title','authors','type','count','free_count','price','keywords'],list(media))) for media in rows]
+        return [dict(zip(['id', 'title', 'authors', 'type', 'count', 'free_count', 'price', 'keywords'], list(media)))
+                for media in rows]
+
+    def get_all_doctype(self, doc_type):
+        if doc_type == 'book':
+            return self.get_all_books()
+        elif doc_type == 'article':
+            return self.get_all_articles()
+        elif doc_type == 'media':
+            return self.get_all_media()
 
     # Return true if chat with user exist, false if not
     # param : user_id - id of user
@@ -102,7 +115,7 @@ class Controller:
     # or {id,name,address,phone,history,current_books,status},
     # or false if user doesn`t existе
 
-    #Можно вынести user['id'] = user_bd[0] и тому подобное за if и кол-во строк уменьшится
+    # Можно вынести user['id'] = user_bd[0] и тому подобное за if и кол-во строк уменьшится
     def get_user(self, user_id):
         user = {}
         if self.BDmanager.select_label('patrons', user_id):
@@ -222,9 +235,9 @@ class Controller:
     def add_media(self, title, authors, keywords, price):
         self.BDmanager.add_media(BaseDoc(0, authors, title, 0, 0, price, 'MEDIA', keywords))
 
-    def add_article(self, title, authors, journal, issue, editors, date, keywords, price,count):
+    def add_article(self, title, authors, journal, issue, editors, date, keywords, price, count):
         self.BDmanager.add_article(
-            JournalArticle(0, title, authors, journal,count,0,price, keywords, issue, editors, date))
+            JournalArticle(0, title, authors, journal, count, 0, price, keywords, issue, editors, date))
         # self.BDmanager.add_article(JournalArticle(0,title,authors,journal,editors,))
         pass
 

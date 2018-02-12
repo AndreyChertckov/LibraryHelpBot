@@ -30,7 +30,7 @@ class LibraryBot:
         self.libr_mat = {}
         self.is_adding = {}
         self.inline_key = {}
-        self.cho_cat = {}
+
         self.add_user_handlers()
         self.add_admin_handlers()
         start_handler = CommandHandler('start', self.start)
@@ -345,7 +345,6 @@ class LibraryBot:
     #  bot -- This object represents a Bot's commands
     #  update -- This object represents an incoming update
     def library(self, bot, update):
-
         bot.send_message(chat_id=update.message.chat_id, text="Choose type of material",
                          reply_markup=RKM(self.keyboard_dict["lib_main"], True))
 
@@ -358,24 +357,18 @@ class LibraryBot:
         text = update.message.text
         self.inline_key[chat] = 'load_material'
         n = 6
-        self.cho_cat[chat] = text
-        if text == "Books📖":
-            self.libr_mat[chat] = self.cntrl.get_all_books()
-        elif text == "Journal Articles📰":
-            self.libr_mat[chat] = self.cntrl.get_all_articles()
-        elif text == "Audio/Video materials📼":
-            self.libr_mat[chat] = self.cntrl.get_all_media()
+        docs = self.cntrl.get_all_doctype(func_data.analog[text])
+        self.pages[chat] = [0, func_data.analog[text]]
 
-        if len(self.libr_mat[chat]) == 0 or self.libr_mat[chat] == None:
-            bot.send_message(chat_id=chat, text="There are no "+text + " to confirm")
+        if len(docs) == 0:
+            bot.send_message(chat_id=chat, text="There are no " + text + " in the library")
             return
-        self.libr_mat[chat] = [self.libr_mat[chat][i * n:(i + 1) * n] for i in range(len(self.libr_mat[chat]) // n + 1)]
-        if not (chat in self.pages):
-            self.pages[chat] = 0
+
+        docs = [docs[i * n:(i + 1) * n] for i in range(len(docs) // n + 1) if i * n < len(docs)]
+        print(docs)
         text_message = ("\n" + "-" * 50 + "\n").join(
-            ["/{} , {} , {} , free copy {} ;\n".format(i + 1, mat.name, mat.authors,mat.free_count) for i, mat in enumerate(self.libr_mat[chat][0])])
-        self.libr_mat[chat] = [self.libr_mat[chat][i * n:(i + 1) * n] for i in range(len(self.libr_mat[chat]) // n + 1)]
-        keyboard = [[IKB(str(i + 1), callback_data=str(i)) for i in range(len(self.libr_mat[chat][0]))]]
+            ["{}) {} - {}".format(i + 1, doc['title'], doc["authors"]) for i, doc in enumerate(docs[0])])
+        keyboard = [[IKB(str(i + 1), callback_data=str(i)) for i in range(len(docs[0]))]]
         keyboard += [[IKB("⬅", callback_data='prev'), IKB("➡️", callback_data='next')]]
         update.message.reply_text(text=text_message + "\nCurrent page: " + str(1), reply_markup=IKM(keyboard))
 
@@ -399,7 +392,8 @@ class LibraryBot:
                     self.pages[chat] -= 1
 
             text_message = ("\n" + "-" * 50 + "\n").join(
-                ["/{} , {} , {} , free copy {} ;\n".format(i + 1, user.name, user.authors,user.free_count) for i, user in
+                ["/{} , {} , {} , free copy {} ;\n".format(i + 1, user.name, user.authors, user.free_count) for i, user
+                 in
                  enumerate(lirb_mat[self.pages[chat]])])
             keyboard = [[IKB(str(i + 1), callback_data=str(i)) for i in range(len(lirb_mat[self.pages[chat]]))]]
             keyboard += [[IKB("⬅", callback_data='prev'), IKB("➡️", callback_data='next')]]
@@ -415,7 +409,8 @@ class LibraryBot:
             elif text == "Audio/Video materials📼":
                 self.libr_mat[chat] = self.cntrl.get_all_media()
 
-            text = """Name: {}\nAuthors: {}\nFree copy: {}""".format(user) ## вот тут доделать заменить юзера на книгу и поменять характеристики
+            text = """Name: {}\nAuthors: {}\nFree copy: {}""".format(
+                user)  ## вот тут доделать заменить юзера на книгу и поменять характеристики
             keyboard = [[IKB("Order the book", callback_data='Order ' + query.data),
                          IKB("Cancel", callback_data='Cancel ' + query.data)]]
             bot.edit_message_text(text=text, chat_id=chat, message_id=query.message.message_id,
@@ -434,7 +429,6 @@ class LibraryBot:
             bot.edit_message_text(text="This user was rejected", chat_id=chat, message_id=query.message.message_id)
             bot.send_message(chat_id=user_id, text="Your application was rejected",
                              reply_markup=RKM(self.keyboard_dict[self.types[0]], True))
-
 
     # Cancel the operation
     # params:

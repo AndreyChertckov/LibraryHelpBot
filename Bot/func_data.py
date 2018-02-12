@@ -79,3 +79,9 @@ lists = {
     "article_bd": ['title', 'authors', 'journal', 'issue', 'editors', 'date', 'keywords', 'price', 'count'],
     "media_bd": ['title', 'authors', 'keywords', 'price', 'count'],
 }
+
+analog = {
+    'Books📖': 'book',
+    'Journal Articles📰': 'article',
+    "Audio/Video materials📼": 'media'
+}
