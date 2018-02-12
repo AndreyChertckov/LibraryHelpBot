@@ -58,7 +58,7 @@ class Controller:
         return [dict(
             zip(['id', 'title', 'authors', 'overview', 'count', 'free_count', 'price', 'best_seller', 'keywords'],
                 list(book))) for book in
-                rows]
+            rows]
 
     # Return all articles from database
     def get_all_articles(self):
