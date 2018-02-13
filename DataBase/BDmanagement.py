@@ -9,10 +9,10 @@ from sqlite3 import Error
 # ---patrons
 # ---librarians
 # ---chats - table containing chat id and type of the users
-# ---articles
+# ---article
 # ---media
 # ---orders - table for keeping order history
-# ---books
+# ---book
 # ---unconfirmed - table containing new unconfirmed users
 
 class BDManagement:
@@ -82,12 +82,12 @@ class BDManagement:
     #  ---newDoc -  'Document' Object
 
     def add_document(self, newDoc):
-        sql = """INSERT INTO books(id,name,author,description,count,free_count,price,best_seller,keywords)
+        sql = """INSERT INTO book(id,name,author,description,count,free_count,price,best_seller,keywords)
             VALUES (?,?,?,?,?,?,?,?,?)"""
 
         cur = self.__create_connection(self.file).cursor()
         cur.execute(sql,
-                    (self.get_max_id("books") + 1, newDoc.name, newDoc.authors, newDoc.description, newDoc.count,
+                    (self.get_max_id("book") + 1, newDoc.name, newDoc.authors, newDoc.description, newDoc.count,
                      newDoc.free_count,
                      newDoc.price,newDoc.best_seller,newDoc.keywords))
 
@@ -108,11 +108,11 @@ class BDManagement:
     # --- newArticle - 'JournalArticle' object
 
     def add_article(self, newArticle):
-        sql = """INSERT INTO articles(id,name,authors,journal_name,count,free_count,price,keywords,issue,editor,date,best_seller)
+        sql = """INSERT INTO article(id,name,authors,journal_name,count,free_count,price,keywords,issue,editor,date,best_seller)
         VALUES(?,?,?,?,?,?,?,?,?,?,?,?)"""
         cur = self.__create_connection(self.file).cursor()  # cursor()
 
-        cur.execute(sql, (self.get_max_id("articles") + 1, newArticle.name, newArticle.authors, newArticle.journal_name,
+        cur.execute(sql, (self.get_max_id("article") + 1, newArticle.name, newArticle.authors, newArticle.journal_name,
                           newArticle.count, newArticle.free_count, newArticle.price,newArticle.keywords,newArticle.issue,newArticle.editor,newArticle.date,newArticle.best_seller))
 
     # Add new 'patron' to DB
@@ -203,7 +203,7 @@ class BDManagement:
                   ); """);
 
         self.__create_table("""
-              CREATE TABLE IF NOT EXISTS books(
+              CREATE TABLE IF NOT EXISTS book(
               id integer PRIMARY KEY,
               name text NOT NULL,
               author text NOT NULL,
@@ -214,7 +214,7 @@ class BDManagement:
              best_seller integer,
              keywords text);
         """)
-        self.__create_table("""CREATE TABLE IF NOT EXISTS articles(
+        self.__create_table("""CREATE TABLE IF NOT EXISTS article(
             id integer PRIMARY KEY,
             name text NOT NULL,
             authors text,
