@@ -4,3 +4,5 @@ __pycache__
 key.txt
 experimental.py
 configs.py
+.vscode
+*.pyc
