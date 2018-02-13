@@ -21,7 +21,7 @@ def first_test(cntrl):
 	cntrl.add_book(**test_book)
 	book_id = cntrl.BDmanager.get_by('name','books',test_book['title'])[0][0]
 	
-	cntrl.check_out_book(test_user['id'],book_id)
+	cntrl.check_out_doc(test_user['id'],book_id)
 	
 	user_db = cntrl.get_user(test_user['id'])
 	book_db_t = list(cntrl.BDmanager.get_by('name','books',test_book['title'])[0])
@@ -50,7 +50,7 @@ def second_test(cntrl):
 	id_book_A = 1
 	test_user = {'id':1,'name':'test','address':'test','status':'Student','phone':'987', 'history':[],'current_books':[]}
 	cntrl.BDmanager.add_patron(Patron(**test_user))
-	can_get_book = cntrl.check_out_book(test_user['id'],id_book_A)
+	can_get_book = cntrl.check_out_doc(test_user['id'],id_book_A)
 	
 	cntrl.BDmanager.clear_table('books')
 	cntrl.BDmanager.clear_table('patrons')
@@ -75,7 +75,7 @@ def third_test(cntrl):
 	cntrl.add_book(**test_book)
 	book_id = cntrl.BDmanager.get_by('name','books',test_book['title'])[0][0]
 	
-	cntrl.check_out_book(test_user['id'],book_id)
+	cntrl.check_out_doc(test_user['id'],book_id)
 	
 	user_db = cntrl.get_user(test_user['id'])
 	book_db_t = list(cntrl.BDmanager.get_by('name','books',test_book['title'])[0])
@@ -113,7 +113,7 @@ def fourth_test(cntrl):
 	cntrl.add_book(**test_book)
 	book_id = cntrl.BDmanager.get_by('name','books',test_book['title'])[0][0]
 	
-	cntrl.check_out_book(test_user['id'],book_id)
+	cntrl.check_out_doc(test_user['id'],book_id)
 	
 	user_db = cntrl.get_user(test_user['id'])
 	book_db_t = list(cntrl.BDmanager.get_by('name','books',test_book['title'])[0])
@@ -157,9 +157,9 @@ def fifth_test(cntrl):
 
 	book_id = cntrl.BDmanager.get_by('name','books',test_book['title'])[0][0]
 	
-	is_first_user_check_out = cntrl.check_out_book(test_user_1['id'],book_id)
-	is_second_user_check_out = cntrl.check_out_book(test_user_3['id'],book_id)
-	is_third_user_check_out = cntrl.check_out_book(test_user_2['id'],book_id)
+	is_first_user_check_out = cntrl.check_out_doc(test_user_1['id'],book_id)
+	is_second_user_check_out = cntrl.check_out_doc(test_user_3['id'],book_id)
+	is_third_user_check_out = cntrl.check_out_doc(test_user_2['id'],book_id)
 
 	cntrl.BDmanager.clear_table('books')
 	cntrl.BDmanager.clear_table('patrons')
@@ -186,8 +186,8 @@ def sixth_test(cntrl):
 	cntrl.add_book(**test_book)
 	book_id = cntrl.BDmanager.get_by('name','books',test_book['title'])[0][0]
 	
-	first_copy = cntrl.check_out_book(test_user['id'],book_id)
-	second_copy = cntrl.check_out_book(test_user['id'],book_id)
+	first_copy = cntrl.check_out_doc(test_user['id'],book_id)
+	second_copy = cntrl.check_out_doc(test_user['id'],book_id)
 
 	cntrl.BDmanager.clear_table('books')
 	cntrl.BDmanager.clear_table('patrons')
@@ -217,8 +217,8 @@ def seventh_test(cntrl):
 
 	book_id = cntrl.BDmanager.get_by('name','books',test_book['title'])[0][0]
 	
-	is_first_user_check_out = cntrl.check_out_book(test_user_1['id'],book_id)
-	is_second_user_check_out = cntrl.check_out_book(test_user_2['id'],book_id)
+	is_first_user_check_out = cntrl.check_out_doc(test_user_1['id'],book_id)
+	is_second_user_check_out = cntrl.check_out_doc(test_user_2['id'],book_id)
 
 	cntrl.BDmanager.clear_table('books')
 	cntrl.BDmanager.clear_table('patrons')
@@ -244,7 +244,7 @@ def eighth_test(cntrl):
 	cntrl.add_book(**test_book)
 	book_id = cntrl.BDmanager.get_by('name','books',test_book['title'])[0][0]
 	
-	cntrl.check_out_book(test_user['id'],book_id,3)
+	cntrl.check_out_doc(test_user['id'],book_id,'books',3)
 	
 	user_db = cntrl.get_user(test_user['id'])
 	book_db_t = list(cntrl.BDmanager.get_by('name','books',test_book['title'])[0])
@@ -281,7 +281,7 @@ def ninth_test(cntrl):
 	cntrl.add_book(**test_book)
 	book_id = cntrl.BDmanager.get_by('name','books',test_book['title'])[0][0]
 	
-	cntrl.check_out_book(test_user['id'],book_id)
+	cntrl.check_out_doc(test_user['id'],book_id)
 	
 	user_db = cntrl.get_user(test_user['id'])
 	book_db_t = list(cntrl.BDmanager.get_by('name','books',test_book['title'])[0])
@@ -323,8 +323,8 @@ def tenth_test(cntrl):
 	book_id_1 = cntrl.BDmanager.get_by('name','books',test_book_1['title'])[0][0]
 	book_id_2 = cntrl.BDmanager.get_by('name','books',test_book_2['title'])[0][0]
 
-	regular_book = cntrl.check_out_book(test_user['id'],book_id_1)
-	references_book = cntrl.check_out_book(test_user['id'],book_id_2)
+	regular_book = cntrl.check_out_doc(test_user['id'],book_id_1)
+	references_book = cntrl.check_out_doc(test_user['id'],book_id_2)
 
 	cntrl.BDmanager.clear_table('books')
 	cntrl.BDmanager.clear_table('patrons')
@@ -432,6 +432,25 @@ def test_get_all_books(cntrl):
 	cntrl.BDmanager.clear_table('books')
 
 	return 'OK', True
+
+
+def test_check_out_media(cntrl):
+
+	test_media = {'title':'Teste','authors':'XY','keywords':'oansedi','price':123}
+	test_user = {'id':1,'name':'test','address':'test','status':'Student','phone':'987', 'history':[],'current_books':[]}
+
+	cntrl.add_media(**test_media)
+	cntrl.BDmanager.add_patron(Patron(**test_user))
+
+	media_id = cntrl.BDmanager.get_by('name','media',test_media['title'])
+	
+	if media_id == None:
+		return 'Can`t add media to DB', False
+	media_id = media_id[0][0]
+
+	cntrl.check_out_doc(test_user['id'],media_id)
+
+	return 'OK',True
 
 
 def test_controller():

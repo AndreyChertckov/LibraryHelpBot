@@ -175,23 +175,28 @@ class Controller:
     # Check out book
     # param : user_id - id of user
     # param : book_id - id of book
-    def check_out_book(self, user_id, book_id, returning_time=0):
+    def check_out_doc(self, user_id, doc_id, type_bd = 'books', returning_time=0):
 
-        if self.BDmanager.select_label('books', book_id) == None:
+        if self.BDmanager.select_label(type_bd, doc_id) == None:
             return False
 
         if returning_time == 0:
-            is_best_seller = self.BDmanager.get_label('best_seller', 'books', book_id) == 1
+            is_best_seller = self.BDmanager.get_label('best_seller', type_bd, doc_id) == 1
             user_status = self.BDmanager.get_label('type', 'patrons', user_id)
             returning_time = 2 if user_status == 'Student' or is_best_seller else 4
 
-        free_count = int(self.BDmanager.get_label("free_count", "books", book_id))
+        free_count = int(self.BDmanager.get_label("free_count", type_bd, doc_id))
         if free_count > 0:
 
-            current_books = eval(self.BDmanager.get_label("current_books", "patrons", user_id))
-            current_books_id = [self.BDmanager.get_by('id', 'orders', order)[0][3] for order in current_books]
+            current_orders = eval(self.BDmanager.get_label("current_books", "patrons", user_id))
+            current_docs_id = []
 
-            if book_id in current_books_id:
+            for order_id in current_orders:
+                order = self.BDmanager.select_label('orders',order_id)
+                if order[2] == type_bd:
+                    current_docs_id.append(order[3])
+
+            if doc_id in current_docs_id:
                 return False
 
             time = datetime.now()
@@ -201,19 +206,19 @@ class Controller:
             time = time[:time.index(' ')]
             out_of_time = out_of_time[:out_of_time.index(' ')]
 
-            order = OrderHistoryObject(self.BDmanager.get_max_id("orders") + 1, time, "books",
-                                       user_id, book_id, out_of_time)
+            order = OrderHistoryObject(self.BDmanager.get_max_id("orders") + 1, time, type_bd,
+                                       user_id, doc_id, out_of_time)
 
             self.BDmanager.add_order(order)
 
             history = eval(self.BDmanager.get_label("history", "patrons", user_id))
-            current_books += [order.id]
+            current_docs_id += [order.id]
             history += [order.id]
             free_count -= 1
 
-            self.BDmanager.edit_label("books", "free_count", free_count, book_id)
+            self.BDmanager.edit_label(type_bd, "free_count", free_count, doc_id)
             self.BDmanager.edit_label("patrons", "history", str(history), user_id)
-            self.BDmanager.edit_label("patrons", "current_books", str(current_books), user_id)
+            self.BDmanager.edit_label("patrons", "current_books", str(current_docs_id), user_id)
 
             return True
 
