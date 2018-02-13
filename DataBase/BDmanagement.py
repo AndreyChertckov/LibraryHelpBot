@@ -96,23 +96,24 @@ class BDManagement:
     # ---newMed - 'Media' object
 
     def add_media(self, newMed):
-        sql = """INSERT INTO media(id,name,authors,type,count,free_count,price,keywords)
-        VALUES(?,?,?,?,?,?,?,?)"""
-        self.__bd.cursor().execute(sql, (
+        sql = """INSERT INTO media(id,name,authors,type,count,free_count,price,keywords,best_seller)
+        VALUES(?,?,?,?,?,?,?,?,?)"""
+        cur = self.__create_connection(self.file).cursor()
+        cur.execute(sql, (
             self.get_max_id("media") + 1, newMed.name, newMed.authors, newMed.type, newMed.count, newMed.free_count,
-            newMed.price,newMed.keywords))
+            newMed.price,newMed.keywords,newMed.best_seller))
 
     # Add new article to DB
     # params:
     # --- newArticle - 'JournalArticle' object
 
     def add_article(self, newArticle):
-        sql = """INSERT INTO articles(id,name,authors,journal_name,count,free_count,price,keywords,issue,editor,date)
-        VALUES(?,?,?,?,?,?,?,?,?,?,?)"""
+        sql = """INSERT INTO articles(id,name,authors,journal_name,count,free_count,price,keywords,issue,editor,date,best_seller)
+        VALUES(?,?,?,?,?,?,?,?,?,?,?,?)"""
         cur = self.__create_connection(self.file).cursor()  # cursor()
 
         cur.execute(sql, (self.get_max_id("articles") + 1, newArticle.name, newArticle.authors, newArticle.journal_name,
-                          newArticle.count, newArticle.free_count, newArticle.price,newArticle.keywords,newArticle.issue,newArticle.editor,newArticle.date))
+                          newArticle.count, newArticle.free_count, newArticle.price,newArticle.keywords,newArticle.issue,newArticle.editor,newArticle.date,newArticle.best_seller))
 
     # Add new 'patron' to DB
     # params:
@@ -214,17 +215,18 @@ class BDManagement:
              keywords text);
         """)
         self.__create_table("""CREATE TABLE IF NOT EXISTS articles(
-             id integer PRIMARY KEY,
-             name text NOT NULL,
-             authors text,
+            id integer PRIMARY KEY,
+            name text NOT NULL,
+            authors text,
             journal_name text,
             count integer,
             free_count integer,
             price integer,
-             keywords text,
-             issue text,
-             editor text,
-             date text);
+            keywords text,
+            issue text,
+            editor text,
+            date text,
+            best_seller integer);
         """)
         self.__create_table("""CREATE TABLE IF NOT EXISTS media(
                 id integer PRIMARY KEY,
@@ -234,7 +236,8 @@ class BDManagement:
                 count integer,
                 free_count integer,
                 price integer,
-                 keywords text);
+                keywords text,
+                best_seller integer);
                 """)
         self.__create_table("""
             CREATE TABLE IF NOT EXISTS chats (
@@ -251,6 +254,7 @@ class BDManagement:
              doc_id integer,
              user_id integer,
              out_of_time string,
+             best_seller integer,
              FOREIGN KEY (user_id) REFERENCES patrons (id)
              );
         """)
