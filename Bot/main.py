@@ -139,7 +139,6 @@ class LibraryBot:
                 bot.send_message(chat_id=update.message.chat_id, text=text_for_message,
                                  reply_markup=RKM(self.keyboard_dict["reg_confirm"], True))
         elif step == len(fields):
-            print(user)
             if update.message.text == "All is correct✅":
                 is_incorrect = utils.data_checker(self.is_in_reg[chat][1])
                 if is_incorrect[0]:
@@ -162,7 +161,6 @@ class LibraryBot:
             self.show_user(bot, update)
         elif key == 'load_material':
             self.libr_con(bot, update)
-
 
     def user_manage(self, bot, update):
         keyboard = self.keyboard_dict["user_management"]
@@ -263,7 +261,6 @@ class LibraryBot:
         patrons = self.cntrl.get_all_patrons()
         patrons = [patrons[i * n:(i + 1) * n] for i in range(len(patrons) // n + 1) if i * n < len(patrons)]
         max_page = len(patrons) - 1
-        print(query.data, query.data in ["prev", "next", 'cancel'])
         if (query.data in ["prev", "next", 'cancel']) and (max_page or query.data == 'cancel'):
             if query.data == "next":
                 if self.pages[chat] == max_page:
@@ -331,7 +328,6 @@ class LibraryBot:
                 bot.send_message(chat_id=update.message.chat_id, text=text_for_message,
                                  reply_markup=RKM(self.keyboard_dict["reg_confirm"], True))
         elif step == len(fields):
-            print(doc)
             if update.message.text == "All is correct✅":
                 self.cntrl.add_document(doc, key)
                 self.is_adding.pop(chat)
@@ -393,7 +389,8 @@ class LibraryBot:
                     self.pages[chat][0] -= 1
 
             text_message = ("\n" + "-" * 50 + "\n").join(
-                ["{}) {} - {}".format(i + 1, doc['title'], doc["authors"]) for i, doc in enumerate(docs[self.pages[chat][0]])])
+                ["{}) {} - {}".format(i + 1, doc['title'], doc["authors"]) for i, doc in
+                 enumerate(docs[self.pages[chat][0]])])
             keyboard = [[IKB(str(i + 1), callback_data=str(i)) for i in range(len(docs[self.pages[chat][0]]))]]
             keyboard += [[IKB("⬅", callback_data='prev'), IKB("➡️", callback_data='next')]]
             bot.edit_message_text(text=text_message + "\nCurrent page: " + str(self.pages[chat][0] + 1), chat_id=chat,
@@ -413,28 +410,21 @@ class LibraryBot:
                 doc_type = """Title: {title};\nAuthors: {authors};\n Free copy: {free_copy};\n;
                 """.format(**doc)
             if self.cntrl.user_type(chat) == 2:
-                keyboard = [[IKB("Order the book", callback_data='Order ' + query.data),
-                            IKB("Cancel", callback_data='cancel')]]
+                keyboard = [[IKB("Order the book", callback_data='order ' + query.data),
+                             IKB("Cancel", callback_data='cancel')]]
             else:
                 keyboard = [[IKB("Cancel", callback_data='cancel')]]
 
             bot.edit_message_text(text=text, chat_id=chat, message_id=query.message.message_id,
                                   reply_markup=IKM(keyboard))
-        # elif query.data.split(" ")[0] == 'Order':
-        #     k = int(query.data.split(" ")[1])
-        #     user_id = unconf_users[self.pages[chat]][k]["id"]
-        #     self.cntrl.confirm_user(user_id)
-        #     bot.edit_message_text(text="This user was confirmed", chat_id=chat, message_id=query.message.message_id)
-        #     bot.send_message(chat_id=user_id, text="Your application was confirmed",
-        #                      reply_markup=RKM(self.keyboard_dict[self.types[2]], True))
-        # elif query.data.split(" ")[0] == 'reject':
-        #     k = int(query.data.split(" ")[1])
-        #     user_id = unconf_users[self.pages[chat]][k]["id"]
-        #     self.cntrl.delete_user(user_id)
-        #     bot.edit_message_text(text="This user was rejected", chat_id=chat, message_id=query.message.message_id)
-        #     bot.send_message(chat_id=user_id, text="Your application was rejected",
-        #                      reply_markup=RKM(self.keyboard_dict[self.types[0]], True))
-
+        elif query.data.split(" ")[0] == 'order':
+            k = int(query.data.split(" ")[1])
+            doc = docs[self.pages[chat][0]][k]
+            print(doc)
+            self.cntrl.check_out_doc(chat, doc['id'], type_bd=doc_type, returning_time=2)
+            bot.edit_message_text(
+                text="Your order was successful.\nCollect the book from the library no later than 4 hours",
+                chat_id=chat, message_id=query.message.message_id)
 
     # Cancel the operation
     # params:
