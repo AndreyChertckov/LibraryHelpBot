@@ -436,7 +436,7 @@ def test_get_all_books(cntrl):
 
 def test_check_out_media(cntrl):
 
-	test_media = {'title':'Teste','authors':'XY','keywords':'oansedi','price':123}
+	test_media = {'title':'Teste','authors':'XY','keywords':'oansedi','price':123,'best_seller':1}
 	test_user = {'id':1,'name':'test','address':'test','status':'Student','phone':'987', 'history':[],'current_books':[]}
 
 	cntrl.add_media(**test_media)
@@ -447,8 +447,17 @@ def test_check_out_media(cntrl):
 	if media_id == None:
 		return 'Can`t add media to DB', False
 	media_id = media_id[0][0]
+	success,msg = cntrl.check_out_doc(test_user['id'],media_id,'media')
+	if not success:
+		return 'Can`t get book : ' + msg, False
 
-	cntrl.check_out_doc(test_user['id'],media_id)
+	test_user = cntrl.get_user(test_user['id'])
+	order = cntrl.BDmanager.select_label('orders',eval(test_user['current_books'])[0])
+	is_order_media = order[2] == 'media'
+	is_ids_match = order[3] == media_id
+	
+	if not is_order_media or not is_ids_match:
+		return 'is_order_media : ' + str(is_order_media) + ', is_ids_match : ' + str(is_ids_match), False
 
 	return 'OK',True
 
@@ -485,6 +494,9 @@ def test_controller():
 			print('test_add_book : ' + msg)
 			msg,err = test_get_all_books(cntrl)
 			print('test_get_all_books : ' + msg)
+			msg,err = test_check_out_media(cntrl)
+			print('test_check_out_media : ' + msg)
+
 		elif num_test_case == 1:
 			msg,err = first_test(cntrl)
 			print('First test : ' + msg)
@@ -524,6 +536,9 @@ def test_controller():
 		elif num_test_case == 13:
 			msg,err = test_get_all_books(cntrl)
 			print('test_get_all_books : ' + msg)
+		elif num_test_case == 14:
+			msg,err = test_check_out_media(cntrl)
+			print('test_check_out_media : ' + msg)
 
 	except Exception as e:
 		raise e
