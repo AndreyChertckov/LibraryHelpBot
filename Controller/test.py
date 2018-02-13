@@ -10,11 +10,9 @@ from DataBase.UsersAndDocumentObjects.Patron import Patron
 #
 def first_test(cntrl):
 
-	cntrl.BDmanager.clear_table('books')
-	cntrl.BDmanager.clear_table('patrons')
-	cntrl.BDmanager.clear_table('orders')
-	
-	test_user = {'id':1,'name':'test','address':'test','status':'Student','phone':'987', 'history':[],'current_books':[]}
+	clear_tables(cntrl)
+
+	test_user = {'id':1,'name':'test','address':'tEsT','status':'Student','phone':'987', 'history':[],'current_books':[]}
 	test_book = {'title': 'Test','overview':'TESTTEST','authors':'tEsT','count':2,'price':123,'keywords':''}
 
 	cntrl.BDmanager.add_patron(Patron(**test_user))
@@ -29,10 +27,6 @@ def first_test(cntrl):
 	order_id = int(eval(user_db['current_books'])[0])
 	user_book_id = cntrl.BDmanager.get_by('id','orders',order_id)[0][3]
 
-	cntrl.BDmanager.clear_table('books')
-	cntrl.BDmanager.clear_table('patrons')
-	cntrl.BDmanager.clear_table('orders')
-
 	is_user_have_book = user_book_id == book_id 
 	is_book_free_count_decremented = book_db['free_count'] == book_db['count'] - 1
 	if  not is_user_have_book or not is_book_free_count_decremented:
@@ -43,18 +37,12 @@ def first_test(cntrl):
 
 def second_test(cntrl):
 	
-	cntrl.BDmanager.clear_table('books')
-	cntrl.BDmanager.clear_table('patrons')
-	cntrl.BDmanager.clear_table('orders')
+	clear_tables(cntrl)
 
 	id_book_A = 1
 	test_user = {'id':1,'name':'test','address':'test','status':'Student','phone':'987', 'history':[],'current_books':[]}
 	cntrl.BDmanager.add_patron(Patron(**test_user))
 	can_get_book = cntrl.check_out_doc(test_user['id'],id_book_A)
-	
-	cntrl.BDmanager.clear_table('books')
-	cntrl.BDmanager.clear_table('patrons')
-	cntrl.BDmanager.clear_table('orders')
 
 	if can_get_book:
 		return 'Book found', False
@@ -64,10 +52,8 @@ def second_test(cntrl):
 
 def third_test(cntrl):
 
-	cntrl.BDmanager.clear_table('books')
-	cntrl.BDmanager.clear_table('patrons')
-	cntrl.BDmanager.clear_table('orders')
-	
+	clear_tables(cntrl)
+
 	test_user = {'id':1,'name':'test','address':'test','status':'Faculty','phone':'987', 'history':[],'current_books':[]}
 	test_book = {'title': 'Test','overview':'TESTTEST','authors':'tEsT','count':2,'price':123,'keywords':''}
 
@@ -87,10 +73,6 @@ def third_test(cntrl):
 	order['time'] = datetime.strptime(order['time'],'%Y-%m-%d')
 	order['out_of_time'] = datetime.strptime(order['out_of_time'],'%Y-%m-%d')
 
-	cntrl.BDmanager.clear_table('books')
-	cntrl.BDmanager.clear_table('patrons')
-	cntrl.BDmanager.clear_table('orders')
-
 	is_user_have_book = order['docId'] == book_id 
 	is_book_free_count_decremented = book_db['free_count'] == book_db['count'] - 1
 	is_out_of_time_equality = order['out_of_time'] == order['time'] + timedelta(weeks = 4)
@@ -102,9 +84,7 @@ def third_test(cntrl):
 
 def fourth_test(cntrl):
 	
-	cntrl.BDmanager.clear_table('books')
-	cntrl.BDmanager.clear_table('patrons')
-	cntrl.BDmanager.clear_table('orders')
+	clear_tables(cntrl)
 
 	test_user = {'id':1,'name':'test','address':'test','status':'Student','phone':'987', 'history':[],'current_books':[]}
 	test_book = {'title': 'Test','overview':'TESTTEST','authors':'tEsT','count':2,'price':123,'best_seller':1,'keywords':''}
@@ -124,10 +104,6 @@ def fourth_test(cntrl):
 	order['time'] = datetime.strptime(order['time'],'%Y-%m-%d')
 	order['out_of_time'] = datetime.strptime(order['out_of_time'],'%Y-%m-%d') 
 
-	cntrl.BDmanager.clear_table('books')
-	cntrl.BDmanager.clear_table('patrons')
-	cntrl.BDmanager.clear_table('orders')
-
 	is_user_have_book = order['docId'] == book_id 
 	is_book_free_count_decremented = book_db['free_count'] == book_db['count'] - 1
 	is_out_of_time_equality = order['out_of_time'] == order['time'] + timedelta(weeks = 2)
@@ -139,9 +115,7 @@ def fourth_test(cntrl):
 
 def fifth_test(cntrl):
 
-	cntrl.BDmanager.clear_table('books')
-	cntrl.BDmanager.clear_table('patrons')
-	cntrl.BDmanager.clear_table('orders')
+	clear_tables(cntrl)
 	
 	test_user_1 = {'id':1,'name':'test','address':'test','status':'Student','phone':'987', 'history':[],'current_books':[]}
 	test_user_2 = {'id':2,'name':'test','address':'test','status':'Student','phone':'987', 'history':[],'current_books':[]}
@@ -160,11 +134,6 @@ def fifth_test(cntrl):
 	is_first_user_check_out = cntrl.check_out_doc(test_user_1['id'],book_id)
 	is_second_user_check_out = cntrl.check_out_doc(test_user_3['id'],book_id)
 	is_third_user_check_out = cntrl.check_out_doc(test_user_2['id'],book_id)
-
-	cntrl.BDmanager.clear_table('books')
-	cntrl.BDmanager.clear_table('patrons')
-	cntrl.BDmanager.clear_table('orders')
-
 	
 	if not is_first_user_check_out or not is_second_user_check_out or is_third_user_check_out:
 		return 'Is first user check out : ' + str(is_first_user_check_out) + ', is second user check out : ' + str(is_second_user_check_out) \
@@ -175,9 +144,7 @@ def fifth_test(cntrl):
 
 def sixth_test(cntrl):
 
-	cntrl.BDmanager.clear_table('books')
-	cntrl.BDmanager.clear_table('patrons')
-	cntrl.BDmanager.clear_table('orders')
+	clear_tables(cntrl)
 	
 	test_user = {'id':1,'name':'test','address':'test','status':'Student','phone':'987', 'history':[],'current_books':[]}
 	test_book = {'title': 'Test','overview':'TESTTEST','authors':'tEsT','count':2,'price':123,'keywords':''}
@@ -189,10 +156,6 @@ def sixth_test(cntrl):
 	first_copy = cntrl.check_out_doc(test_user['id'],book_id)
 	second_copy = cntrl.check_out_doc(test_user['id'],book_id)
 
-	cntrl.BDmanager.clear_table('books')
-	cntrl.BDmanager.clear_table('patrons')
-	cntrl.BDmanager.clear_table('orders')
-
 	if not first_copy or second_copy:
 		return 'Can get two copies of book. First copy : ' + str(first_copy) + ', second copy : ' + str(second_copy), False
 
@@ -200,10 +163,8 @@ def sixth_test(cntrl):
 
 
 def seventh_test(cntrl):
-	
-	cntrl.BDmanager.clear_table('books')
-	cntrl.BDmanager.clear_table('patrons')
-	cntrl.BDmanager.clear_table('orders')
+
+	clear_tables(cntrl)
 
 	test_user_1 = {'id':1,'name':'test','address':'test','status':'Student','phone':'987', 'history':[],'current_books':[]}
 	test_user_2 = {'id':2,'name':'test','address':'test','status':'Student','phone':'987', 'history':[],'current_books':[]}
@@ -220,11 +181,6 @@ def seventh_test(cntrl):
 	is_first_user_check_out = cntrl.check_out_doc(test_user_1['id'],book_id)
 	is_second_user_check_out = cntrl.check_out_doc(test_user_2['id'],book_id)
 
-	cntrl.BDmanager.clear_table('books')
-	cntrl.BDmanager.clear_table('patrons')
-	cntrl.BDmanager.clear_table('orders')
-
-	
 	if not is_first_user_check_out or not is_second_user_check_out:
 		return 'Is first user check out : ' + str(is_first_user_check_out) + ', is second user check out : ' + str(is_second_user_check_out), False
 
@@ -233,9 +189,7 @@ def seventh_test(cntrl):
 
 def eighth_test(cntrl):
 
-	cntrl.BDmanager.clear_table('books')
-	cntrl.BDmanager.clear_table('patrons')
-	cntrl.BDmanager.clear_table('orders')
+	clear_tables(cntrl)
 	
 	test_user = {'id':1,'name':'test','address':'test','status':'Student','phone':'987', 'history':[],'current_books':[]}
 	test_book = {'title': 'Test','overview':'TESTTEST','authors':'tEsT','count':2,'price':123,'keywords':''}
@@ -255,10 +209,6 @@ def eighth_test(cntrl):
 	order['time'] = datetime.strptime(order['time'],'%Y-%m-%d')
 	order['out_of_time'] = datetime.strptime(order['out_of_time'],'%Y-%m-%d')
 
-	cntrl.BDmanager.clear_table('books')
-	cntrl.BDmanager.clear_table('patrons')
-	cntrl.BDmanager.clear_table('orders')
-
 	is_user_have_book = order['docId'] == book_id 
 	is_book_free_count_decremented = book_db['free_count'] == book_db['count'] - 1
 	is_out_of_time_equality = order['out_of_time'] == order['time'] + timedelta(weeks = 3)
@@ -270,9 +220,7 @@ def eighth_test(cntrl):
 
 def ninth_test(cntrl):
 	
-	cntrl.BDmanager.clear_table('books')
-	cntrl.BDmanager.clear_table('patrons')
-	cntrl.BDmanager.clear_table('orders')
+	clear_tables(cntrl)
 
 	test_user = {'id':1,'name':'test','address':'test','status':'Student','phone':'987', 'history':[],'current_books':[]}
 	test_book = {'title': 'Test','overview':'TESTTEST','authors':'tEsT','count':2,'price':123,'keywords':''}
@@ -292,10 +240,6 @@ def ninth_test(cntrl):
 	order['time'] = datetime.strptime(order['time'],'%Y-%m-%d')
 	order['out_of_time'] = datetime.strptime(order['out_of_time'],'%Y-%m-%d') 
 
-	cntrl.BDmanager.clear_table('books')
-	cntrl.BDmanager.clear_table('patrons')
-	cntrl.BDmanager.clear_table('orders')
-
 	is_user_have_book = order['docId'] == book_id 
 	is_book_free_count_decremented = book_db['free_count'] == book_db['count'] - 1
 	is_out_of_time_equality = order['out_of_time'] == order['time'] + timedelta(weeks = 2)
@@ -307,9 +251,7 @@ def ninth_test(cntrl):
 
 def tenth_test(cntrl):
 
-	cntrl.BDmanager.clear_table('books')
-	cntrl.BDmanager.clear_table('patrons')
-	cntrl.BDmanager.clear_table('orders')
+	clear_tables(cntrl)
 
 	test_user = {'id':1,'name':'test','address':'test','status':'Student','phone':'987', 'history':[],'current_books':[]}
 	test_book_1 = {'title': 'Test','overview':'TESTTEST','authors':'tEsT','count':2,'price':123,'keywords':''}
@@ -326,10 +268,6 @@ def tenth_test(cntrl):
 	regular_book = cntrl.check_out_doc(test_user['id'],book_id_1)
 	references_book = cntrl.check_out_doc(test_user['id'],book_id_2)
 
-	cntrl.BDmanager.clear_table('books')
-	cntrl.BDmanager.clear_table('patrons')
-	cntrl.BDmanager.clear_table('orders')
-
 	if  not regular_book or references_book:
 		return 'Regular book : ' + str(regular_book) + ' , references book : ' + str(references_book), False
 
@@ -337,6 +275,8 @@ def tenth_test(cntrl):
 
 
 def test_add_book(cntrl):
+
+	clear_tables(cntrl)
 	
 	test_book_1 = {'title': 'Test','overview':'TESTTEST','authors':'tEsT','count':2,'price':123,'keywords':0}
 	test_book_2 = {'title': 'Test2','overview':'TESTTEST2','authors':'tEsT2','count':1,'price':1223,'keywords':0}
@@ -349,13 +289,13 @@ def test_add_book(cntrl):
 	if not is_in_db_first_book or not is_in_db_second_book:
 		return 'Can`t add book in db. First book added: ' + str(is_in_db_first_book) + ' , Second book added : ' + str(is_in_db_second_book),False
 
-	cntrl.BDmanager.clear_table('books')
-
 	return 'OK',True
 
 
 def test_registration_confirm_uptolibrarian(cntrl):
 	
+	clear_tables(cntrl)
+
 	test_user = {'id':1,'name':'test','address':'test','status':'Student','phone':'987'}
 	cntrl.registration(test_user)
 	if not check_in_db_users(cntrl.BDmanager,'unconfirmed',test_user):
@@ -371,8 +311,6 @@ def test_registration_confirm_uptolibrarian(cntrl):
 	test_user['status'] = 'librarian'
 	if check_in_db_users(cntrl.BDmanager,'patrons',test_user) or not check_in_db_users(cntrl.BDmanager,'librarians',test_user):
 		return 'Can`t up to librarian',False
-
-	cntrl.BDmanager.clear_table('patrons')
 
 	return 'OK',True
 
@@ -414,7 +352,7 @@ def check_in_db_books(dbmanage,book):
 
 def test_get_all_books(cntrl):
 
-	cntrl.BDmanager.clear_table('books')
+	clear_tables(cntrl)
 	
 	test_book_1 = {'title': 'Test','overview':'TESTTEST','authors':'tEsT','count':2,'price':123,'keywords':0}
 	test_book_2 = {'title': 'Test2','overview':'TESTTEST2','authors':'tEsT2','count':1,'price':1223,'keywords':0}
@@ -436,6 +374,8 @@ def test_get_all_books(cntrl):
 
 def test_check_out_media(cntrl):
 
+	clear_tables(cntrl)
+	
 	test_media = {'title':'Teste','authors':'XY','keywords':'oansedi','price':123,'best_seller':1}
 	test_user = {'id':1,'name':'test','address':'test','status':'Student','phone':'987', 'history':[],'current_books':[]}
 
@@ -461,6 +401,15 @@ def test_check_out_media(cntrl):
 
 	return 'OK',True
 
+
+def clear_tables(cntrl):
+	cntrl.BDmanager.clear_table('media')
+	cntrl.BDmanager.clear_table('librarians')
+	cntrl.BDmanager.clear_table('article')
+	cntrl.BDmanager.clear_table('books')
+	cntrl.BDmanager.clear_table('patrons')
+	cntrl.BDmanager.clear_table('orders')
+	
 
 def test_controller():
 
