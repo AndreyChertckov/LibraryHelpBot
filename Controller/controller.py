@@ -216,9 +216,8 @@ class Controller:
             history += [order.id]
             free_count -= 1
 
-            self.BDmanager.edit_label(type_bd, "free_count", free_count, doc_id)
-            self.BDmanager.edit_label("patrons", "history", str(history), user_id)
-            self.BDmanager.edit_label("patrons", "current_books", str(current_docs_id), user_id)
+            self.BDmanager.edit_label(type_bd, ["free_count"], [free_count], doc_id)
+            self.BDmanager.edit_label("patrons", ["history","current_books"], [str(history),str(current_docs_id)], user_id)
 
             return True, 'OK'
 
@@ -247,10 +246,14 @@ class Controller:
         pass
 
     def add_document(self, doc, key):
+        doc['best_seller'] = 0
         if key == 'book':
-            doc['best_seller'] = 0
             self.add_book(**doc)
         elif key == 'article':
             self.add_article(**doc)
         elif key == 'media':
             self.add_media(**doc)
+
+    def modify_document(self,doc,type):
+        doc_id = doc.pop('id')
+        self.BDmanager.edit_label(type,list(doc.keys()),list(doc.values()),doc_id)

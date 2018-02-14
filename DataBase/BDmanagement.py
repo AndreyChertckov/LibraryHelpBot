@@ -128,10 +128,10 @@ class BDManagement:
     # ---table - table to update record from(string)
     # ---set - what to update(string)
     # ---newLabel - cortege , containing updated information
-    def edit_label(self, table, set, newLabel, id):
-        sql = "UPDATE " + table + " SET " + set + "=? WHERE id=?"
+    def edit_label(self, table, sets, newLabels, id):
+        sql = "UPDATE " + table + " SET " + ', '.join([set+'=?' for set in sets]) + " WHERE id=?"
         cur = self.__create_connection(self.file).cursor()
-        cur.execute(sql, (newLabel, id))
+        cur.execute(sql, tuple(newLabels + [id]))
 
     # Deletes some record
     # params:
