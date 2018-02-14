@@ -278,3 +278,6 @@ class Controller:
     def modify_document(self,doc,type):
         doc_id = doc.pop('id')
         self.BDmanager.edit_label(type,list(doc.keys()),list(doc.values()),doc_id)
+    
+    def delete_document(self, doc_id,type):
+        self.BDmanager.delete_label(type,doc_id)

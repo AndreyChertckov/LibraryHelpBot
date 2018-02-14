@@ -456,6 +456,32 @@ def test_return_doc(cntrl):
 		return 'Can`t return book : Clear current doc ' + str(clear_currents_doc) + ', Count of media : ' + str(count_of_media), False
 	return 'OK', True
 
+
+def test_delete_boc(cntrl):
+	
+	clear_tables(cntrl)
+
+	test_book = {'title': 'Test','overview':'TESTTEST','authors':'tEsT','count':2,'price':123,'keywords':0}
+
+	cntrl.add_book(**test_book)
+
+	doc_db = cntrl.BDmanager.get_by('name','book',test_book['title'])
+	
+	is_save_in_db =  doc_db != None
+
+	if not is_save_in_db:
+		return 'Can`t save in db', False
+
+	doc_id = doc_db[0][0]
+
+	cntrl.delete_document(doc_id,'book')
+	doc_db = cntrl.BDmanager.select_label('book',doc_id)
+	is_deleted_from_db = doc_db == None
+	if not is_deleted_from_db:
+		return 'Can`t delete from db', False
+
+	return 'OK', True 
+
 def clear_tables(cntrl):
 	cntrl.BDmanager.clear_table('media')
 	cntrl.BDmanager.clear_table('librarians')
@@ -503,6 +529,8 @@ def test_controller():
 			print('test_modify_doc : ',msg)
 			msg,err = test_return_doc(cntrl)
 			print('test_return_doc : ',msg)
+			msg,err = test_delete_boc(cntrl)
+			print('test_delete_doc : ',msg)
 		elif num_test_case == 1:
 			msg,err = first_test(cntrl)
 			print('First test : ' + msg)
@@ -551,6 +579,9 @@ def test_controller():
 		elif num_test_case == 16:
 			msg,err = test_return_doc(cntrl)
 			print('test_return_doc : ',msg)
+		elif num_test_case == 17:
+			msg,err = test_delete_boc(cntrl)
+			print('test_delete_doc : ',msg)
 	except Exception as e:
 		raise e
 	finally:
