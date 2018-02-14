@@ -112,7 +112,7 @@ class Controller:
     # Return user by id
     # param : user_id - id of user
     # return : dictionary user {id,name,address,phone,status} if user librarian or unconfirmed,
-    # or {id,name,address,phone,history,current_books,status},
+    # or {id,name,address,phone,history,current_docs,status},
     # or false if user doesn`t existе
 
     # Можно вынести user['id'] = user_bd[0] и тому подобное за if и кол-во строк уменьшится, читаемость уменьшится, так что нет 
@@ -125,7 +125,7 @@ class Controller:
             user['address'] = user_bd[2]
             user['phone'] = user_bd[3]
             user['history'] = user_bd[4]
-            user['current_books'] = user_bd[5]
+            user['current_docs'] = user_bd[5]
             user['status'] = user_bd[6]
         elif self.BDmanager.select_label('librarians', user_id):
             user_bd = self.BDmanager.select_label('librarians', user_id)
@@ -149,7 +149,7 @@ class Controller:
     # param: user_id : id of user
     def upto_librarian(self, user_id):
         user_info = self.get_user(user_id)
-        user_info.pop('current_books', 0)
+        user_info.pop('current_docs', 0)
         user_info.pop('history', 0)
         self.remove_user(user_id, 'patrons')
         user_info["status"] = 'librarian'
@@ -225,6 +225,27 @@ class Controller:
 
             return False, 'Not enough copies'
 
+    def return_doc(self, user_id,doc_id):
+        
+        order = self.BDmanager.get_by_parameters(['user_id','doc_id'],'orders',[user_id,doc_id])
+        if order == None:
+            return False, 'Can`t find order in db'
+        order = dict(zip(['id','time','table','user_id','doc_id','time_out','best_seller'],order[0]))
+
+        if self.BDmanager.select_label(order['table'], doc_id) == None:
+            return False, 'Document doesn`t exist'
+        
+        curr_doc = eval(self.BDmanager.get_label('current_books','patrons',user_id))
+        curr_doc.remove(order['id'])
+
+        free_count = int(self.BDmanager.get_label("free_count", order['table'], doc_id))
+        free_count += 1
+
+        self.BDmanager.edit_label(order['table'],['free_count'],[free_count],doc_id)
+        self.BDmanager.edit_label('patrons',['current_books'],[str(curr_doc)],user_id)
+
+        return True,'OK'
+
     # Method for adding the book in database
     # param: name - Name of the book
     # param: description - about what this book
@@ -236,8 +257,8 @@ class Controller:
             Document(0, title, overview, authors, count, count, price, best_seller,
                      keywords))  # TODO: заменить 0 на ничего
 
-    def add_media(self, title, authors, keywords, price, best_seller):
-        self.BDmanager.add_media(BaseDoc(0, authors, title, 0, 0, price, 'MEDIA', keywords, best_seller))
+    def add_media(self, title, authors, keywords, price, best_seller,count):
+        self.BDmanager.add_media(BaseDoc(0, authors, title, count, count, price, 'MEDIA', keywords, best_seller))
 
     def add_article(self, title, authors, journal, issue, editors, date, keywords, price, count, best_seller):
         self.BDmanager.add_article(

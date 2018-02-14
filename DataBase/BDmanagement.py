@@ -280,6 +280,12 @@ class BDManagement:
         return self.__create_connection(self.file).execute(
             sql,(get_value,)).fetchall()
 
+    def get_by_parameters(self, get_by_whats, get_from, get_values):
+        sql = "SELECT * from " + get_from + " WHERE " + ' AND '.join([param + '=?' for param in get_by_whats])
+        return self.__create_connection(self.file).execute(
+            sql,tuple(get_values)).fetchall()
+    
+
     def get_label(self, what_to_select, from_table, id):
         return self.__create_connection(self.file).execute(
             "SELECT " + what_to_select + " from " + from_table + " WHERE id=" + str(id)).fetchone()[0]

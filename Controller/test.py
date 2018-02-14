@@ -24,7 +24,7 @@ def first_test(cntrl):
 	user_db = cntrl.get_user(test_user['id'])
 	book_db_t = list(cntrl.BDmanager.get_by('name','book',test_book['title'])[0])
 	book_db = dict(zip(['id','title','authors','overview','count','free_count','price'],book_db_t))
-	order_id = int(eval(user_db['current_books'])[0])
+	order_id = int(eval(user_db['current_docs'])[0])
 	user_book_id = cntrl.BDmanager.get_by('id','orders',order_id)[0][3]
 
 	is_user_have_book = user_book_id == book_id 
@@ -66,7 +66,7 @@ def third_test(cntrl):
 	user_db = cntrl.get_user(test_user['id'])
 	book_db_t = list(cntrl.BDmanager.get_by('name','book',test_book['title'])[0])
 	book_db = dict(zip(['id','title','authors','overview','count','free_count','price','keywords'],book_db_t))
-	order_id = int(eval(user_db['current_books'])[0])
+	order_id = int(eval(user_db['current_docs'])[0])
 	order = dict(zip(['id','time','table','userId','docId','out_of_time'],list(cntrl.BDmanager.get_by('id','orders',order_id)[0])))
 	#TODO: check time  
 
@@ -98,7 +98,7 @@ def fourth_test(cntrl):
 	user_db = cntrl.get_user(test_user['id'])
 	book_db_t = list(cntrl.BDmanager.get_by('name','book',test_book['title'])[0])
 	book_db = dict(zip(['id','title','authors','overview','count','free_count','price','keywords'],book_db_t))
-	order_id = int(eval(user_db['current_books'])[0])
+	order_id = int(eval(user_db['current_docs'])[0])
 	order = dict(zip(['id','time','table','userId','docId','out_of_time'],list(cntrl.BDmanager.get_by('id','orders',order_id)[0])))
 	
 	order['time'] = datetime.strptime(order['time'],'%Y-%m-%d')
@@ -203,7 +203,7 @@ def eighth_test(cntrl):
 	user_db = cntrl.get_user(test_user['id'])
 	book_db_t = list(cntrl.BDmanager.get_by('name','book',test_book['title'])[0])
 	book_db = dict(zip(['id','title','author','overview','count','free_count','price','keywords'],book_db_t))
-	order_id = int(eval(user_db['current_books'])[0])
+	order_id = int(eval(user_db['current_docs'])[0])
 	order = dict(zip(['id','time','table','userId','docId','out_of_time'],list(cntrl.BDmanager.get_by('id','orders',order_id)[0])))
 	
 	order['time'] = datetime.strptime(order['time'],'%Y-%m-%d')
@@ -234,7 +234,7 @@ def ninth_test(cntrl):
 	user_db = cntrl.get_user(test_user['id'])
 	book_db_t = list(cntrl.BDmanager.get_by('name','book',test_book['title'])[0])
 	book_db = dict(zip(['id','title','authors','overview','count','free_count','price','keywords'],book_db_t))
-	order_id = int(eval(user_db['current_books'])[0])
+	order_id = int(eval(user_db['current_docs'])[0])
 	order = dict(zip(['id','time','table','userId','docId','out_of_time'],list(cntrl.BDmanager.get_by('id','orders',order_id)[0])))
 	
 	order['time'] = datetime.strptime(order['time'],'%Y-%m-%d')
@@ -376,7 +376,7 @@ def test_check_out_media(cntrl):
 
 	clear_tables(cntrl)
 	
-	test_media = {'title':'Teste','authors':'XY','keywords':'oansedi','price':123,'best_seller':1}
+	test_media = {'title':'Teste','authors':'XY','keywords':'oansedi','price':123,'best_seller':1,'count':1}
 	test_user = {'id':1,'name':'test','address':'test','status':'Student','phone':'987', 'history':[],'current_books':[]}
 
 	cntrl.add_media(**test_media)
@@ -392,7 +392,7 @@ def test_check_out_media(cntrl):
 		return 'Can`t get book : ' + msg, False
 
 	test_user = cntrl.get_user(test_user['id'])
-	order = cntrl.BDmanager.select_label('orders',eval(test_user['current_books'])[0])
+	order = cntrl.BDmanager.select_label('orders',eval(test_user['current_docs'])[0])
 	is_order_media = order[2] == 'media'
 	is_ids_match = order[3] == media_id
 	
@@ -423,7 +423,38 @@ def test_modify_doc(cntrl):
 		return 'OK',True
 	except Exception:
 		return 'Can`t find book in db', False
+
+
+def test_return_doc(cntrl):
 	
+	test_media = {'title':'Teste','authors':'XY','keywords':'oansedi','price':123,'best_seller':1,'count':1}
+	test_user = {'id':1,'name':'test','address':'test','status':'Student','phone':'987', 'history':[],'current_books':[]}
+
+	cntrl.BDmanager.add_patron(Patron(**test_user))
+	cntrl.add_media(**test_media)
+
+	media_id = cntrl.BDmanager.get_by('name','media',test_media['title'])[0][0]
+
+	if type(media_id) != type(1):
+		return 'Can`t find document in db', False
+
+	success,msg = cntrl.check_out_doc(test_user['id'],media_id,'media')
+	
+	if not success:
+		return msg,False
+	
+	success, msg = cntrl.return_doc(test_user['id'],media_id)
+
+	if not success:
+		return msg,False
+	
+	user_current_docs = eval(cntrl.BDmanager.get_label('current_books','patrons',test_user['id']))
+	media_count = cntrl.BDmanager.get_label('free_count','media',media_id)
+	clear_currents_doc = user_current_docs == []
+	count_of_media = media_count == test_media['count']
+	if not clear_currents_doc or not count_of_media:
+		return 'Can`t return book : Clear current doc ' + str(clear_currents_doc) + ', Count of media : ' + str(count_of_media), False
+	return 'OK', True
 
 def clear_tables(cntrl):
 	cntrl.BDmanager.clear_table('media')
@@ -470,7 +501,8 @@ def test_controller():
 			print('test_check_out_media : ' + msg)
 			msg,err = test_modify_doc(cntrl)
 			print('test_modify_doc : ',msg)
-
+			msg,err = test_return_doc(cntrl)
+			print('test_return_doc : ',msg)
 		elif num_test_case == 1:
 			msg,err = first_test(cntrl)
 			print('First test : ' + msg)
@@ -516,6 +548,9 @@ def test_controller():
 		elif num_test_case == 15:
 			msg,err = test_modify_doc(cntrl)
 			print('test_modify_doc : ',msg)
+		elif num_test_case == 16:
+			msg,err = test_return_doc(cntrl)
+			print('test_return_doc : ',msg)
 	except Exception as e:
 		raise e
 	finally:
