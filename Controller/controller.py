@@ -115,7 +115,7 @@ class Controller:
     # or {id,name,address,phone,history,current_books,status},
     # or false if user doesn`t existе
 
-    # Можно вынести user['id'] = user_bd[0] и тому подобное за if и кол-во строк уменьшится
+    # Можно вынести user['id'] = user_bd[0] и тому подобное за if и кол-во строк уменьшится, читаемость уменьшится, так что нет 
     def get_user(self, user_id):
         user = {}
         if self.BDmanager.select_label('patrons', user_id):
