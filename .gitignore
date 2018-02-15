@@ -6,3 +6,4 @@ experimental.py
 configs.py
 .vscode
 *.pyc
+.pytest_cache
