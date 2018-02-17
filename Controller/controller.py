@@ -278,35 +278,40 @@ class Controller:
 
     def modify_document(self, doc, type):
         doc_id = doc.pop('id')
-        self.BDmanager.edit_label(type,list(doc.keys()),list(doc.values()),doc_id)
-    
-    def delete_document(self, doc_id,type):
-        self.BDmanager.delete_label(type,doc_id)
+        self.BDmanager.edit_label(type, list(doc.keys()), list(doc.values()), doc_id)
 
-    def doc_tuple_to_dict(self, type,doc_tuple):
-        if type =='book':
-            return dict(zip(['id', 'title', 'authors', 'overview', 'count', 'free_count', 'price', 'best_seller', 'keywords'],list(doc_tuple)))
+    def delete_document(self, doc_id, type):
+        self.BDmanager.delete_label(type, doc_id)
+
+    def doc_tuple_to_dict(self, type, doc_tuple):
+        if type == 'book':
+            return dict(
+                zip(['id', 'title', 'authors', 'overview', 'count', 'free_count', 'price', 'best_seller', 'keywords'],
+                    list(doc_tuple)))
         elif type == 'arcticle':
-            return dict(zip(['id', 'title', 'authors', 'journal', 'count', 'free_count', 'price', 'keywords', 'issue', 'editors','date'], list(doc_tuple)))
+            return dict(zip(
+                ['id', 'title', 'authors', 'journal', 'count', 'free_count', 'price', 'keywords', 'issue', 'editors',
+                 'date'], list(doc_tuple)))
         elif type == 'media':
-            return dict(zip(['id', 'title', 'authors', 'type', 'count', 'free_count', 'price', 'keywords'], list(doc_tuple)))
+            return dict(
+                zip(['id', 'title', 'authors', 'type', 'count', 'free_count', 'price', 'keywords'], list(doc_tuple)))
 
-    def get_ordered_documents(self,user_id):
+    def get_ordered_documents(self, user_id):
         user = self.get_user(user_id)
         if not user:
             return []
         orders_id = eval(user['current_docs'])
         print(orders_id)
         output = []
-        keys = ['doc_dict','time','time_out']
+        keys = ['doc_dict', 'time', 'time_out']
         for order_id in orders_id:
-            order = self.BDmanager.select_label('orders',order_id)
+            order = self.BDmanager.select_label('orders', order_id)
             if order == None:
                 continue
-            doc = self.BDmanager.select_label(order[2],order[3])
+            doc = self.BDmanager.select_label(order[2], order[3])
             if doc == None:
                 continue
-            doc_dict = self.doc_tuple_to_dict(order[2],doc)
+            doc_dict = self.doc_tuple_to_dict(order[2], doc)
             print(doc_dict)
-            output.append(dict(zip(keys,[doc_dict,order[1],order[5]])))
+            output.append(dict(zip(keys, [doc_dict, order[1], order[5]])))
         return output
