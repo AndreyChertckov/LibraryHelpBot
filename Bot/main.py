@@ -45,6 +45,8 @@ class LibraryBot:
         reg_step_handler = MHandler(StateFilter(self.is_in_reg) & Filters.text, self.reg_steps)
         reg_admin_handler = CommandHandler('get_admin', self.reg_admin, filters=UserFilter(2), pass_args=True)
         library_handler = MHandler(WordFilter('Library🏤'), self.library)
+        search_handler = MHandler(WordFilter('Search🔎'), self.cancel)
+        my_book_handler = MHandler(WordFilter('My Books📚') & UserFilter(2), self.library)
         cancel_handler = MHandler(WordFilter('Cancel⤵️'), self.cancel)
 
         book_handler = MHandler(WordFilter('Books📖') & UserFilter(3, True), self.load_material)
@@ -71,7 +73,6 @@ class LibraryBot:
         self.dispatcher.add_handler(
             MHandler(WordFilter("Material management📚") & UserFilter(3), self.mat_manage))
         self.dispatcher.add_handler(CallbackQueryHandler(self.call_back))
-        # self.dispatcher.add_handler(CallbackQueryHandler(self.show_user))
 
         doc_type = lambda key: lambda bot, update: self.start_adding(bot, update, key)
         self.dispatcher.add_handler(MHandler(WordFilter('Books📖') & UserFilter(3), doc_type("book")))

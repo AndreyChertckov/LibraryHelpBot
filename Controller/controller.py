@@ -217,7 +217,8 @@ class Controller:
             free_count -= 1
 
             self.BDmanager.edit_label(type_bd, ["free_count"], [free_count], doc_id)
-            self.BDmanager.edit_label("patrons", ["history","current_books"], [str(history),str(current_docs_id)], user_id)
+            self.BDmanager.edit_label("patrons", ["history", "current_books"], [str(history), str(current_docs_id)],
+                                      user_id)
 
             return True, 'OK'
 
@@ -225,26 +226,26 @@ class Controller:
 
             return False, 'Not enough copies'
 
-    def return_doc(self, user_id,doc_id):
-        
-        order = self.BDmanager.get_by_parameters(['user_id','doc_id'],'orders',[user_id,doc_id])
+    def return_doc(self, user_id, doc_id):
+
+        order = self.BDmanager.get_by_parameters(['user_id', 'doc_id'], 'orders', [user_id, doc_id])
         if order == None:
             return False, 'Can`t find order in db'
-        order = dict(zip(['id','time','table','user_id','doc_id','time_out','best_seller'],order[0]))
+        order = dict(zip(['id', 'time', 'table', 'user_id', 'doc_id', 'time_out', 'best_seller'], order[0]))
 
         if self.BDmanager.select_label(order['table'], doc_id) == None:
             return False, 'Document doesn`t exist'
-        
-        curr_doc = eval(self.BDmanager.get_label('current_books','patrons',user_id))
+
+        curr_doc = eval(self.BDmanager.get_label('current_books', 'patrons', user_id))
         curr_doc.remove(order['id'])
 
         free_count = int(self.BDmanager.get_label("free_count", order['table'], doc_id))
         free_count += 1
 
-        self.BDmanager.edit_label(order['table'],['free_count'],[free_count],doc_id)
-        self.BDmanager.edit_label('patrons',['current_books'],[str(curr_doc)],user_id)
+        self.BDmanager.edit_label(order['table'], ['free_count'], [free_count], doc_id)
+        self.BDmanager.edit_label('patrons', ['current_books'], [str(curr_doc)], user_id)
 
-        return True,'OK'
+        return True, 'OK'
 
     # Method for adding the book in database
     # param: name - Name of the book
@@ -257,7 +258,7 @@ class Controller:
             Document(0, title, overview, authors, count, count, price, best_seller,
                      keywords))  # TODO: заменить 0 на ничего
 
-    def add_media(self, title, authors, keywords, price, best_seller,count):
+    def add_media(self, title, authors, keywords, price, best_seller, count):
         self.BDmanager.add_media(BaseDoc(0, authors, title, count, count, price, 'MEDIA', keywords, best_seller))
 
     def add_article(self, title, authors, journal, issue, editors, date, keywords, price, count, best_seller):
@@ -275,9 +276,9 @@ class Controller:
         elif key == 'media':
             self.add_media(**doc)
 
-    def modify_document(self,doc,type):
+    def modify_document(self, doc, type):
         doc_id = doc.pop('id')
-        self.BDmanager.edit_label(type,list(doc.keys()),list(doc.values()),doc_id)
-    
-    def delete_document(self, doc_id,type):
-        self.BDmanager.delete_label(type,doc_id)
+        self.BDmanager.edit_label(type, list(doc.keys()), list(doc.values()), doc_id)
+
+    def delete_document(self, doc_id, type):
+        self.BDmanager.delete_label(type, doc_id)
