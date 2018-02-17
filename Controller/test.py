@@ -448,8 +448,31 @@ def test_delete_boc():
 	clear_tables()
 	assert(is_deleted_from_db)
 
+def test_get_ordered_documents():
+	
+	cntrl = create_controller()
+
+	test_book = {'title': 'Test','overview':'TESTTEST','authors':'tEsT','count':2,'price':123,'keywords':'0'}
+	test_user = {'id':1,'name':'test','address':'tEsT','status':'Student','phone':'987', 'history':[],'current_books':[]}
+
+	cntrl.add_book(**test_book)
+	cntrl.BDmanager.add_patron(Patron(**test_user))
+
+	book_id = cntrl.BDmanager.get_by('name','book',test_book['title'])[0][0]
+
+	success,_ = cntrl.check_out_doc(test_user['id'],book_id)
+	if not success:
+		assert(success)
+	
+	doc = cntrl.get_ordered_documents(test_user['id'])[0]['doc_dict']
+	clear_tables()
+	assert(min([test_book[key] == doc[key] for key in test_book.keys()]))
+
 def clear_tables():
 	os.remove('test.db')
 
 def create_controller():
 	return Controller('test.db')
+
+if __name__ == '__main__':
+	main()
