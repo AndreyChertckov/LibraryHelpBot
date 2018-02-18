@@ -186,7 +186,7 @@ class Controller:
             returning_time = 2 if user_status == 'Student' or is_best_seller else 4
 
         free_count = int(self.BDmanager.get_label("free_count", type_bd, doc_id))
-        if free_count > 0 or type_bd == 'media' or type_bd == 'article':
+        if free_count > 0:
 
             current_orders = eval(self.BDmanager.get_label("current_books", "patrons", user_id))
             current_docs_id = []
@@ -212,12 +212,12 @@ class Controller:
             self.BDmanager.add_order(order)
 
             history = eval(self.BDmanager.get_label("history", "patrons", user_id))
-            current_docs_id += [order.id]
+            current_orders += [order.id]
             history += [order.id]
             free_count -= 1
 
             self.BDmanager.edit_label(type_bd, ["free_count"], [free_count], doc_id)
-            self.BDmanager.edit_label("patrons", ["history", "current_books"], [str(history), str(current_docs_id)],
+            self.BDmanager.edit_label("patrons", ["history", "current_books"], [str(history), str(current_orders)],
                                       user_id)
 
             return True, 'OK'
