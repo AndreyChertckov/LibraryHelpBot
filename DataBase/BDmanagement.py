@@ -45,7 +45,7 @@ class BDManagement:
     #  ---newOrder -  'Order' Object
 
     def add_order(self, newOrder):
-        sql = """INSERT INTO orders(id,date,storing_table,doc_id,user_id,out_of_time) VALUES(?,?,?,?,?,?)"""
+        sql = """INSERT INTO orders(date,storing_table,doc_id,user_id,out_of_time) VALUES(?,?,?,?,?)"""
         self.__add_new(sql, newOrder)
 
     # Add new Librarian to DB
@@ -82,12 +82,12 @@ class BDManagement:
     #  ---newDoc -  'Document' Object
 
     def add_document(self, newDoc):
-        sql = """INSERT INTO book(id,name,author,description,count,free_count,price,best_seller,keywords)
-            VALUES (?,?,?,?,?,?,?,?,?)"""
+        sql = """INSERT INTO book(name,author,description,count,free_count,price,best_seller,keywords)
+            VALUES (?,?,?,?,?,?,?,?)"""
 
         cur = self.__create_connection(self.file).cursor()
         cur.execute(sql,
-                    (self.get_max_id("book") + 1, newDoc.name, newDoc.authors, newDoc.description, newDoc.count,
+                    (newDoc.name, newDoc.authors, newDoc.description, newDoc.count,
                      newDoc.free_count,
                      newDoc.price,newDoc.best_seller,newDoc.keywords))
 
@@ -108,11 +108,11 @@ class BDManagement:
     # --- newArticle - 'JournalArticle' object
 
     def add_article(self, newArticle):
-        sql = """INSERT INTO article(id,name,authors,journal_name,count,free_count,price,keywords,issue,editor,date,best_seller)
-        VALUES(?,?,?,?,?,?,?,?,?,?,?,?)"""
+        sql = """INSERT INTO article(name,authors,journal_name,count,free_count,price,keywords,issue,editor,date,best_seller)
+        VALUES(?,?,?,?,?,?,?,?,?,?,?)"""
         cur = self.__create_connection(self.file).cursor()  # cursor()
 
-        cur.execute(sql, (self.get_max_id("article") + 1, newArticle.name, newArticle.authors, newArticle.journal_name,
+        cur.execute(sql, (newArticle.name, newArticle.authors, newArticle.journal_name,
                           newArticle.count, newArticle.free_count, newArticle.price,newArticle.keywords,newArticle.issue,newArticle.editor,newArticle.date,newArticle.best_seller))
 
     # Add new 'patron' to DB
@@ -177,7 +177,7 @@ class BDManagement:
 
         self.__create_table("""
                 CREATE TABLE IF NOT EXISTS librarians (
-                id integer PRIMARY KEY,
+                id integer PRIMARY KEY ,
                 name text NOT NULL,
                 phone text,
                 address text,
@@ -204,7 +204,7 @@ class BDManagement:
 
         self.__create_table("""
               CREATE TABLE IF NOT EXISTS book(
-              id integer PRIMARY KEY,
+              id integer PRIMARY KEY AUTOINCREMENT,
               name text NOT NULL,
               author text NOT NULL,
               description text NOT NULL,
@@ -215,7 +215,7 @@ class BDManagement:
              keywords text);
         """)
         self.__create_table("""CREATE TABLE IF NOT EXISTS article(
-            id integer PRIMARY KEY,
+            id integer PRIMARY KEY AUTOINCREMENT,
             name text NOT NULL,
             authors text,
             journal_name text,
@@ -229,7 +229,7 @@ class BDManagement:
             best_seller integer);
         """)
         self.__create_table("""CREATE TABLE IF NOT EXISTS media(
-                id integer PRIMARY KEY,
+                id integer PRIMARY KEY AUTOINCREMENT,
                 name text NOT NULL,
                 authors text,
                 type text,
@@ -248,7 +248,7 @@ class BDManagement:
 
         self.__create_table("""
              CREATE TABLE  IF NOT EXISTS orders (
-             id integer PRIMARY KEY,
+             id integer PRIMARY KEY AUTOINCREMENT,
              date text NOT NULL,
              storing_table text,
              doc_id integer,
