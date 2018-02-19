@@ -45,7 +45,7 @@ class BDManagement:
     #  ---newOrder -  'Order' Object
 
     def add_order(self, newOrder):
-        sql = """INSERT INTO orders(date,storing_table,doc_id,user_id,out_of_time) VALUES(?,?,?,?,?)"""
+        sql = """INSERT INTO orders(date,storing_table,doc_id,user_id,out_of_time,active) VALUES(?,?,?,?,?,?)"""
         self.__add_new(sql, newOrder)
 
     # Add new Librarian to DB
@@ -254,7 +254,7 @@ class BDManagement:
              doc_id integer,
              user_id integer,
              out_of_time string,
-             best_seller integer,
+             active integer,
              FOREIGN KEY (user_id) REFERENCES patrons (id)
              );
         """)
