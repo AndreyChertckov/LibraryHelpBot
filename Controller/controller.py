@@ -255,15 +255,15 @@ class Controller:
     # param: price - price of the book
     def add_book(self, title, overview, authors, count, price, keywords, best_seller=0):
         self.BDmanager.add_document(
-            Document(0, title, overview, authors, count, count, price, best_seller,
+            Document(title, overview, authors, count, count, price, best_seller,
                      keywords))  # TODO: заменить 0 на ничего
 
     def add_media(self, title, authors, keywords, price, best_seller, count):
-        self.BDmanager.add_media(BaseDoc(0, authors, title, count, count, price, 'MEDIA', keywords, best_seller))
+        self.BDmanager.add_media(BaseDoc(authors, title, count, count, price, 'MEDIA', keywords, best_seller))
 
     def add_article(self, title, authors, journal, issue, editors, date, keywords, price, count, best_seller):
         self.BDmanager.add_article(
-            JournalArticle(0, title, authors, journal, count, 0, price, keywords, issue, editors, date, best_seller))
+            JournalArticle(title, authors, journal, count, 0, price, keywords, issue, editors, date, best_seller))
         # self.BDmanager.add_article(JournalArticle(0,title,authors,journal,editors,))
         pass
 
