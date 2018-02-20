@@ -41,26 +41,22 @@ class LibraryBot:
         self.updater.idle()
 
     def add_user_handlers(self):
-        reg_handler = MHandler(WordFilter('Registration📝') & UserFilter(0), self.registration)
-        reg_step_handler = MHandler(StateFilter(self.is_in_reg) & Filters.text, self.reg_steps)
-        reg_admin_handler = CommandHandler('get_admin', self.reg_admin, filters=UserFilter(2), pass_args=True)
-        library_handler = MHandler(WordFilter('Library🏤'), self.library)
-        search_handler = MHandler(WordFilter('Search🔎'), self.cancel)
-        my_book_handler = MHandler(WordFilter('My Books📚') & UserFilter(2), self.library)
-        cancel_handler = MHandler(WordFilter('Cancel⤵️'), self.cancel)
 
-        book_handler = MHandler(WordFilter('Books📖') & UserFilter(3, True), self.load_material)
-        article_handler = MHandler(WordFilter('Journal Articles📰') & UserFilter(3, True), self.load_material)
-        av_handler = MHandler(WordFilter('Audio/Video materials📼') & UserFilter(3, True), self.load_material)
+        self.dispatcher.add_handler(MHandler(WordFilter('Library🏤'), self.library))
+        self.dispatcher.add_handler(MHandler(WordFilter('Search🔎'), self.cancel))
+        self.dispatcher.add_handler(MHandler(WordFilter('My Books📚') & UserFilter(2), self.user_orders))
 
-        self.dispatcher.add_handler(book_handler)
-        self.dispatcher.add_handler(article_handler)
-        self.dispatcher.add_handler(av_handler)
-        self.dispatcher.add_handler(reg_handler)
-        self.dispatcher.add_handler(reg_step_handler)
-        self.dispatcher.add_handler(reg_admin_handler)
-        self.dispatcher.add_handler(library_handler)
-        self.dispatcher.add_handler(cancel_handler)
+        self.dispatcher.add_handler(MHandler(WordFilter('Books📖') & UserFilter(3, True), self.load_material))
+        self.dispatcher.add_handler(
+            MHandler(WordFilter('Journal Articles📰') & UserFilter(3, True), self.load_material))
+        self.dispatcher.add_handler(
+            MHandler(WordFilter('Audio/Video materials📼') & UserFilter(3, True), self.load_material))
+
+        self.dispatcher.add_handler(MHandler(WordFilter('Registration📝') & UserFilter(0), self.registration))
+        self.dispatcher.add_handler(MHandler(StateFilter(self.is_in_reg) & Filters.text, self.reg_steps))
+        self.dispatcher.add_handler(CommandHandler('get_admin', self.reg_admin, filters=UserFilter(2), pass_args=True))
+
+        self.dispatcher.add_handler(MHandler(WordFilter('Cancel⤵️'), self.cancel))
 
     def add_admin_handlers(self):
         self.dispatcher.add_handler(CommandHandler('get_key', utils.get_key, filters=UserFilter(3)))
@@ -156,12 +152,14 @@ class LibraryBot:
 
     def call_back(self, bot, update):
         key = self.inline_key[update.callback_query.message.chat_id]
-        if key == 'conf_user':
-            self.conf_user(bot, update)
-        elif key == 'show_user':
-            self.show_user(bot, update)
+        if key == 'conf_flip':
+            self.conf_flip(bot, update)
+        elif key == 'user_flip':
+            self.user_flip(bot, update)
         elif key == 'load_material':
-            self.libr_con(bot, update)
+            self.library_flip(bot, update)
+        elif key == 'order_history':
+            self.order_flip(bot, update)
 
     def user_manage(self, bot, update):
         keyboard = self.keyboard_dict["user_management"]
@@ -169,7 +167,7 @@ class LibraryBot:
 
     def confirm(self, bot, update):
         chat = update.message.chat_id
-        self.inline_key[chat] = 'conf_user'
+        self.inline_key[chat] = 'conf_flip'
         n = 3
         unconf_users = self.cntrl.get_all_unconfirmed()
         if len(unconf_users) == 0:
@@ -184,7 +182,7 @@ class LibraryBot:
         keyboard += [[IKB("⬅", callback_data='prev'), IKB("➡️", callback_data='next')]]
         update.message.reply_text(text=text_message + "\nCurrent page: " + str(1), reply_markup=IKM(keyboard))
 
-    def conf_user(self, bot, update):
+    def conf_flip(self, bot, update):
         query = update.callback_query
         chat = query.message.chat_id
         n = 3
@@ -240,7 +238,7 @@ class LibraryBot:
 
     def show_users(self, bot, update):
         chat = update.message.chat_id
-        self.inline_key[chat] = 'show_user'
+        self.inline_key[chat] = 'user_flip'
         n = 3
         patrons = self.cntrl.get_all_patrons()
         if len(patrons) == 0:
@@ -255,7 +253,7 @@ class LibraryBot:
         keyboard += [[IKB("⬅", callback_data='prev'), IKB("➡️", callback_data='next')]]
         update.message.reply_text(text=text_message + "\nCurrent page: " + str(1), reply_markup=IKM(keyboard))
 
-    def show_user(self, bot, update):
+    def user_flip(self, bot, update):
         query = update.callback_query
         chat = query.message.chat_id
         n = 3
@@ -369,7 +367,7 @@ class LibraryBot:
         keyboard += [[IKB("⬅", callback_data='prev'), IKB("➡️", callback_data='next')]]
         update.message.reply_text(text=text_message + "\nCurrent page: " + str(1), reply_markup=IKM(keyboard))
 
-    def libr_con(self, bot, update):
+    def library_flip(self, bot, update):
         query = update.callback_query
         chat = query.message.chat_id
         doc_type = self.pages[chat][1]
@@ -399,17 +397,13 @@ class LibraryBot:
         elif utils.is_int(query.data):
             k = int(query.data)
             doc = docs[self.pages[chat][0]][k]
+            text = """Title: {title};\nAuthors: {authors}\n"""
             if doc_type == "book":
-                text = """
-                Title: {title}\nAuthors: {authors}\nDescription: {overview}\nFree copy: {free_count}
-                """.format(**doc)
+                text = """Description: {overview}\nFree copy: {free_count}""".format(**doc)
             elif doc_type == "article":
-                text = """
-                Title: {title}\nAuthors: {authors}\nJournal: {journal}\nIssue: {issue}\nDate: {date}\nFree copy: {free_count}
-                """.format(**doc)
+                text = """Journal: {journal}\nIssue: {issue}\nDate: {date}\nFree copy: {free_count}""".format(**doc)
             elif doc_type == "media":
-                doc_type = """Title: {title};\nAuthors: {authors};\n Free copy: {free_copy};\n;
-                """.format(**doc)
+                text = """Free copy: {free_copy}""".format(**doc)
             if self.cntrl.user_type(chat) == 2:
                 keyboard = [[IKB("Order the book", callback_data='order ' + query.data),
                              IKB("Cancel", callback_data='cancel')]]
@@ -421,11 +415,78 @@ class LibraryBot:
         elif query.data.split(" ")[0] == 'order':
             k = int(query.data.split(" ")[1])
             doc = docs[self.pages[chat][0]][k]
+            status, report = self.cntrl.check_out_doc(chat, doc['id'], type_bd=doc_type, returning_time=2)
+            message = "Your order was successful.\nCollect the book from the library not later than 4 hours" if status else "You already have this document"
+            bot.edit_message_text(text=message, chat_id=chat, message_id=query.message.message_id)
+
+    def user_orders(self, bot, update):
+        chat = update.message.chat_id
+        self.inline_key[chat] = 'order_history'
+        n = 2
+        docs = self.cntrl.get_ordered_documents(chat)
+        self.pages[chat] = 0
+
+        if len(docs) == 0:
+            bot.send_message(chat_id=chat, text="You have no orders")
+            return
+
+        docs = [docs[i * n:(i + 1) * n] for i in range(len(docs) // n + 1) if i * n < len(docs)]
+        text_message = ("\n" + "-" * 50 + "\n").join(
+            ["{}) {}, till {}".format(i + 1, doc['doc_dict']['title'], doc["active"]) for i, doc in
+             enumerate(docs[0])])
+        keyboard = [[IKB(str(i + 1), callback_data=str(i)) for i in range(len(docs[0]))]]
+        keyboard += [[IKB("⬅", callback_data='prev'), IKB("➡️", callback_data='next')]]
+        update.message.reply_text(text=text_message + "\nCurrent page: " + str(1), reply_markup=IKM(keyboard))
+
+    def order_flip(self, bot, update):
+        query = update.callback_query
+        chat = query.message.chat_id
+        n = 2
+        docs = self.cntrl.get_ordered_documents(chat)
+        docs = [docs[i * n:(i + 1) * n] for i in range(len(docs) // n + 1) if i * n < len(docs)]
+        max_page = len(docs) - 1
+        if (query.data in ["prev", "next", 'cancel']) and (max_page or query.data == 'cancel'):
+            if query.data == "next":
+                if self.pages[chat] == max_page:
+                    self.pages[chat] = 0
+                else:
+                    self.pages[chat] += 1
+            if query.data == "prev":
+                if self.pages[chat] == 0:
+                    self.pages[chat] = max_page
+                else:
+                    self.pages[chat] -= 1
+
+            text_message = ("\n" + "-" * 50 + "\n").join(
+                ["{}) {}, till {}".format(i + 1, doc['doc_dict']['title'], doc["active"]) for i, doc in
+                 enumerate(docs[self.pages[chat]])])
+            keyboard = [[IKB(str(i + 1), callback_data=str(i)) for i in range(len(docs[self.pages[chat]]))]]
+            keyboard += [[IKB("⬅", callback_data='prev'), IKB("➡️", callback_data='next')]]
+            bot.edit_message_text(text=text_message + "\nCurrent page: " + str(self.pages[chat] + 1), chat_id=chat,
+                                  message_id=query.message.message_id, reply_markup=IKM(keyboard))
+        elif utils.is_int(query.data):
+            k = int(query.data)
+            doc = docs[self.pages[chat]][k]
+            doc,
             print(doc)
-            self.cntrl.check_out_doc(chat, doc['id'], type_bd=doc_type, returning_time=2)
-            bot.edit_message_text(
-                text="Your order was successful.\nCollect the book from the library no later than 4 hours",
-                chat_id=chat, message_id=query.message.message_id)
+            text = """
+            Title: {title};\nAuthors: {authors}\nFree copy: {free_count}
+            """.format(**doc)
+
+            if self.cntrl.user_type(chat) == 2:
+                keyboard = [[IKB("Order the book", callback_data='order ' + query.data),
+                             IKB("Cancel", callback_data='cancel')]]
+            else:
+                keyboard = [[IKB("Cancel", callback_data='cancel')]]
+
+            bot.edit_message_text(text=text, chat_id=chat, message_id=query.message.message_id,
+                                  reply_markup=IKM(keyboard))
+        # elif query.data.split(" ")[0] == 'order':
+        #     k = int(query.data.split(" ")[1])
+        #     doc = docs[self.pages[chat][0]][k]
+        #     status, report = self.cntrl.check_out_doc(chat, doc['id'], type_bd=doc_type, returning_time=2)
+        #     message = "Your order was successful.\nCollect the book from the library not later than 4 hours" if status else "You already have this document"
+        #     bot.edit_message_text(text=message, chat_id=chat, message_id=query.message.message_id)
 
     # Cancel the operation
     # params:
