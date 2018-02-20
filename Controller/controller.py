@@ -30,11 +30,14 @@ class Controller:
                 fh.setLevel(logging.INFO)
                 fh.setFormatter(formater)
                 self.logger.addHandler(fh)
-        self.log('Start work')
+        self.log('INFO','Start work')
     
-    def log(self, msg):
+    def log(self, type_msg, msg):
         if self.is_log:
-            self.logger.info(msg)
+            if type_msg == 'WARNING':
+                self.logger.warning(msg)
+            elif type_msg == 'INFO':
+                self.logger.info(msg)
 
     # Accept user to the library
     # param: user_id - id of user
@@ -228,14 +231,13 @@ class Controller:
             time = time[:time.index(' ')]
             out_of_time = out_of_time[:out_of_time.index(' ')]
 
-            order = OrderHistoryObject(self.BDmanager.get_max_id("orders") + 1, time, type_bd,
-                                       user_id, doc_id, out_of_time)
+            order = OrderHistoryObject(time, type_bd, user_id, doc_id, 0,out_of_time)
 
             self.BDmanager.add_order(order)
-
+            order_id = self.BDmanager.get_max_id('orders')
             history = eval(self.BDmanager.get_label("history", "patrons", user_id))
-            current_orders += [order.id]
-            history += [order.id]
+            current_orders += [order_id]
+            history += [order_id]
             free_count -= 1
 
             self.BDmanager.edit_label(type_bd, ["free_count"], [free_count], doc_id)
@@ -247,13 +249,16 @@ class Controller:
         else:
 
             return False, 'Not enough copies'
+    
+    def get_book(self,order_id):
+        self.BDmanager.edit_label('orders',['active'],[1])
 
     def return_doc(self, user_id, doc_id):
 
         order = self.BDmanager.get_by_parameters(['user_id', 'doc_id'], 'orders', [user_id, doc_id])
         if order == None:
             return False, 'Can`t find order in db'
-        order = dict(zip(['id', 'time', 'table', 'user_id', 'doc_id', 'time_out', 'best_seller'], order[0]))
+        order = dict(zip(['id', 'time', 'table', 'user_id', 'doc_id','active', 'time_out'], order[0]))
 
         if self.BDmanager.select_label(order['table'], doc_id) == None:
             return False, 'Document doesn`t exist'
