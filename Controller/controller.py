@@ -7,12 +7,34 @@ from DataBase.UsersAndDocumentObjects.JournalArticle import JournalArticle
 from DataBase.UsersAndDocumentObjects.BaseDoc import BaseDoc
 from datetime import timedelta
 from datetime import datetime
-
+import logging
 
 # Class booking system
 class Controller:
-    def __init__(self, file_bd='DataBase.db'):
+    
+    def __init__(self, file_bd='DataBase.db',lc = False,lf = False,file_log = 'controller.log'):
         self.BDmanager = BDManagement(file_bd)
+        self.is_log = False
+        if lc or lf:
+            self.is_log = True
+            self.logger = logging.getLogger('controller')
+            self.logger.setLevel(logging.DEBUG)
+            formater = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+            if lc:
+                ch = logging.StreamHandler()
+                ch.setLevel(logging.INFO)
+                ch.setFormatter(formater)
+                self.logger.addHandler(ch)
+            if lf:
+                fh = logging.FileHandler(file_log)
+                fh.setLevel(logging.INFO)
+                fh.setFormatter(formater)
+                self.logger.addHandler(fh)
+        self.log('Start work')
+    
+    def log(self, msg):
+        if self.is_log:
+            self.logger.info(msg)
 
     # Accept user to the library
     # param: user_id - id of user

@@ -7,3 +7,5 @@ configs.py
 .vscode
 *.pyc
 .pytest_cache
+*.log
+*.db
