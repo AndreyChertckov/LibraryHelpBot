@@ -50,11 +50,12 @@ class Controller:
 
     # Accept user to the library
     # param: user_id - id of user
-    def confirm_user(self, user_id):
+    def confirm_user(self, user_id,librarian_id = -1):
         user = self.BDmanager.select_label("unconfirmed", user_id)
         self.delete_user(user_id)
         self.BDmanager.add_patron(Patron(user[1], user[3], user_id, user[4], user[2], [], []))
-        self.log('INFO','User status {} is confirmed.'.format(user[1]))
+        by_who = 'UNKNOW' if librarian_id == -1 else self.get_user(librarian_id)['name']
+        self.log('INFO','User status {} is confirmed by {}.'.format(user[1],by_who))
     
     # Move patron from table patrons to table librarians
     # param: user_id : id of user
@@ -67,6 +68,12 @@ class Controller:
         self.BDmanager.add_librarian(Librarian(**user_info))
         self.log('INFO','User {} is upgraded to librarian'.format(user_info['name']))
 
+    def modify_user(self, user_id, new_user_info,by_who_id = -1):
+        self.BDmanager.edit_label('patrons', list(new_user_info.keys()), list(new_user_info.values()), user_id)
+        by_who = 'UNKNOW' if by_who_id == 0 else self.get_user(by_who_id)['name'] 
+        log = 'User with id {} was modified by {}: '.format(user_id,by_who) + ', '.join(['new ' + str(key) + ' is ' + str(new_user_info[key]) for key in new_user_info.keys()])
+        self.log('INFO',log)
+
     # Delete user by user_info
     # param: user_info: dictionary {id,name,address,status,phone}
     def delete_user(self, user_id):
@@ -74,16 +81,20 @@ class Controller:
         if table != 'unauthorized':
             u_name = self.get_user(user_id)['name']
             self.BDmanager.delete_label(table,user_id)
-            self.log('INFO','User {} is deleted.'.format(u_name))
+            self.log('INFO','User {} is deleted from table {}.'.format(u_name,table))
 
     # Return all patrons from database
-    def get_all_patrons(self):
+    def get_all_patrons(self,by_who_id = -1):
         rows = self.BDmanager.select_all("patrons")
+        by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)['name']
+        self.log('INFO','Get all patrons by {}'.format(by_who))
         return [{'id': user[0], 'name': user[1], 'phone': user[2], 'address': user[3], 'history': user[4],
                  'current_books': user[5], 'status': user[6]} for user in rows]
 
     # Return all librarians from database
-    def get_all_librarians(self):
+    def get_all_librarians(self,by_who_id = -1):
+        by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)['name']
+        self.log('INFO','Get all librarians by {}'.format(by_who))
         rows = self.BDmanager.select_all("librarians")
         return [{'id': user[0], 'name': user[1], 'phone': user[2], 'address': user[3], 'status': user[4]} for user in
                 rows]
@@ -195,7 +206,7 @@ class Controller:
             self.BDmanager.edit_label(type_bd, ["free_count"], [free_count], doc_id)
             self.BDmanager.edit_label("patrons", ["history", "current_books"], [str(history), str(current_orders)],
                                       user_id)
-            self.log('INFO','User {} want to check out document \'{}\' for {} weeks. Returning time is {}'.format(self.get_user(user_id)['name'],self.get_document(doc_id,type_bd)['title'],returning_time,out_of_time))
+            self.log('INFO','User {}({}) want to check out document \'{}\' for {} weeks. Returning time is {}'.format(self.get_user(user_id)['name'],self.get_user(user_id)['status'],self.get_document(doc_id,type_bd)['title'],returning_time,out_of_time))
             return True, 'OK'
 
         else:
@@ -240,18 +251,15 @@ class Controller:
         self.BDmanager.add_document(
             Document(title, overview, authors, count, count, price, best_seller,
                      keywords))
-        self.log('INFO', 'Book \'{}\' is added to system.'.format(title))
 
     def add_media(self, title, authors, keywords, price, best_seller, count):
         self.BDmanager.add_media(BaseDoc(authors, title, count, count, price, 'MEDIA', keywords, best_seller))
-        self.log('INFO', 'Media \'{}\' is added to system.'.format(title))
 
     def add_article(self, title, authors, journal, issue, editors, date, keywords, price, count, best_seller):
         self.BDmanager.add_article(
             JournalArticle(title, authors, journal, count, 0, price, keywords, issue, editors, date, best_seller))
-        self.log('INFO', 'Article \'{}\' is added to system.'.format(title))
 
-    def add_document(self, doc, key):
+    def add_document(self, doc, key, by_who_id = 0):
         doc['best_seller'] = 0
         if key == 'book':
             self.add_book(**doc)
@@ -259,13 +267,14 @@ class Controller:
             self.add_article(**doc)
         elif key == 'media':
             self.add_media(**doc)
+        by_who = 'UNKNOW' if by_who_id == 0 else self.get_user(by_who_id)['name']
+        self.log('INFO', '{} \'{}\' is added to system by {}.'.format(key.capitalize(),doc['title'],by_who))
 
-    def modify_document(self, doc, type):
+    def modify_document(self, doc, type,by_who_id=0):
         doc_id = doc.pop('id')
         self.BDmanager.edit_label(type, list(doc.keys()), list(doc.values()), doc_id)
-        log = 'Document {} was modified: '.format(doc_id)
-        for key in doc.keys():
-            log += str(key) + ':' + str(doc[key]) + ' , '
+        by_who = 'UNKNOW' if by_who_id == 0 else self.get_user(by_who_id)['name'] 
+        log = 'Document with id {} was modified by {}: '.format(doc_id,by_who) + ', '.join(['new ' + str(key) + ' is ' + str(doc[key]) for key in doc.keys()])
         self.log('INFO',log)
 
     def delete_document(self, doc_id, type):
