@@ -450,7 +450,7 @@ def test_delete_doc():
 
 def test_get_ordered_documents():
 	
-	cntrl = create_controller('test_get_ordered_documents')
+	cntrl = create_controller('get_user_orders')
 
 	test_book = {'title': 'Test','overview':'TESTTEST','authors':'tEsT','count':2,'price':123,'keywords':'0'}
 	test_user = {'id':1,'name':'test','address':'tEsT','status':'Student','phone':'987', 'history':[],'current_books':[]}
@@ -464,7 +464,7 @@ def test_get_ordered_documents():
 	if not success:
 		assert(success)
 	
-	doc = cntrl.get_ordered_documents(test_user['id'])[0]['doc_dict']
+	doc = cntrl.get_user_orders(test_user['id'])[0]['doc_dict']
 	clear_tables()
 	assert(min([test_book[key] == doc[key] for key in test_book.keys()]))
 
