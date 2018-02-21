@@ -238,6 +238,7 @@ class Controller:
 
         self.BDmanager.edit_label(order['table'], ['free_count'], [free_count], doc_id)
         self.BDmanager.edit_label('patrons', ['current_books'], [str(curr_doc)], user_id)
+		self.BDmanager.edit_label('orders',['active'],[2])
         self.log('INFO','User {} is returned document {}.'.format(self.get_user(user_id)['name'],self.get_document(doc_id,order['table'])['title']))
         return True, 'OK'
 
