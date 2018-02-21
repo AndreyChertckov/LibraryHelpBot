@@ -467,20 +467,14 @@ class LibraryBot:
         elif utils.is_int(query.data):
             k = int(query.data)
             doc = docs[self.pages[chat]][k]
-            doc,
+            doc, active, time_out = doc.values()
             print(doc)
             text = """
-            Title: {title};\nAuthors: {authors}\nFree copy: {free_count}
-            """.format(**doc)
-
-            if self.cntrl.user_type(chat) == 2:
-                keyboard = [[IKB("Order the book", callback_data='order ' + query.data),
-                             IKB("Cancel", callback_data='cancel')]]
-            else:
-                keyboard = [[IKB("Cancel", callback_data='cancel')]]
+            Title: {}\nAuthors: {}\nAvailable till: {}
+            """.format(doc['title'], doc['authors'], active)
 
             bot.edit_message_text(text=text, chat_id=chat, message_id=query.message.message_id,
-                                  reply_markup=IKM(keyboard))
+                                  reply_markup=[[IKB("Cancel", callback_data='cancel')]])
         # elif query.data.split(" ")[0] == 'order':
         #     k = int(query.data.split(" ")[1])
         #     doc = docs[self.pages[chat][0]][k]

@@ -3,7 +3,7 @@ keyboard_dict = {
     "unconf": [['Library🏤', 'Search🔎', 'Help👤']],
     "auth": [['Library🏤', 'Search🔎', 'My Books📚', 'Help👤']],
     "admin": [["Check material📆", "Material management📚", "User management👥"]],
-    "mat_management": [["Add material🗄", "Search🔎", 'Cancel⤵️']],
+    "mat_management": [["Add material🗄", "Check orders🏷", "Search🔎", 'Cancel⤵️']],
     "user_management": [["Confirm application📝", "Check overdue📋", "Show users👥", 'Cancel⤵️']],
     "reg_confirm": [["All is correct✅", "Something is incorrect❌"]],
     "lib_main": [['Books📖', 'Journal Articles📰', "Audio/Video materials📼", 'Cancel⤵️']],
