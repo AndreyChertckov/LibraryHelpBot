@@ -8,7 +8,7 @@ from DataBase.UsersAndDocumentObjects.Patron import Patron
 
 def test_first():
 
-	cntrl = create_controller()
+	cntrl = create_controller(1)
 
 	test_user = {'id':1,'name':'test','address':'tEsT','status':'Student','phone':'987', 'history':[],'current_books':[]}
 	test_book = {'title': 'Test','overview':'TESTTEST','authors':'tEsT','count':2,'price':123,'keywords':''}
@@ -33,7 +33,7 @@ def test_first():
 
 def test_second():
 	
-	cntrl = create_controller()
+	cntrl = create_controller(2)
 
 	id_book_A = 1
 	test_user = {'id':1,'name':'test','address':'test','status':'Student','phone':'987', 'history':[],'current_books':[]}
@@ -45,7 +45,7 @@ def test_second():
 
 def test_third():
 
-	cntrl = create_controller()
+	cntrl = create_controller(3)
 
 	test_user = {'id':1,'name':'test','address':'test','status':'Faculty','phone':'987', 'history':[],'current_books':[]}
 	test_book = {'title': 'Test','overview':'TESTTEST','authors':'tEsT','count':2,'price':123,'keywords':''}
@@ -73,7 +73,7 @@ def test_third():
 
 def test_fourth():
 	
-	cntrl = create_controller()
+	cntrl = create_controller(4)
 
 	test_user = {'id':1,'name':'test','address':'test','status':'Student','phone':'987', 'history':[],'current_books':[]}
 	test_book = {'title': 'Test','overview':'TESTTEST','authors':'tEsT','count':2,'price':123,'best_seller':1,'keywords':''}
@@ -102,7 +102,7 @@ def test_fourth():
 
 def test_fifth():
 
-	cntrl = create_controller()
+	cntrl = create_controller(5)
 	
 	test_user_1 = {'id':1,'name':'test','address':'test','status':'Student','phone':'987', 'history':[],'current_books':[]}
 	test_user_2 = {'id':2,'name':'test','address':'test','status':'Student','phone':'987', 'history':[],'current_books':[]}
@@ -127,7 +127,7 @@ def test_fifth():
 
 def test_sixth():
 
-	cntrl = create_controller()
+	cntrl = create_controller(6)
 	
 	test_user = {'id':1,'name':'test','address':'test','status':'Student','phone':'987', 'history':[],'current_books':[]}
 	test_book = {'title': 'Test','overview':'TESTTEST','authors':'tEsT','count':2,'price':123,'keywords':''}
@@ -143,7 +143,7 @@ def test_sixth():
 
 def test_seventh():
 
-	cntrl = create_controller()
+	cntrl = create_controller(7)
 
 	test_user_1 = {'id':1,'name':'test','address':'test','status':'Student','phone':'987', 'history':[],'current_books':[]}
 	test_user_2 = {'id':2,'name':'test','address':'test','status':'Student','phone':'987', 'history':[],'current_books':[]}
@@ -165,7 +165,7 @@ def test_seventh():
 
 def test_eighth():
 
-	cntrl = create_controller()
+	cntrl = create_controller(8)
 	
 	test_user = {'id':1,'name':'test','address':'test','status':'Student','phone':'987', 'history':[],'current_books':[]}
 	test_book = {'title': 'Test','overview':'TESTTEST','authors':'tEsT','count':2,'price':123,'keywords':''}
@@ -194,7 +194,7 @@ def test_eighth():
 
 def test_ninth():
 	
-	cntrl = create_controller()
+	cntrl = create_controller(9)
 
 	test_user = {'id':1,'name':'test','address':'test','status':'Student','phone':'987', 'history':[],'current_books':[]}
 	test_book = {'title': 'Test','overview':'TESTTEST','authors':'tEsT','count':2,'price':123,'keywords':''}
@@ -223,7 +223,7 @@ def test_ninth():
 
 def test_tenth():
 
-	cntrl = create_controller()
+	cntrl = create_controller(10)
 
 	test_user = {'id':1,'name':'test','address':'test','status':'Student','phone':'987', 'history':[],'current_books':[]}
 	test_book_1 = {'title': 'Test','overview':'TESTTEST','authors':'tEsT','count':2,'price':123,'keywords':''}
@@ -244,7 +244,7 @@ def test_tenth():
 
 def test_add_book():
 
-	cntrl = create_controller()
+	cntrl = create_controller('test_add_book')
 	
 	test_book_1 = {'title': 'Test','overview':'TESTTEST','authors':'tEsT','count':2,'price':123,'keywords':0}
 	test_book_2 = {'title': 'Test2','overview':'TESTTEST2','authors':'tEsT2','count':1,'price':1223,'keywords':0}
@@ -259,7 +259,7 @@ def test_add_book():
 
 def test_registration_confirm_uptolibrarian():
 	
-	cntrl = create_controller()
+	cntrl = create_controller('test_registration_confirm_uptolibrarian')
 
 	test_user = {'id':1,'name':'test','address':'test','status':'Student','phone':'987'}
 	cntrl.registration(test_user)
@@ -321,7 +321,7 @@ def check_in_db_books(dbmanage,book):
 
 def test_get_all_books():
 
-	cntrl = create_controller()
+	cntrl = create_controller('test_get_all_books')
 	
 	test_book_1 = {'title': 'Test','overview':'TESTTEST','authors':'tEsT','count':2,'price':123,'keywords':0}
 	test_book_2 = {'title': 'Test2','overview':'TESTTEST2','authors':'tEsT2','count':1,'price':1223,'keywords':0}
@@ -339,7 +339,7 @@ def test_get_all_books():
 
 def test_check_out_media():
 
-	cntrl = create_controller()
+	cntrl = create_controller('test_check_out_media')
 	
 	test_media = {'title':'Teste','authors':'XY','keywords':'oansedi','price':123,'best_seller':1,'count':1}
 	test_user = {'id':1,'name':'test','address':'test','status':'Student','phone':'987', 'history':[],'current_books':[]}
@@ -368,7 +368,7 @@ def test_check_out_media():
 
 def test_modify_doc():
 
-	cntrl = create_controller()
+	cntrl = create_controller('test_modify_doc')
 
 	test_book = {'title': 'Test','overview':'TESTTEST','authors':'tEsT','count':2,'price':123,'keywords':0}
 	cntrl.add_book(**test_book)
@@ -395,7 +395,7 @@ def test_modify_doc():
 
 def test_return_doc():
 	
-	cntrl = create_controller()
+	cntrl = create_controller('test_return_doc')
 
 	test_media = {'title':'Teste','authors':'XY','keywords':'oansedi','price':123,'best_seller':1,'count':1}
 	test_user = {'id':1,'name':'test','address':'test','status':'Student','phone':'987', 'history':[],'current_books':[]}
@@ -429,9 +429,9 @@ def test_return_doc():
 	assert(clear_currents_doc and count_of_media)
 
 
-def test_delete_boc():
+def test_delete_doc():
 	
-	cntrl = create_controller()
+	cntrl = create_controller('test_delete_doc')
 
 	test_book = {'title': 'Test','overview':'TESTTEST','authors':'tEsT','count':2,'price':123,'keywords':0}
 
@@ -450,7 +450,7 @@ def test_delete_boc():
 
 def test_get_ordered_documents():
 	
-	cntrl = create_controller()
+	cntrl = create_controller('test_get_ordered_documents')
 
 	test_book = {'title': 'Test','overview':'TESTTEST','authors':'tEsT','count':2,'price':123,'keywords':'0'}
 	test_user = {'id':1,'name':'test','address':'tEsT','status':'Student','phone':'987', 'history':[],'current_books':[]}
@@ -471,8 +471,8 @@ def test_get_ordered_documents():
 def clear_tables():
 	os.remove('test.db')
 
-def create_controller():
-	return Controller('test.db')
+def create_controller(name_test):
+	return Controller('test.db',False,True,'test.log',True,name_test=str(name_test))
 
 if __name__ == '__main__':
 	main()
