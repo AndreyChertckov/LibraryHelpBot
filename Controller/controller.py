@@ -294,7 +294,7 @@ class Controller:
             return dict(
                 zip(['id', 'title', 'authors', 'type', 'count', 'free_count', 'price', 'keywords'], list(doc_tuple)))
 
-    def get_ordered_documents(self, user_id):
+    def get_user_orders(self, user_id):
         user = self.get_user(user_id)
         if not user:
             return []
