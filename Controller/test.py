@@ -448,7 +448,7 @@ def test_delete_doc():
 	clear_tables()
 	assert(is_deleted_from_db)
 
-def test_get_ordered_documents():
+def test_get_user_orders():
 	
 	cntrl = create_controller('get_user_orders')
 
@@ -467,6 +467,42 @@ def test_get_ordered_documents():
 	doc = cntrl.get_user_orders(test_user['id'])[0]['doc_dict']
 	clear_tables()
 	assert(min([test_book[key] == doc[key] for key in test_book.keys()]))
+
+def test_get_orders():
+	
+	cntrl = create_controller('get_orders')
+
+	test_book = {'title': 'Test','overview':'TESTTEST','authors':'tEsT','count':2,'price':123,'keywords':'0'}
+	test_user = {'id':1,'name':'test','address':'tEsT','status':'Student','phone':'987', 'history':[],'current_books':[]}
+
+	cntrl.add_book(**test_book)
+	cntrl.BDmanager.add_patron(Patron(**test_user))
+
+	book_id = cntrl.BDmanager.get_by('name','book',test_book['title'])[0][0]
+
+	success,_ = cntrl.check_out_doc(test_user['id'],book_id)
+	if not success:
+		clear_tables()
+		assert(success)
+	
+	orders = cntrl.get_all_whaiting_doc(-1)
+	if len(orders) != 1:
+		clear_tables()
+		assert(False)
+	
+	cntrl.user_get_doc(orders[0]['id'])
+	orders = cntrl.get_all_active_orders(-1)
+	if len(orders) != 1:
+		clear_tables()
+		assert(False)
+	
+	cntrl.return_doc(orders[0]['id'],book_id)
+	orders = cntrl.get_all_returned_orders(-1)
+	if len(orders) != 1:
+		clear_tables()
+		assert(False)
+	clear_tables()
+	assert(True)
 
 def clear_tables():
 	os.remove('test.db')

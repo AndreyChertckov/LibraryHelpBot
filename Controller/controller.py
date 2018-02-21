@@ -83,6 +83,12 @@ class Controller:
 			self.BDmanager.delete_label(table,user_id)
 			self.log('INFO','User {} is deleted from table {}.'.format(u_name,table))
 
+	# Return all users who don`t confirmed
+	def get_all_unconfirmed(self):
+		rows = self.BDmanager.select_all("unconfirmed")
+		return [{'id': user[0], 'name': user[1], 'phone': user[2], 'address': user[3], 'status': user[4]} for user in
+				rows]
+
 	# Return all patrons from database
 	def get_all_patrons(self,by_who_id = -1):
 		rows = self.BDmanager.select_all("patrons")
@@ -215,8 +221,8 @@ class Controller:
 	
 	def user_get_doc(self,order_id):
 		order = self.BDmanager.select_label('orders',order_id)
-		self.BDmanager.edit_label('orders',['active'],[1])
-		self.log('INFO','User {} get document {}.'.format(self.get_user(order[3])['name'],self.get_document(order[2])['title']))
+		self.BDmanager.edit_label('orders',['active'],[1],order_id)
+		self.log('INFO','User {} get document {}.'.format(self.get_user(order[3])['name'],self.get_document(order[3],order[2])['title']))
 
 	def return_doc(self, user_id, doc_id):
 
@@ -241,7 +247,51 @@ class Controller:
 		self.BDmanager.edit_label('orders',['active'],[2],order['id'])
 		self.log('INFO','User {} is returned document {}.'.format(self.get_user(user_id)['name'],self.get_document(doc_id,order['table'])['title']))
 		return True, 'OK'
+	
+	def get_user_orders(self, user_id):
+		user = self.get_user(user_id)
+		if not user:
+			return []
+		orders_id = eval(user['current_docs'])
+		print(orders_id)
+		output = []
+		keys = ['doc_dict', 'time', 'time_out']
+		for order_id in orders_id:
+			order = self.BDmanager.select_label('orders', order_id)
+			if order == None:
+				continue
+			doc = self.BDmanager.select_label(order[2], order[3])
+			if doc == None:
+				continue
+			doc_dict = self.doc_tuple_to_dict(order[2], doc)
+			print(doc_dict)
+			output.append(dict(zip(keys, [doc_dict, order[1], order[5]])))
+		return output
 
+	def get_all_orders(self, by_who_id=-1):
+		by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)['name']
+		orders = self.BDmanager.select_all('orders')
+		self.log('INFO','Librarian {} whant to see all orders'.format(by_who))
+		return [dict(zip(['id', 'time', 'table', 'user_id', 'doc_id','active', 'time_out'], order)) for order in orders]
+	
+	def get_all_active_orders(self, by_who_id = -1):
+		by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)['name']
+		orders = self.BDmanager.get_by('active','orders',1)
+		self.log('INFO','Librarian {} whant to see all active orders'.format(by_who))
+		return [dict(zip(['id', 'time', 'table', 'user_id', 'doc_id','active', 'time_out'], order)) for order in orders]
+
+	def get_all_whaiting_doc(self, by_who_id=-1):
+		by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)['name']
+		orders = self.BDmanager.get_by('active','orders',0)
+		self.log('INFO','Librarian {} whant to see all whaiting orders'.format(by_who))
+		return [dict(zip(['id', 'time', 'table', 'user_id', 'doc_id','active', 'time_out'], order)) for order in orders]
+	
+	def get_all_returned_orders(self, by_who_id=-1):
+		by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)['name']
+		orders = self.BDmanager.get_by('active','orders',2)
+		self.log('INFO','Librarian {} whant to see all returned orders'.format(by_who))
+		return [dict(zip(['id', 'time', 'table', 'user_id', 'doc_id','active', 'time_out'], order)) for order in orders]
+	
 	# Method for adding the book in database
 	# param: name - Name of the book
 	# param: description - about what this book
@@ -294,35 +344,9 @@ class Controller:
 		elif type == 'media':
 			return dict(
 				zip(['id', 'title', 'authors', 'type', 'count', 'free_count', 'price', 'keywords'], list(doc_tuple)))
-
-	def get_user_orders(self, user_id):
-		user = self.get_user(user_id)
-		if not user:
-			return []
-		orders_id = eval(user['current_docs'])
-		print(orders_id)
-		output = []
-		keys = ['doc_dict', 'time', 'time_out']
-		for order_id in orders_id:
-			order = self.BDmanager.select_label('orders', order_id)
-			if order == None:
-				continue
-			doc = self.BDmanager.select_label(order[2], order[3])
-			if doc == None:
-				continue
-			doc_dict = self.doc_tuple_to_dict(order[2], doc)
-			print(doc_dict)
-			output.append(dict(zip(keys, [doc_dict, order[1], order[5]])))
-		return output
 	
 	def get_document(self,doc_id,type_bd):
 		return self.doc_tuple_to_dict(type_bd,self.BDmanager.select_label(type_bd,doc_id))
-
-	# Return all users who don`t confirmed
-	def get_all_unconfirmed(self):
-		rows = self.BDmanager.select_all("unconfirmed")
-		return [{'id': user[0], 'name': user[1], 'phone': user[2], 'address': user[3], 'status': user[4]} for user in
-				rows]
 
 	# Return all books from database
 	def get_all_books(self):
