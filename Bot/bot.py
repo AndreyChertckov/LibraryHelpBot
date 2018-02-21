@@ -31,11 +31,10 @@ class LibraryBot:
         self.is_adding = {}
         self.inline_key = {}
 
+        self.dispatcher.add_handler(CommandHandler('start', self.start))
         self.add_user_handlers()
         self.add_admin_handlers()
-        start_handler = CommandHandler('start', self.start)
 
-        self.dispatcher.add_handler(start_handler)
         # self.dispatcher.add_error_handler(self.error)
 
         self.updater.start_polling()
