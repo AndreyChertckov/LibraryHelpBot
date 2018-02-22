@@ -504,6 +504,31 @@ def test_get_orders():
 	clear_tables()
 	assert(True)
 
+def test_get_documents_by_title():
+
+	cntrl = create_controller('test_get_documents_by_title')
+
+	test_book = {'title': 'Test','overview':'TESTTEST','authors':'tEsT','count':2,'price':123,'keywords':'0','best_seller':0}
+	cntrl.add_book(**test_book)
+
+	doc = cntrl.get_documents_by_title(test_book['title'],'book')[0]
+	doc.pop('id',0)
+	doc.pop('free_count',0)
+	clear_tables()
+	assert(doc == test_book)
+
+def test_get_documents_by_author():
+	
+	cntrl = create_controller('test_get_documents_by_title')
+
+	test_book = {'title': 'Test','overview':'TESTTEST','authors':'tEsT;kek','count':2,'price':123,'keywords':'0','best_seller':0}
+	cntrl.add_book(**test_book)
+
+	doc1 = cntrl.get_documents_by_authors(['kek'],'book')[0]
+	doc2 = cntrl.get_documents_by_authors(['tEsT'],'book')[0]
+	doc3 = cntrl.get_documents_by_authors(['kek','tEsT'],'book')[0]
+	assert(doc1 == doc2 and doc2 == doc3)
+
 def clear_tables():
 	os.remove('test.db')
 

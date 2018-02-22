@@ -1,6 +1,5 @@
 from Bot.main import start_bot
 from Controller.controller import Controller
-from Controller.user_story import user_story 
 import sys, getopt,os
 
 def main():
@@ -15,10 +14,7 @@ def main():
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
-            print('main.py -t -s --log_console --log_file=<filelog> --database=<filedb>')
-            sys.exit()
-        elif opt == '-s':
-            user_story()
+            print('main.py -t --log_console --log_file=<filelog> --database=<filedb>')
             sys.exit()
         elif opt == '-t':
             os.system('python -m pytest -vv Controller/test.py')

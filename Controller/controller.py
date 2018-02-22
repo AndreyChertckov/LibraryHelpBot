@@ -18,7 +18,6 @@ class Controller:
 		if lc or lf:
 			self.is_log = True
 			logger_str = 'controller' if not test_logging else 'controller_' + name_test
-			print(logger_str)
 			self.logger = logging.getLogger(logger_str)
 			self.logger.setLevel(logging.DEBUG)
 			formater = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -164,6 +163,12 @@ class Controller:
 		else:
 			return d['unauthorized']
 
+	def get_user_by_name(self, name, by_who_id = -1):
+		by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)
+		user = self.BDmanager.get_by('name','patrons',name)[0]
+		self.log('INFO','Get user with name {} by {}'.format(name,by_who))
+		return dict(zip(['id','name','address','phone','history','current_docs','status'],user))
+		
 	# Check out book
 	# param : user_id - id of user
 	# param : book_id - id of book
@@ -344,7 +349,7 @@ class Controller:
 		elif type == 'media':
 			return dict(
 				zip(['id', 'title', 'authors', 'type', 'count', 'free_count', 'price', 'keywords'], list(doc_tuple)))
-	
+
 	def get_document(self,doc_id,type_bd):
 		return self.doc_tuple_to_dict(type_bd,self.BDmanager.select_label(type_bd,doc_id))
 
@@ -369,10 +374,28 @@ class Controller:
 		return [dict(zip(['id', 'title', 'authors', 'type', 'count', 'free_count', 'price', 'keywords'], list(media)))
 				for media in rows]
 
-	def get_all_doctype(self, doc_type):
+	def get_all_doctype(self, doc_type,by_who_id = -1):
+		by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)['name']
 		if doc_type == 'book':
 			return self.get_all_books()
 		elif doc_type == 'article':
 			return self.get_all_articles()
 		elif doc_type == 'media':
 			return self.get_all_media()
+		self.log('INFO', 'Get all {} by {}.'.format(doc_type.capitalize(),by_who))
+	
+	def get_documents_by_title(self, title,type_db,by_who_id = -1):
+		by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)['name']
+		documents = self.BDmanager.get_by('name',type_db,title)
+		self.log('INFO', 'Get {} by title {} by {}.'.format(type_db.capitalize(),title,by_who))
+		return [self.doc_tuple_to_dict(type_db,i) for i in documents]
+	
+	def get_documents_by_authors(self,authors,type_db,by_who_id = -1):
+		by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)['name']
+		documents = self.get_all_doctype(type_db)
+		output = []
+		for doc in documents:
+			if all([author in doc['authors'].split(';') for author in authors]):
+				output.append(doc)
+		self.log('INFO', 'Get {} by authors: {}.'.format(type_db.capitalize(),', '.join(authors)))
+		return output
