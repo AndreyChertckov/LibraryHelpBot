@@ -21,10 +21,6 @@ def get_key(bot, update):
     bot.send_message(chat_id=update.message.chat_id, text=key_gen())
 
 
-def randint(min=0, max=2**40 - 1):
-    return random.randint(min, max)
-
-
 def data_checker(user):
     name = user['name']
     address = user["address"]
