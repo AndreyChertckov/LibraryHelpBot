@@ -1,6 +1,10 @@
+import getopt
+import os
+import sys
+
 from Bot.bot import start_bot
 from Controller.controller import Controller
-import sys, getopt,os
+
 
 def main():
     file_log = 'controller.log'
@@ -8,22 +12,23 @@ def main():
     lc = False
     lf = False
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'h:s:t', ['log_console', 'log_file=', 'database='])
+        opts, args = getopt.getopt(sys.argv[1:], 'h:s:t:c', ['log_file=', 'database='])
     except getopt.GetoptError:
-        print('main.py -t --log_console --log_file=<filelog> --database=<filedb>')
+        print('main.py -t -c --log_file=<filelog> --database=<filedb>')
         sys.exit(2)
     for opt, arg in opts:
+        print(opt)
         if opt == '-h':
-            print('main.py -t --log_console --log_file=<filelog> --database=<filedb>')
+            print('main.py -t -c --log_file=<filelog> --database=<filedb>')
             sys.exit()
         elif opt == '-t':
             os.system('python -m pytest -vv Controller/test.py')
             sys.exit()
-        elif opt == "--log_console":
+        elif opt == "-c":
             lc = True
         elif opt == "--log_file":
             if arg == '':
-                print('main.py --log_console --log_file=<filelog> --database=<filedb>')
+                print('main.py -lc --log_file=<filelog> --database=<filedb>')
                 sys.exit()
             lf = True
             file_log = arg
