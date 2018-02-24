@@ -60,14 +60,14 @@ class LibraryBot:
 
     def add_admin_handlers(self):
         self.dispatcher.add_handler(CommandHandler('get_key', utils.get_key, filters=UserFilter(3)))
-        self.dispatcher.add_handler(MHandler(WordFilter("User management👥") & UserFilter(3), self.user_manage))
+        self.dispatcher.add_handler(MHandler(WordFilter("User management 👥") & UserFilter(3), self.user_manage))
 
         self.dispatcher.add_handler(MHandler(WordFilter("Confirm application📝") & UserFilter(3), self.confirm))
         self.dispatcher.add_handler(MHandler(WordFilter("Check overdue📋") & UserFilter(3), self.cancel))
         self.dispatcher.add_handler(MHandler(WordFilter("Show users👥") & UserFilter(3), self.show_users))
 
         self.dispatcher.add_handler(
-            MHandler(WordFilter("Material management📚") & UserFilter(3), self.mat_manage))
+            MHandler(WordFilter("Material management 📚") & UserFilter(3), self.mat_manage))
         self.dispatcher.add_handler(CallbackQueryHandler(self.call_back))
 
         doc_type = lambda key: lambda bot, update: self.start_adding(bot, update, key)
@@ -133,7 +133,7 @@ class LibraryBot:
             ["{}) {} - {}".format(i + 1, doc['title'], doc["authors"]) for i, doc in enumerate(docs[0])])
         keyboard = [[IKB(str(i + 1), callback_data=str(i)) for i in range(len(docs[0]))]]
         keyboard += [[IKB("⬅", callback_data='prev'), IKB("➡️", callback_data='next')]]
-        update.message.reply_text(text=text_message + "\nCurrent page: " + str(1), reply_markup=IKM(keyboard))
+        update.message.reply_text(text=text_message + "\nCurrent page: {}/{}".format(str(1), len(docs)), reply_markup=IKM(keyboard))
 
     def library_flip(self, bot, update):
         query = update.callback_query

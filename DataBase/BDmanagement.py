@@ -17,9 +17,9 @@ from sqlite3 import Error
 
 class BDManagement:
     # initializion of object
-    def __init__(self, file = 'DataBase.db'):
+    def __init__(self, file='DataBase.db'):
         self.file = file
-        #self.drop_table("orders")
+        # self.drop_table("orders")
         self.__create_tables()
 
     # Get all data from some table
@@ -89,7 +89,7 @@ class BDManagement:
         cur.execute(sql,
                     (newDoc.name, newDoc.authors, newDoc.description, newDoc.count,
                      newDoc.free_count,
-                     newDoc.price,newDoc.best_seller,newDoc.keywords))
+                     newDoc.price, newDoc.best_seller, newDoc.keywords))
 
     # Add new media to DB
     # params:
@@ -101,7 +101,7 @@ class BDManagement:
         cur = self.__create_connection(self.file).cursor()
         cur.execute(sql, (
             self.get_max_id("media") + 1, newMed.name, newMed.authors, newMed.type, newMed.count, newMed.free_count,
-            newMed.price,newMed.keywords,newMed.best_seller))
+            newMed.price, newMed.keywords, newMed.best_seller))
 
     # Add new article to DB
     # params:
@@ -113,7 +113,8 @@ class BDManagement:
         cur = self.__create_connection(self.file).cursor()  # cursor()
 
         cur.execute(sql, (newArticle.name, newArticle.authors, newArticle.journal_name,
-                          newArticle.count, newArticle.free_count, newArticle.price,newArticle.keywords,newArticle.issue,newArticle.editor,newArticle.date,newArticle.best_seller))
+                          newArticle.count, newArticle.free_count, newArticle.price, newArticle.keywords,
+                          newArticle.issue, newArticle.editor, newArticle.date, newArticle.best_seller))
 
     # Add new 'patron' to DB
     # params:
@@ -129,7 +130,7 @@ class BDManagement:
     # ---set - what to update(string)
     # ---newLabel - cortege , containing updated information
     def edit_label(self, table, sets, newLabels, id):
-        sql = "UPDATE " + table + " SET " + ', '.join([set+'=?' for set in sets]) + " WHERE id=?"
+        sql = "UPDATE " + table + " SET " + ', '.join([set + '=?' for set in sets]) + " WHERE id=?"
         cur = self.__create_connection(self.file).cursor()
         cur.execute(sql, tuple(newLabels + [id]))
 
@@ -177,84 +178,84 @@ class BDManagement:
 
         self.__create_table("""
                 CREATE TABLE IF NOT EXISTS librarians (
-                id integer PRIMARY KEY ,
-                name text NOT NULL,
-                phone text,
-                address text,
-                type text
+                id INTEGER PRIMARY KEY ,
+                name TEXT NOT NULL,
+                phone TEXT,
+                address TEXT,
+                type TEXT
               ); """);
         self.__create_table("""
                         CREATE TABLE IF NOT EXISTS unconfirmed (
-                        id integer PRIMARY KEY,
-                        name text NOT NULL,
-                        phone text,
-                        address text,
-                        type text
+                        id INTEGER PRIMARY KEY,
+                        name TEXT NOT NULL,
+                        phone TEXT,
+                        address TEXT,
+                        type TEXT
                       ); """);
         self.__create_table("""
                  CREATE TABLE IF NOT EXISTS patrons (
-                 id integer PRIMARY KEY,
-                 name text NOT NULL,
-                 phone text,
-                 address text,
-                 history text,
-                 current_books text,
-                 type text
+                 id INTEGER PRIMARY KEY,
+                 name TEXT NOT NULL,
+                 phone TEXT,
+                 address TEXT,
+                 history TEXT,
+                 current_books TEXT,
+                 type TEXT
                   ); """);
 
         self.__create_table("""
               CREATE TABLE IF NOT EXISTS book(
-              id integer PRIMARY KEY AUTOINCREMENT,
-              name text NOT NULL,
-              author text NOT NULL,
-              description text NOT NULL,
-              count integer,
-             free_count integer,
-             price integer,
-             best_seller integer,
-             keywords text);
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              name TEXT NOT NULL,
+              author TEXT NOT NULL,
+              description TEXT NOT NULL,
+              count INTEGER,
+             free_count INTEGER,
+             price INTEGER,
+             best_seller INTEGER,
+             keywords TEXT);
         """)
         self.__create_table("""CREATE TABLE IF NOT EXISTS article(
-            id integer PRIMARY KEY AUTOINCREMENT,
-            name text NOT NULL,
-            authors text,
-            journal_name text,
-            count integer,
-            free_count integer,
-            price integer,
-            keywords text,
-            issue text,
-            editor text,
-            date text,
-            best_seller integer);
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            authors TEXT,
+            journal_name TEXT,
+            count INTEGER,
+            free_count INTEGER,
+            price INTEGER,
+            keywords TEXT,
+            issue TEXT,
+            editor TEXT,
+            date TEXT,
+            best_seller INTEGER);
         """)
         self.__create_table("""CREATE TABLE IF NOT EXISTS media(
-                id integer PRIMARY KEY AUTOINCREMENT,
-                name text NOT NULL,
-                authors text,
-                type text,
-                count integer,
-                free_count integer,
-                price integer,
-                keywords text,
-                best_seller integer);
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                authors TEXT,
+                type TEXT,
+                count INTEGER,
+                free_count INTEGER,
+                price INTEGER,
+                keywords TEXT,
+                best_seller INTEGER);
                 """)
         self.__create_table("""
             CREATE TABLE IF NOT EXISTS chats (
-            chat_id integer PRIMARY KEY,
+            chat_id INTEGER PRIMARY KEY,
             table_text NOT NULL,
-            id integer);
+            id INTEGER);
         """)
 
         self.__create_table("""
              CREATE TABLE  IF NOT EXISTS orders (
-             id integer PRIMARY KEY AUTOINCREMENT,
-             date text NOT NULL,
-             storing_table text,
-             doc_id integer,
-             user_id integer,
+             id INTEGER PRIMARY KEY AUTOINCREMENT,
+             date TEXT NOT NULL,
+             storing_table TEXT,
+             doc_id INTEGER,
+             user_id INTEGER,
              out_of_time string,
-             active integer,
+             active INTEGER,
              FOREIGN KEY (user_id) REFERENCES patrons (id)
              );
         """)
@@ -270,21 +271,17 @@ class BDManagement:
 
     def get_max_id(self, table):
         a = self.__create_connection(self.file).execute("SELECT max(id) from " + table).fetchone()[0]
-        if (a == None):
-            return 0;
-        else:
-            return a;
+        return a if a else 0
 
     def get_by(self, get_by_what, get_from, get_value):
         sql = "SELECT * from " + get_from + " WHERE " + get_by_what + "=?"
         return self.__create_connection(self.file).execute(
-            sql,(get_value,)).fetchall()
+            sql, (get_value,)).fetchall()
 
     def get_by_parameters(self, get_by_whats, get_from, get_values):
         sql = "SELECT * from " + get_from + " WHERE " + ' AND '.join([param + '=?' for param in get_by_whats])
         return self.__create_connection(self.file).execute(
-            sql,tuple(get_values)).fetchall()
-    
+            sql, tuple(get_values)).fetchall()
 
     def get_label(self, what_to_select, from_table, id):
         return self.__create_connection(self.file).execute(
