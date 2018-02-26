@@ -173,7 +173,7 @@ class LibraryBot:
             elif doc_type == "media":
                 text = """Free copy: {free_copy}""".format(**doc)
             if self.cntrl.user_type(chat) == 2:
-                keyboard = [[IKB("Order the book", callback_data='order ' + query.data),
+                keyboard = [[IKB("Order the document", callback_data='order ' + query.data),
                              IKB("Cancel", callback_data='cancel')]]
             else:
                 keyboard = [[IKB("Cancel", callback_data='cancel')]]
@@ -183,9 +183,8 @@ class LibraryBot:
         elif query.data.split(" ")[0] == 'order':
             k = int(query.data.split(" ")[1])
             doc = docs[self.pages[chat][0]][k]
-            status, report = self.cntrl.check_out_doc(chat, doc['id'], type_bd=doc_type, returning_time=2)
-            print(status, report)
-            message = "Your order was successful.\nCollect the book from the library not later than 4 hours" if status else "You already have this document"
+            status, report = self.cntrl.check_out_doc(chat, doc['id'], type_bd=doc_type)
+            message = "Your order was successful.\nYou may take the document during library working hours." if status else "You already have this document"
             bot.edit_message_text(text=message, chat_id=chat, message_id=query.message.message_id)
 
     def user_orders(self, bot, update):

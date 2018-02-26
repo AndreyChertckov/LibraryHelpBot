@@ -199,7 +199,6 @@ class Controller:
                     current_docs_id.append(order[3])
 
             if doc_id in current_docs_id:
-                print(self.get_user(user_id), self.get_document(doc_id, type_bd), doc_id, type_bd)
                 self.log('INFO', 'User {} already have copy of document \'{}\''.format(
                     self.get_user(user_id)['name'], self.get_document(doc_id, type_bd)['title']))
                 return False, 'User alredy have copy of document'
@@ -223,7 +222,6 @@ class Controller:
             self.BDmanager.edit_label(type_bd, ["free_count"], [free_count], doc_id)
             self.BDmanager.edit_label("patrons", ["history", "current_books"], [str(history), str(current_orders)],
                                       user_id)
-            print()
             self.log(
                 'INFO', 'User {}({}) want to check out document \'{}\' for {} weeks. Returning time is {}'.format(
                     self.get_user(user_id)['name'],
@@ -357,7 +355,7 @@ class Controller:
             return dict(
                 zip(['id', 'title', 'authors', 'overview', 'count', 'free_count', 'price', 'best_seller', 'keywords'],
                     list(doc_tuple)))
-        elif type == 'arcticle':
+        elif type == 'article':
             return dict(zip(
                 ['id', 'title', 'authors', 'journal', 'count', 'free_count', 'price', 'keywords', 'issue', 'editors',
                  'date'], list(doc_tuple)))
