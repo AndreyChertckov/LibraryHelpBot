@@ -235,7 +235,7 @@ def test_ninth():
 
     is_user_have_book = order['docId'] == book_id
     is_book_free_count_decremented = book_db['free_count'] == book_db['count'] - 1
-    is_out_of_time_equality = order['out_of_time'] == order['time'] + timedelta(weeks=2)
+    is_out_of_time_equality = order['out_of_time'] == order['time'] + timedelta(weeks=3)
     clear_tables()
     assert(is_user_have_book and is_book_free_count_decremented and is_out_of_time_equality)
 

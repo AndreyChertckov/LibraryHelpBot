@@ -182,10 +182,13 @@ class Controller:
             self.log('WARNING', 'Document with id {} not found.'.format(doc_id))
             return False, 'Document doesn`t exist'
 
-        if returning_time == 0:
+        if returning_time == 0 and type_bd == 'book':
             is_best_seller = self.BDmanager.get_label('best_seller', type_bd, doc_id) == 1
             user_status = self.BDmanager.get_label('type', 'patrons', user_id)
-            returning_time = 2 if user_status == 'Student' or is_best_seller else 4
+            returning_time = 3 if user_status == 'Student' else 4
+            returning_time = 2 if is_best_seller else returning_time
+        elif type_bd != 'book':
+            returning_time == 2
 
         free_count = int(self.BDmanager.get_label("free_count", type_bd, doc_id))
         if free_count > 0:
