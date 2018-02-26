@@ -160,7 +160,7 @@ class LibraryBot:
                  enumerate(docs[self.pages[chat][0]])])
             keyboard = [[IKB(str(i + 1), callback_data=str(i)) for i in range(len(docs[self.pages[chat][0]]))]]
             keyboard += [[IKB("⬅", callback_data='prev'), IKB("➡️", callback_data='next')]]
-            bot.edit_message_text(text=text_message + "\nCurrent page: " + str(self.pages[chat][0] + 1), chat_id=chat,
+            bot.edit_message_text(text=text_message + "\nCurrent page: {}/{}".format(self.pages[chat][0] + 1, len(docs)), chat_id=chat,
                                   message_id=query.message.message_id, reply_markup=IKM(keyboard))
         elif utils.is_int(query.data):
             k = int(query.data)
@@ -184,6 +184,7 @@ class LibraryBot:
             k = int(query.data.split(" ")[1])
             doc = docs[self.pages[chat][0]][k]
             status, report = self.cntrl.check_out_doc(chat, doc['id'], type_bd=doc_type, returning_time=2)
+            print(status, report)
             message = "Your order was successful.\nCollect the book from the library not later than 4 hours" if status else "You already have this document"
             bot.edit_message_text(text=message, chat_id=chat, message_id=query.message.message_id)
 
@@ -223,7 +224,7 @@ class LibraryBot:
                     self.pages[chat] = max_page
                 else:
                     self.pages[chat] -= 1
-
+            print(docs)
             text_message = ("\n" + "-" * 50 + "\n").join(
                 ["{}) {}, till {}".format(i + 1, doc['doc_dict']['title'], doc["time_out"]) for i, doc in
                  enumerate(docs[self.pages[chat]])])
