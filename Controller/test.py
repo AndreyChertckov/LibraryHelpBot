@@ -548,6 +548,21 @@ def test_get_documents_by_authors():
     assert (doc1 == doc2 and doc2 == doc3)
 
 
+def test_check_out_article():
+    cntrl = create_controller('test_check_out_article')
+
+    test_article = {'title':'test_title','authors':'test_author','journal':'journala','issue':'satohue','editors':'editor1','date':'2017-08-01','keywords':'','price':1,'count':3,'best_seller':0}
+    test_user = {'id': 1, 'name': 'test', 'address': 'tEsT',
+                 'status': 'Student', 'phone': '987', 'history': [], 'current_books': []}
+    cntrl.add_article(**test_article)
+    cntrl.BDmanager.add_patron(Patron(**test_user))
+    doc_id = cntrl.get_documents_by_title(test_article['title'],'article')[0]['id']
+    cntrl.check_out_doc(test_user['id'],doc_id,'article')
+    is_decremented =cntrl.get_document(doc_id,'article')['free_count'] == test_article['count'] - 1
+    clear_tables()
+    assert(is_decremented)
+
+
 def clear_tables():
     os.remove('test.db')
 

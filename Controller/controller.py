@@ -331,7 +331,7 @@ class Controller:
 
     def add_article(self, title, authors, journal, issue, editors, date, keywords, price, count, best_seller):
         self.BDmanager.add_article(
-            JournalArticle(title, authors, journal, count, 0, price, keywords, issue, editors, date, best_seller))
+            JournalArticle(title, authors, journal, count, count, price, keywords, issue, editors, date, best_seller))
 
     def add_document(self, doc, key, by_who_id=0):
         doc['best_seller'] = 0
