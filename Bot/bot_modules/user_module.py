@@ -43,6 +43,7 @@ class User_module:
         patrons = [patrons[i * n:(i + 1) * n] for i in range(len(patrons) // n + 1) if i * n < len(patrons)]
         max_page = len(patrons) - 1
         if (query.data in ["prev", "next", 'cancel']) and (max_page or query.data == 'cancel'):
+            self.modify.pop(chat, 0)
             if query.data == "next":
                 if self.pages[chat][0] == max_page:
                     self.pages[chat][0] = 0
@@ -68,8 +69,8 @@ class User_module:
             user_id = user['id']
             orders = self.cntrl.get_user_orders(user_id)
             text = """
-            Name: {name}\nAddress: {address}\nPhone: {phone}\nStatus: {status}\nTaken books: """.format(**user)
-            text += "{}\nOverdue books: ".format(len(orders))
+            Name: {name}\nAddress: {address}\nPhone: {phone}\nStatus: {status}\nTaken documents: """.format(**user)
+            text += "{}\nOverdue documents: ".format(len(orders))
             text += str(len([i for i in orders if datetime.strptime(i['time_out'], "%Y-%m-%d") < datetime.today()]))
             # orders = "\n".join(["{}) {} -  till {}".format(i+1, doc['doc_dict']['title'], doc['time_out']) for i, doc in enumerate(orders)])
             # text += orders if orders else "This user has not documents"
@@ -79,9 +80,7 @@ class User_module:
             bot.edit_message_text(text=text, chat_id=chat, message_id=query.message.message_id,
                                   reply_markup=IKM(keyboard))
         elif query.data == 'order':
-            print(self.pages)
             k = self.pages[chat][1]
-            print(k)
             user = patrons[self.pages[chat][0]][k]
             user_id = user['id']
             orders = self.cntrl.get_user_orders(user_id)
@@ -92,3 +91,29 @@ class User_module:
             # keyboard = [[IKB(str(i + 1), callback_data=str(i)) for i in range(len(patrons[self.pages[chat][0]]))]]
             keyboard = [[IKB("Cancel", callback_data='cancel')]]
             bot.edit_message_text(text=orders, chat_id=chat, message_id=query.message.message_id, reply_markup=IKM(keyboard))
+        elif query.data == 'edit':
+            k = self.pages[chat][1]
+            user = patrons[self.pages[chat][0]][k]
+            user_id = user['id']
+            keyboard = [[IKB("Name", callback_data='e1'), IKB("Phone", callback_data='e3')],
+                        [IKB("Address", callback_data='e2'), IKB("Status", callback_data='e4')],
+                        [IKB("Cancel", callback_data='cancel')]]
+            text = "Choose edited parameter or press cancel"
+            bot.edit_message_text(text=text, chat_id=chat, message_id=query.message.message_id, reply_markup=IKM(keyboard))
+        elif query.data in ['e1', 'e2', 'e3', 'e4']:
+            k = self.pages[chat][1]
+            user = patrons[self.pages[chat][0]][k]
+            keyboard = [[IKB("Cancel", callback_data='cancel')]]
+            params = dict(zip(['e1', 'e2', 'e3', 'e4'], func_data.lists["reg_fields"]))
+            text = 'Enter new {}.\nOld value - {}.'.format(params[query.data], user[params[query.data]])
+            self.modify[chat] = ['user', user, params[query.data]]
+            bot.edit_message_text(text=text, chat_id=chat, message_id=query.message.message_id, reply_markup=IKM(keyboard))
+
+    def modify_user(self, bot, update):
+        chat = update.message.chat_id
+        user, parametr = self.modify[chat][1:]
+        user[parametr] = update.message.text
+        self.cntrl.modify_user(user)
+        self.modify.pop(chat, 0)
+        bot.send_message(text='User data was updated', chat_id=chat)
+

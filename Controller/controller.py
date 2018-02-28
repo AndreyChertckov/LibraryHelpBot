@@ -70,7 +70,10 @@ class Controller:
         self.BDmanager.add_librarian(Librarian(**user_info))
         self.log('INFO', 'User {} is upgraded to librarian'.format(user_info['name']))
 
-    def modify_user(self, user_id, new_user_info, by_who_id=-1):
+    def modify_user(self, new_user_info, by_who_id=0):
+        user_id = new_user_info['id']
+        new_user_info['type'] = new_user_info['status']
+        new_user_info.pop('status')
         self.BDmanager.edit_label('patrons', list(new_user_info.keys()), list(new_user_info.values()), user_id)
         by_who = 'UNKNOW' if by_who_id == 0 else self.get_user(by_who_id)['name']
         log = 'User with id {} was modified by {}: '.format(
