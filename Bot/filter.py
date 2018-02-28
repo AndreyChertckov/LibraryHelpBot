@@ -12,13 +12,13 @@ class BooleanFilter(BaseFilter):
 
 
 # Filter for check location
-# class LocationFilter(BaseFilter):
-#     def __init__(self, obj, loc):
-#         self.obj = obj
-#         self.loc = loc
-#
-#     def filter(self, message):
-#         return self.obj.keyboard_dict[self.loc] == self.obj.keyboardmarkup.keyboard
+class LocationFilter(BaseFilter):
+    def __init__(self, obj, loc):
+        self.obj = obj
+        self.loc = loc
+
+    def filter(self, message):
+        return self.obj.keyboard_dict[self.loc] == self.obj.keyboardmarkup.keyboard
 
 
 # Filter for check word
