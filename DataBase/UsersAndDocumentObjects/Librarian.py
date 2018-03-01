@@ -10,4 +10,4 @@ class Librarian(userBase):
         userBase.__init__(self, name, address, status, id, phone)
 
     def get_info(self):
-        return (int(self.get_id()), self.get_name(), self.get_phone(), self.get_address(), self.get_type())
+        return (int(self.get_id()), self.get_name(), self.get_phone(), self.get_address())
