@@ -46,7 +46,7 @@ class Controller:
     # Put user in queue for accepting to the library
     # param: user_info: dictionary {id,name,address,status,phone}
     def registration(self, user_info):
-        unconfirmed_patron = Librarian(**user_info)
+        unconfirmed_patron = Patron(**user_info)
         self.BDmanager.add_unconfirmed(unconfirmed_patron)
         self.log('INFO', 'User {} signed up. Whaiting for librarians confirmation.'.format(user_info['name']))
 

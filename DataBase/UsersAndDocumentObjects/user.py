@@ -1,11 +1,10 @@
 class userBase:
     # base class for all types of users:patrons,librarians and others
 
-    def __init__(self, name, address, type, id, phone):
+    def __init__(self, name, address, id, phone):
         self.set_name(name)
         self.set_address(address)
         self.set_phone(phone)
-        self.__type = type
         self.__id = id
 
     # get name
@@ -16,10 +15,6 @@ class userBase:
     def set_name(self, name):
         self.__name = name
         return True
-
-    # get type
-    def get_type(self):
-        return self.__type
 
     # setting and getting phone number
     def set_phone(self, phone):

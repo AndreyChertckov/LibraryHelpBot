@@ -67,6 +67,7 @@ class Reg_module:
                     bot.send_message(chat_id=chat, text=is_incorrect[1],
                                      reply_markup=RKM(self.keyboard_dict["unauth"], True))
                 else:
+                    print(user)
                     self.cntrl.registration(user)
                     self.is_in_reg.pop(chat)
                     bot.send_message(chat_id=chat, text="Your request has been sent.\n Wait for librarian confirmation",

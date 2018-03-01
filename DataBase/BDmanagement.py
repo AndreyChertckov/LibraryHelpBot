@@ -53,8 +53,8 @@ class BDManagement:
     #  ---newLibr -  'Librarian' Object
 
     def add_librarian(self, newLibr):
-        sql = """INSERT INTO librarians(id,name,phone,address,type)
-                    VALUES(?,?,?,?,?)"""
+        sql = """INSERT INTO librarians(id,name,phone,address)
+                    VALUES(?,?,?,?)"""
         self.__add_new(sql, newLibr)
 
     # Add new unconfirmed user to DB
@@ -62,10 +62,10 @@ class BDManagement:
     #  ---newLibr -  'Librarian' Object (because unconfirmed user has the same attributes
     # like librarians
 
-    def add_unconfirmed(self, newLibr):
+    def add_unconfirmed(self, unconf):
         sql = """INSERT INTO unconfirmed(id,name,phone,address,type)
                     VALUES(?,?,?,?,?)"""
-        self.__add_new(sql, newLibr)
+        self.__add_new(sql, unconf)
 
     # Select some label
     # params:
