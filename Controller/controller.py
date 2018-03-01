@@ -346,6 +346,8 @@ class Controller:
 
     def modify_document(self, doc, type, by_who_id=0):
         doc_id = doc.pop('id')
+        doc['name'] = doc['title']
+        doc.pop('title')
         self.BDmanager.edit_label(type, list(doc.keys()), list(doc.values()), doc_id)
         by_who = 'UNKNOW' if by_who_id == 0 else self.get_user(by_who_id)['name']
         log = 'Document with id {} was modified by {}: '.format(
