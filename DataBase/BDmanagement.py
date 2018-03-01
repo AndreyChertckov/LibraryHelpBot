@@ -189,7 +189,7 @@ class BDManagement:
                         name TEXT NOT NULL,
                         phone TEXT,
                         address TEXT,
-                        type TEXT
+                        status TEXT
                       ); """);
         self.__create_table("""
                  CREATE TABLE IF NOT EXISTS patrons (
@@ -199,7 +199,7 @@ class BDManagement:
                  address TEXT,
                  history TEXT,
                  current_books TEXT,
-                 type TEXT
+                 status TEXT
                   ); """);
 
         self.__create_table("""
