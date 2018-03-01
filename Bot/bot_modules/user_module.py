@@ -118,7 +118,6 @@ class User_module:
             bot.edit_message_text(text=text, chat_id=chat, message_id=query.message.message_id,
                                   reply_markup=IKM(keyboard))
         elif query.data.split(" ")[0] == 'order' and utils.is_int(query.data.split(" ")[1]):
-            # print(self.pages[chat][2])
             self.location[chat] = ["notice", user_id]
             doc, time, time_out = self.pages[chat][2][int(query.data.split(" ")[1])].values()
             text = "User name: {name}\nPhone: {phone}\nStatus: {status}\n\n".format(**user)

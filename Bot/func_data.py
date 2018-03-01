@@ -75,7 +75,7 @@ lists = {
     "article": ['title', ' list of authors (separated by ";")', 'journal title', 'issue', 'issue editors',
                 'date of publication', 'keywords (separated by ";")', 'price', 'count'],
     "media": ['title', ' list of authors (separated by ";")', 'keywords (separated by ";")', 'price', 'count'],
-    "book_bd": ['title', 'authors', 'overview', 'keywords', 'price', 'count'],
+    "book_bd": ['title', 'authors', 'description', 'keywords', 'price', 'count'],
     "article_bd": ['title', 'authors', 'journal', 'issue', 'editors', 'date', 'keywords', 'price', 'count'],
     "media_bd": ['title', 'authors', 'keywords', 'price', 'count'],
 }

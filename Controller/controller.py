@@ -66,14 +66,11 @@ class Controller:
         user_info.pop('current_docs', 0)
         user_info.pop('history', 0)
         self.delete_user(user_id)
-        user_info["status"] = 'librarian'
         self.BDmanager.add_librarian(Librarian(**user_info))
         self.log('INFO', 'User {} is upgraded to librarian'.format(user_info['name']))
 
     def modify_user(self, new_user_info, by_who_id=0):
         user_id = new_user_info['id']
-        new_user_info['type'] = new_user_info['status']
-        new_user_info.pop('status')
         self.BDmanager.edit_label('patrons', list(new_user_info.keys()), list(new_user_info.values()), user_id)
         by_who = 'UNKNOW' if by_who_id == 0 else self.get_user(by_who_id)['name']
         log = 'User with id {} was modified by {}: '.format(
@@ -108,7 +105,7 @@ class Controller:
         by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)['name']
         self.log('INFO', 'Get all librarians by {}'.format(by_who))
         rows = self.BDmanager.select_all("librarians")
-        return [{'id': user[0], 'name': user[1], 'phone': user[2], 'address': user[3], 'status': user[4]} for user in
+        return [{'id': user[0], 'name': user[1], 'phone': user[2], 'address': user[3]} for user in
                 rows]
 
     # Return true if chat with user exist, false if not
@@ -140,7 +137,6 @@ class Controller:
             user['name'] = user_bd[1]
             user['phone'] = user_bd[2]
             user['address'] = user_bd[3]
-            user['status'] = user_bd[4]
         elif self.BDmanager.select_label('unconfirmed', user_id):
             user_bd = self.BDmanager.select_label('unconfirmed', user_id)
             user['id'] = user_bd[0]
@@ -346,8 +342,6 @@ class Controller:
 
     def modify_document(self, doc, type, by_who_id=0):
         doc_id = doc.pop('id')
-        doc['name'] = doc['title']
-        doc.pop('title')
         self.BDmanager.edit_label(type, list(doc.keys()), list(doc.values()), doc_id)
         by_who = 'UNKNOW' if by_who_id == 0 else self.get_user(by_who_id)['name']
         log = 'Document with id {} was modified by {}: '.format(
@@ -361,7 +355,7 @@ class Controller:
     def doc_tuple_to_dict(self, type, doc_tuple):
         if type == 'book':
             return dict(
-                zip(['id', 'title', 'authors', 'overview', 'count', 'free_count', 'price', 'best_seller', 'keywords'],
+                zip(['id', 'title', 'authors', 'description', 'count', 'free_count', 'price', 'best_seller', 'keywords'],
                     list(doc_tuple)))
         elif type == 'article':
             return dict(zip(
@@ -378,7 +372,7 @@ class Controller:
     def get_all_books(self):
         rows = self.BDmanager.select_all("book")
         return [dict(
-                zip(['id', 'title', 'authors', 'overview', 'count', 'free_count', 'price', 'best_seller', 'keywords'],
+                zip(['id', 'title', 'authors', 'description', 'count', 'free_count', 'price', 'best_seller', 'keywords'],
                     list(book))) for book in
                 rows]
 

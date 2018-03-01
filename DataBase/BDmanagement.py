@@ -181,8 +181,7 @@ class BDManagement:
                 id INTEGER PRIMARY KEY ,
                 name TEXT NOT NULL,
                 phone TEXT,
-                address TEXT,
-                type TEXT
+                address TEXT
               ); """);
         self.__create_table("""
                         CREATE TABLE IF NOT EXISTS unconfirmed (
@@ -206,8 +205,8 @@ class BDManagement:
         self.__create_table("""
               CREATE TABLE IF NOT EXISTS book(
               id INTEGER PRIMARY KEY AUTOINCREMENT,
-              name TEXT NOT NULL,
-              author TEXT NOT NULL,
+              title TEXT NOT NULL,
+              authors TEXT NOT NULL,
               description TEXT NOT NULL,
               count INTEGER,
              free_count INTEGER,
@@ -217,7 +216,7 @@ class BDManagement:
         """)
         self.__create_table("""CREATE TABLE IF NOT EXISTS article(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
+            title TEXT NOT NULL,
             authors TEXT,
             journal_name TEXT,
             count INTEGER,
@@ -225,13 +224,13 @@ class BDManagement:
             price INTEGER,
             keywords TEXT,
             issue TEXT,
-            editor TEXT,
+            editors TEXT,
             date TEXT,
             best_seller INTEGER);
         """)
         self.__create_table("""CREATE TABLE IF NOT EXISTS media(
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
+                title TEXT NOT NULL,
                 authors TEXT,
                 type TEXT,
                 count INTEGER,
