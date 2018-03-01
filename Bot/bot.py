@@ -30,7 +30,7 @@ class LibraryBot:
         self.pages = {}
         self.is_adding = {}
         self.inline_key = {}
-        self.modify = {}
+        self.location = {}
 
         self.dispatcher.add_handler(CommandHandler('start', self.start))
         self.add_user_handlers()
@@ -66,7 +66,8 @@ class LibraryBot:
         self.dispatcher.add_handler(MHandler(WordFilter("Confirm application📝") & UserFilter(3), self.confirm))
         self.dispatcher.add_handler(MHandler(WordFilter("Check overdue📋") & UserFilter(3), self.cancel))
         self.dispatcher.add_handler(MHandler(WordFilter("Show users👥") & UserFilter(3), self.show_users))
-        self.dispatcher.add_handler(MHandler(BooleanFilter(self.modify) & UserFilter(3), self.modify_user)) # To Do разделение на изменение юзеров и документов
+        self.dispatcher.add_handler(MHandler(LocationFilter(self.location, "user_modify") & UserFilter(3), self.modify_user))
+        self.dispatcher.add_handler(MHandler(LocationFilter(self.location, "notice") & UserFilter(3), self.notice_user))
 
         self.dispatcher.add_handler(
             MHandler(WordFilter("Material management 📚") & UserFilter(3), self.mat_manage))

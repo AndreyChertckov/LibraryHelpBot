@@ -18,7 +18,7 @@ class LocationFilter(BaseFilter):
         self.loc = loc
 
     def filter(self, message):
-        return self.obj.keyboard_dict[self.loc] == self.obj.keyboardmarkup.keyboard
+        return self.obj[message.chat_id][0] == self.loc
 
 
 # Filter for check word
