@@ -63,7 +63,7 @@ class BDManagement:
     # like librarians
 
     def add_unconfirmed(self, unconf):
-        sql = """INSERT INTO unconfirmed(id,name,phone,address,type)
+        sql = """INSERT INTO unconfirmed(id,name,phone,address,status)
                     VALUES(?,?,?,?,?)"""
         self.__add_new(sql, unconf)
 
