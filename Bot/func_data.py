@@ -8,7 +8,9 @@ keyboard_dict = {
     "reg_confirm": [["All is correct✅", "Something is incorrect❌"]],
     "lib_main": [['Books📖', 'Journal Articles📰', "Audio/Video materials📼", 'Cancel⤵️']],
     "cancel": [['Cancel⤵']],
-    "status": [['Student', 'Faculty (professor, instructor, TA)']]
+    "status": [['Student', 'Faculty (professor, instructor, TA)']],
+    "modMat": [['Apply✅', 'Cancel❌']]
+
 }
 
 sample_messages = {
@@ -76,7 +78,7 @@ lists = {
                 'date of publication', 'keywords (separated by ";")', 'price', 'count'],
     "media": ['title', ' list of authors (separated by ";")', 'keywords (separated by ";")', 'price', 'count'],
     "book_bd": ['title', 'authors', 'description', 'keywords', 'price', 'count'],
-    "article_bd": ['title', 'authors', 'journal', 'issue', 'editors', 'date', 'keywords', 'price', 'count'],
+    "article_bd": ['title', 'authors', 'journal_name', 'issue', 'editors', 'date', 'keywords', 'price', 'count'],
     "media_bd": ['title', 'authors', 'keywords', 'price', 'count'],
 }
 

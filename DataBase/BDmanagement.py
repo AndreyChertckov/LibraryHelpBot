@@ -63,7 +63,7 @@ class BDManagement:
     # like librarians
 
     def add_unconfirmed(self, unconf):
-        sql = """INSERT INTO unconfirmed(id,name,phone,address,type)
+        sql = """INSERT INTO unconfirmed(id,name,phone,address,status)
                     VALUES(?,?,?,?,?)"""
         self.__add_new(sql, unconf)
 
@@ -82,7 +82,7 @@ class BDManagement:
     #  ---newDoc -  'Document' Object
 
     def add_document(self, newDoc):
-        sql = """INSERT INTO book(name,author,description,count,free_count,price,best_seller,keywords)
+        sql = """INSERT INTO book(title,author,description,count,free_count,price,best_seller,keywords)
             VALUES (?,?,?,?,?,?,?,?)"""
 
         cur = self.__create_connection(self.file).cursor()
@@ -96,7 +96,7 @@ class BDManagement:
     # ---newMed - 'Media' object
 
     def add_media(self, newMed):
-        sql = """INSERT INTO media(id,name,authors,type,count,free_count,price,keywords,best_seller)
+        sql = """INSERT INTO media(id,title,authors,type,count,free_count,price,keywords,best_seller)
         VALUES(?,?,?,?,?,?,?,?,?)"""
         cur = self.__create_connection(self.file).cursor()
         cur.execute(sql, (
@@ -108,7 +108,7 @@ class BDManagement:
     # --- newArticle - 'JournalArticle' object
 
     def add_article(self, newArticle):
-        sql = """INSERT INTO article(name,authors,journal_name,count,free_count,price,keywords,issue,editor,date,best_seller)
+        sql = """INSERT INTO article(title,authors,journal_name,count,free_count,price,keywords,issue,editor,date,best_seller)
         VALUES(?,?,?,?,?,?,?,?,?,?,?)"""
         cur = self.__create_connection(self.file).cursor()  # cursor()
 
@@ -120,7 +120,7 @@ class BDManagement:
     # params:
     # ---newPatron - 'Patron' object
     def add_patron(self, newPatron):
-        sql = """ INSERT INTO patrons(id,name,address,phone,history,current_books,type)
+        sql = """ INSERT INTO patrons(id,name,address,phone,history,current_books,status)
                 VALUES (?,?,?,?,?,?,?)"""
         self.__add_new(sql, newPatron)
 

@@ -55,7 +55,7 @@ class Controller:
     def confirm_user(self, user_id, librarian_id=-1):
         user = self.BDmanager.select_label("unconfirmed", user_id)
         self.delete_user(user_id)
-        self.BDmanager.add_patron(Patron(user[1], user[3], user_id, user[4], user[2], [], []))
+        self.BDmanager.add_patron(Patron(user[1], user[3], user_id, user[4], user[2], [""], [""]))
         by_who = 'UNKNOW' if librarian_id == -1 else self.get_user(librarian_id)['name']
         self.log('INFO', 'User status {} is confirmed by {}.'.format(user[1], by_who))
 
