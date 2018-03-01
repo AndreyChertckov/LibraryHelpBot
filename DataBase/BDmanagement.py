@@ -120,7 +120,7 @@ class BDManagement:
     # params:
     # ---newPatron - 'Patron' object
     def add_patron(self, newPatron):
-        sql = """ INSERT INTO patrons(id,name,address,phone,history,current_books,type)
+        sql = """ INSERT INTO patrons(id, name, address, phone, history, current_books, status)
                 VALUES (?,?,?,?,?,?,?)"""
         self.__add_new(sql, newPatron)
 
