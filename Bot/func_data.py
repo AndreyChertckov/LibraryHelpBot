@@ -33,7 +33,7 @@ sample_messages = {
         Check whether all data is correct:
         Title: {title}
         Authors: {authors}
-        Overview: {overview}
+        Description: {description}
         Keywords: {keywords}
         Price: {price}
         Count: {count}
@@ -71,7 +71,7 @@ sample_messages = {
 lists = {
     "user_types": ['unauth', "unconf", "auth", 'admin'],
     "reg_fields": ["name", "address", "phone", "status"],
-    'book': ['title', 'list of authors (divided by ";")', 'overview', 'keywords (divided by ";")', 'price', 'count'],
+    'book': ['title', 'list of authors (divided by ";")', 'description', 'keywords (divided by ";")', 'price', 'count'],
     "article": ['title', ' list of authors (separated by ";")', 'journal title', 'issue', 'issue editors',
                 'date of publication', 'keywords (separated by ";")', 'price', 'count'],
     "media": ['title', ' list of authors (separated by ";")', 'keywords (separated by ";")', 'price', 'count'],

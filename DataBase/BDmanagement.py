@@ -81,40 +81,39 @@ class BDManagement:
     #  params:
     #  ---newDoc -  'Document' Object
 
-    def add_document(self, newDoc):
-        sql = """INSERT INTO book(title,author,description,count,free_count,price,best_seller,keywords)
+    def add_book(self, newDoc):
+        sql = """INSERT INTO book(title,authors,description,count,free_count,price,best_seller,keywords)
             VALUES (?,?,?,?,?,?,?,?)"""
 
         cur = self.__create_connection(self.file).cursor()
         cur.execute(sql,
-                    (newDoc.name, newDoc.authors, newDoc.description, newDoc.count,
-                     newDoc.free_count,
-                     newDoc.price, newDoc.best_seller, newDoc.keywords))
+                    (newDoc.title, newDoc.authors, newDoc.description, newDoc.count,
+                     newDoc.free_count, newDoc.price, newDoc.best_seller, newDoc.keywords))
 
     # Add new media to DB
     # params:
     # ---newMed - 'Media' object
 
     def add_media(self, newMed):
-        sql = """INSERT INTO media(id,title,authors,type,count,free_count,price,keywords,best_seller)
-        VALUES(?,?,?,?,?,?,?,?,?)"""
+        sql = """INSERT INTO media(id,title,authors,count,free_count,price,keywords)
+        VALUES(?,?,?,?,?,?,?)"""
         cur = self.__create_connection(self.file).cursor()
         cur.execute(sql, (
-            self.get_max_id("media") + 1, newMed.name, newMed.authors, newMed.type, newMed.count, newMed.free_count,
-            newMed.price, newMed.keywords, newMed.best_seller))
+            self.get_max_id("media") + 1, newMed.title, newMed.authors, newMed.count, newMed.free_count,
+            newMed.price, newMed.keywords))
 
     # Add new article to DB
     # params:
     # --- newArticle - 'JournalArticle' object
 
     def add_article(self, newArticle):
-        sql = """INSERT INTO article(title,authors,journal_name,count,free_count,price,keywords,issue,editor,date,best_seller)
-        VALUES(?,?,?,?,?,?,?,?,?,?,?)"""
+        sql = """INSERT INTO article(title,authors,journal,count,free_count,price,keywords,issue,editors,date)
+        VALUES(?,?,?,?,?,?,?,?,?,?)"""
         cur = self.__create_connection(self.file).cursor()  # cursor()
 
-        cur.execute(sql, (newArticle.name, newArticle.authors, newArticle.journal_name,
+        cur.execute(sql, (newArticle.title, newArticle.authors, newArticle.journal,
                           newArticle.count, newArticle.free_count, newArticle.price, newArticle.keywords,
-                          newArticle.issue, newArticle.editor, newArticle.date, newArticle.best_seller))
+                          newArticle.issue, newArticle.editors, newArticle.date))
 
     # Add new 'patron' to DB
     # params:
@@ -182,7 +181,7 @@ class BDManagement:
                 name TEXT NOT NULL,
                 phone TEXT,
                 address TEXT
-              ); """);
+              ); """)
         self.__create_table("""
                         CREATE TABLE IF NOT EXISTS unconfirmed (
                         id INTEGER PRIMARY KEY,
@@ -190,7 +189,7 @@ class BDManagement:
                         phone TEXT,
                         address TEXT,
                         status TEXT
-                      ); """);
+                      ); """)
         self.__create_table("""
                  CREATE TABLE IF NOT EXISTS patrons (
                  id INTEGER PRIMARY KEY,
@@ -200,7 +199,7 @@ class BDManagement:
                  history TEXT,
                  current_books TEXT,
                  status TEXT
-                  ); """);
+                  ); """)
 
         self.__create_table("""
               CREATE TABLE IF NOT EXISTS book(
@@ -218,7 +217,7 @@ class BDManagement:
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             title TEXT NOT NULL,
             authors TEXT,
-            journal_name TEXT,
+            journal TEXT,
             count INTEGER,
             free_count INTEGER,
             price INTEGER,
@@ -232,20 +231,12 @@ class BDManagement:
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 title TEXT NOT NULL,
                 authors TEXT,
-                type TEXT,
                 count INTEGER,
                 free_count INTEGER,
                 price INTEGER,
                 keywords TEXT,
                 best_seller INTEGER);
                 """)
-        self.__create_table("""
-            CREATE TABLE IF NOT EXISTS chats (
-            chat_id INTEGER PRIMARY KEY,
-            table_text NOT NULL,
-            id INTEGER);
-        """)
-
         self.__create_table("""
              CREATE TABLE  IF NOT EXISTS orders (
              id INTEGER PRIMARY KEY AUTOINCREMENT,
