@@ -30,8 +30,9 @@ class Reg_module:
     #  bot -- This object represents a Bot's commands
     #  update -- This object represents an incoming update
     def registration(self, bot, update):
+        # self.location = {}
         chat = update.message.chat_id
-        self.is_in_reg[chat] = [0, {"id": chat}]
+        self.location[chat] = ['reg', 0, {"id": chat}]
         bot.send_message(chat_id=chat, text=func_data.sample_messages['reg'])
         bot.send_message(chat_id=chat, text="Enter your name", reply_markup=RKR([[]]))
 
@@ -43,15 +44,15 @@ class Reg_module:
 
     def reg_steps(self, bot, update):
         chat = update.message.chat_id
-        step = self.is_in_reg[chat][0]
-        user = self.is_in_reg[chat][1]
+        step = self.location[chat][1]
+        user = self.location[chat][2]
         fields = func_data.lists["reg_fields"]
 
         if step < len(fields):
             text = update.message.text
             user[fields[step]] = text if text != "Faculty (professor, instructor, TA)" else "Faculty"
             step += 1
-            self.is_in_reg[chat][0] += 1
+            self.location[chat][1] += 1
             if step < len(fields):
                 keyboard = RKM(self.keyboard_dict["status"], True) if fields[step] == "status" else None
                 bot.send_message(chat_id=update.message.chat_id, text="Enter your {}".format(fields[step]),
@@ -62,18 +63,18 @@ class Reg_module:
                                  reply_markup=RKM(self.keyboard_dict["reg_confirm"], True))
         elif step == len(fields):
             if update.message.text == "All is correct✅":
-                is_incorrect = utils.data_checker(self.is_in_reg[chat][1])
+                is_incorrect = utils.data_checker(self.location[chat][2])
                 if is_incorrect[0]:
                     bot.send_message(chat_id=chat, text=is_incorrect[1],
                                      reply_markup=RKM(self.keyboard_dict["unauth"], True))
                 else:
                     print(user)
                     self.cntrl.registration(user)
-                    self.is_in_reg.pop(chat)
+                    self.location.pop(chat)
                     bot.send_message(chat_id=chat, text="Your request has been sent.\n Wait for librarian confirmation",
                                      reply_markup=RKM(self.keyboard_dict["unconf"], True))
             elif update.message.text == "Something is incorrect❌":
-                self.is_in_reg[chat] = [0, {"id": update.message.chat_id}]
+                self.location[chat] = ["reg", 0, {"id": update.message.chat_id}]
                 bot.send_message(chat_id=chat, text="Enter your name", reply_markup=RKR([[]]))
 
     def confirm(self, bot, update):
@@ -85,8 +86,7 @@ class Reg_module:
             bot.send_message(chat_id=chat, text="There are no application to confirm")
             return
         unconf_users = [unconf_users[i * n:(i + 1) * n] for i in range(len(unconf_users) // n + 1)]
-        if not (chat in self.pages):
-            self.pages[chat] = 0
+        self.pages[chat] = 0
         text_message = ("\n" + "-" * 50 + "\n").join(
             ["{}) {} - {}".format(i + 1, user['name'], user["status"]) for i, user in enumerate(unconf_users[0])])
         keyboard = [[IKB(str(i + 1), callback_data=str(i)) for i in range(len(unconf_users[0]))]]

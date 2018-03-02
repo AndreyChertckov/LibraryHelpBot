@@ -13,7 +13,7 @@ keyboard_dict = {
 
 sample_messages = {
     'reg': """
-        You have to provide your name, address, phone number and status (student or faculty).\n
+        You have to provide your full name, address, phone number and status (student or faculty).\n
         Example:
         Ivan Ivanov,
         ul. Universitetskaya 1, 2-100,

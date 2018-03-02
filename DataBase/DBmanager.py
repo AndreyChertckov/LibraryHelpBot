@@ -8,7 +8,6 @@ from sqlite3 import Error
 # existing tables:
 # ---patrons
 # ---librarians
-# ---chats - table containing chat id and type of the users
 # ---article
 # ---media
 # ---orders - table for keeping order history
@@ -32,21 +31,14 @@ class Manager:
         rows = cur.fetchall()
         return rows
 
-    # Add new chat to DB
-    # params:
-    # ---newChat -  'Chat' Object
-
-    def add_chat(self, newChat):
-        sql = """INSERT INTO chats(chat_id,table_,id) VALUES(?,?,?)"""
-        self.__add_new(sql, newChat)
-
     # Add new order to DB
     # params:
     #  ---newOrder -  'Order' Object
 
     def add_order(self, newOrder):
         sql = """INSERT INTO orders(date,storing_table,doc_id,user_id,out_of_time,active) VALUES(?,?,?,?,?,?)"""
-        self.__add_new(sql, newOrder)
+        self.add_new(sql, (newOrder.date, newOrder.table, newOrder.doc_id,
+                           newOrder.user_id, newOrder.out_of_time, newOrder.active))
 
     # Add new Librarian to DB
     # params:
@@ -55,7 +47,7 @@ class Manager:
     def add_librarian(self, newLibr):
         sql = """INSERT INTO librarians(id,name,phone,address)
                     VALUES(?,?,?,?)"""
-        self.__add_new(sql, newLibr)
+        self.add_new(sql, (newLibr.id, newLibr.name, newLibr.phone, newLibr.address))
 
     # Add new unconfirmed user to DB
     # params:
@@ -65,7 +57,7 @@ class Manager:
     def add_unconfirmed(self, unconf):
         sql = """INSERT INTO unconfirmed(id,name,phone,address,status)
                     VALUES(?,?,?,?,?)"""
-        self.__add_new(sql, unconf)
+        self.add_new(sql, (unconf.id, unconf.name, unconf.phone, unconf.address, unconf.status))
 
     # Select some label
     # params:
@@ -86,9 +78,8 @@ class Manager:
             VALUES (?,?,?,?,?,?,?,?)"""
 
         cur = self.__create_connection(self.file).cursor()
-        cur.execute(sql,
-                    (newDoc.title, newDoc.authors, newDoc.description, newDoc.count,
-                     newDoc.free_count, newDoc.price, newDoc.best_seller, newDoc.keywords))
+        self.add_new(sql, (newDoc.title, newDoc.authors, newDoc.description, newDoc.count, newDoc.free_count,
+                           newDoc.price, newDoc.best_seller, newDoc.keywords))
 
     # Add new media to DB
     # params:
@@ -97,10 +88,8 @@ class Manager:
     def add_media(self, newMed):
         sql = """INSERT INTO media(id,title,authors,count,free_count,price,keywords)
         VALUES(?,?,?,?,?,?,?)"""
-        cur = self.__create_connection(self.file).cursor()
-        cur.execute(sql, (
-            self.get_max_id("media") + 1, newMed.title, newMed.authors, newMed.count, newMed.free_count,
-            newMed.price, newMed.keywords))
+        self.add_new(sql, (self.get_max_id("media") + 1, newMed.title, newMed.authors, newMed.count,
+                           newMed.free_count, newMed.price, newMed.keywords))
 
     # Add new article to DB
     # params:
@@ -109,19 +98,17 @@ class Manager:
     def add_article(self, newArticle):
         sql = """INSERT INTO article(title,authors,journal,count,free_count,price,keywords,issue,editors,date)
         VALUES(?,?,?,?,?,?,?,?,?,?)"""
-        cur = self.__create_connection(self.file).cursor()  # cursor()
-
-        cur.execute(sql, (newArticle.title, newArticle.authors, newArticle.journal,
-                          newArticle.count, newArticle.free_count, newArticle.price, newArticle.keywords,
-                          newArticle.issue, newArticle.editors, newArticle.date))
+        self.add_new(sql, (newArticle.title, newArticle.authors, newArticle.journal,
+                           newArticle.count, newArticle.free_count, newArticle.price, newArticle.keywords,
+                           newArticle.issue, newArticle.editors, newArticle.date))
 
     # Add new 'patron' to DB
     # params:
     # ---newPatron - 'Patron' object
     def add_patron(self, newPatron):
-        sql = """ INSERT INTO patrons(id, name, address, phone, history, current_books, status)
-                VALUES (?,?,?,?,?,?,?)"""
-        self.__add_new(sql, newPatron)
+        sql = """INSERT INTO patrons(id, name, address, phone, history, current_books, status) VALUES (?,?,?,?,?,?,?)"""
+        self.add_new(sql, (newPatron.id, newPatron.name, newPatron.address, newPatron.phone,
+                           newPatron.history, newPatron.current_book, newPatron.status))
 
     # Updates some record
     # params:
@@ -254,9 +241,9 @@ class Manager:
     # params:
     # ---sql - sql command for adding new record
     # ---new - new record
-    def __add_new(self, sql, new):
+    def add_new(self, sql, new):
         cur = self.__create_connection(self.file).cursor()
-        cur.execute(sql, new.get_info())
+        cur.execute(sql, new)
         return cur.lastrowid
 
     def get_max_id(self, table):

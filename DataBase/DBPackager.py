@@ -2,6 +2,7 @@ class Packager:
 
     def __init__(self, parametrs):
         self.attrs = parametrs.keys()
+        self.params = parametrs
         for i in parametrs.items():
             setattr(self, *i)
 

@@ -47,12 +47,12 @@ class Controller:
     # param: user_id - id of user
     def confirm_user(self, user_id, librarian_id=-1):
         user = self.get_user(user_id)
-        user['history'] = []
-        user['current_books'] = []
+        user['history'] = str([])
+        user['current_books'] = str([])
         self.delete_user(user_id)
         self.DBmanager.add_patron(Packager(user))
         by_who = 'UNKNOW' if librarian_id == -1 else self.get_user(librarian_id)['name']
-        self.log('INFO', 'User status {} is confirmed by {}.'.format(user[1], by_who))
+        self.log('INFO', 'User status {} is confirmed by {}.'.format(user['name'], by_who))
 
     # Move patron from table patrons to table librarians
     # param: user_id : id of user
@@ -179,7 +179,7 @@ class Controller:
 
         if returning_time == 0 and type_bd == 'book':
             is_best_seller = self.DBmanager.get_label('best_seller', type_bd, doc_id) == 1
-            user_status = self.DBmanager.get_label('type', 'patrons', user_id)
+            user_status = self.DBmanager.get_label('status', 'patrons', user_id)
             returning_time = 3 if user_status == 'Student' else 4
             returning_time = 2 if is_best_seller else returning_time
         elif type_bd != 'book':
@@ -208,7 +208,7 @@ class Controller:
             time = time[:time.index(' ')]
             out_of_time = out_of_time[:out_of_time.index(' ')]
 
-            order = {'time': time, 'table': type_bd, "userId": user_id, "docId": doc_id, "active": 0,
+            order = {'date': time, 'table': type_bd, "user_id": user_id, "doc_id": doc_id, "active": 0,
                      'out_of_time': out_of_time}
 
             self.DBmanager.add_order(Packager(order))
