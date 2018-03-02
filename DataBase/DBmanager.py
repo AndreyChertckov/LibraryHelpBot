@@ -15,7 +15,7 @@ from sqlite3 import Error
 # ---book
 # ---unconfirmed - table containing new unconfirmed users
 
-class BDManagement:
+class Manager:
     # initializion of object
     def __init__(self, file='DataBase.db'):
         self.file = file

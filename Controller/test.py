@@ -12,17 +12,17 @@ def test_first():
                  'status': 'Student', 'phone': '987', 'history': [], 'current_books': []}
     test_book = {'title': 'Test', 'overview': 'TESTTEST', 'authors': 'tEsT', 'count': 2, 'price': 123, 'keywords': ''}
 
-    cntrl.BDmanager.add_patron(Packager(test_user))
+    cntrl.DBmanager.add_patron(Packager(test_user))
     cntrl.add_document(test_book, 'book')
-    book_id = cntrl.BDmanager.get_by('name', 'book', test_book['title'])[0][0]
+    book_id = cntrl.DBmanager.get_by('name', 'book', test_book['title'])[0][0]
 
     cntrl.check_out_doc(test_user['id'], book_id)
 
     user_db = cntrl.get_user(test_user['id'])
-    book_db_t = list(cntrl.BDmanager.get_by('name', 'book', test_book['title'])[0])
+    book_db_t = list(cntrl.DBmanager.get_by('name', 'book', test_book['title'])[0])
     book_db = dict(zip(['id', 'title', 'authors', 'overview', 'count', 'free_count', 'price'], book_db_t))
     order_id = int(eval(user_db['current_docs'])[0])
-    user_book_id = cntrl.BDmanager.get_by('id', 'orders', order_id)[0][3]
+    user_book_id = cntrl.DBmanager.get_by('id', 'orders', order_id)[0][3]
 
     is_user_have_book = user_book_id == book_id
     is_book_free_count_decremented = book_db['free_count'] == book_db['count'] - 1
@@ -36,7 +36,7 @@ def test_second():
     id_book_A = 1
     test_user = {'id': 1, 'name': 'test', 'address': 'test',
                  'status': 'Student', 'phone': '987', 'history': [], 'current_books': []}
-    cntrl.BDmanager.add_patron(Packager(test_user))
+    cntrl.DBmanager.add_patron(Packager(test_user))
     can_get_book = cntrl.check_out_doc(test_user['id'], id_book_A)
     clear_tables()
     assert (can_get_book)
@@ -49,18 +49,18 @@ def test_third():
                  'status': 'Faculty', 'phone': '987', 'history': [], 'current_books': []}
     test_book = {'title': 'Test', 'overview': 'TESTTEST', 'authors': 'tEsT', 'count': 2, 'price': 123, 'keywords': ''}
 
-    cntrl.BDmanager.add_patron(Packager(test_user))
+    cntrl.DBmanager.add_patron(Packager(test_user))
     cntrl.add_document(test_book, 'book')
-    book_id = cntrl.BDmanager.get_by('name', 'book', test_book['title'])[0][0]
+    book_id = cntrl.DBmanager.get_by('name', 'book', test_book['title'])[0][0]
 
     cntrl.check_out_doc(test_user['id'], book_id)
 
     user_db = cntrl.get_user(test_user['id'])
-    book_db_t = list(cntrl.BDmanager.get_by('name', 'book', test_book['title'])[0])
+    book_db_t = list(cntrl.DBmanager.get_by('name', 'book', test_book['title'])[0])
     book_db = dict(zip(['id', 'title', 'authors', 'overview', 'count', 'free_count', 'price', 'keywords'], book_db_t))
     order_id = int(eval(user_db['current_docs'])[0])
     order = dict(zip(['id', 'time', 'table', 'userId', 'docId', 'out_of_time'],
-                     list(cntrl.BDmanager.get_by('id', 'orders', order_id)[0])))
+                     list(cntrl.DBmanager.get_by('id', 'orders', order_id)[0])))
 
     order['time'] = datetime.strptime(order['time'], '%Y-%m-%d')
     order['out_of_time'] = datetime.strptime(order['out_of_time'], '%Y-%m-%d')
@@ -80,18 +80,18 @@ def test_fourth():
     test_book = {'title': 'Test', 'overview': 'TESTTEST', 'authors': 'tEsT',
                  'count': 2, 'price': 123, 'best_seller': 1, 'keywords': ''}
 
-    cntrl.BDmanager.add_patron(Packager(test_user))
+    cntrl.DBmanager.add_patron(Packager(test_user))
     cntrl.add_document(test_book, 'book')
-    book_id = cntrl.BDmanager.get_by('name', 'book', test_book['title'])[0][0]
+    book_id = cntrl.DBmanager.get_by('name', 'book', test_book['title'])[0][0]
 
     cntrl.check_out_doc(test_user['id'], book_id)
 
     user_db = cntrl.get_user(test_user['id'])
-    book_db_t = list(cntrl.BDmanager.get_by('name', 'book', test_book['title'])[0])
+    book_db_t = list(cntrl.DBmanager.get_by('name', 'book', test_book['title'])[0])
     book_db = dict(zip(['id', 'title', 'authors', 'overview', 'count', 'free_count', 'price', 'keywords'], book_db_t))
     order_id = int(eval(user_db['current_docs'])[0])
     order = dict(zip(['id', 'time', 'table', 'userId', 'docId', 'out_of_time'],
-                     list(cntrl.BDmanager.get_by('id', 'orders', order_id)[0])))
+                     list(cntrl.DBmanager.get_by('id', 'orders', order_id)[0])))
 
     order['time'] = datetime.strptime(order['time'], '%Y-%m-%d')
     order['out_of_time'] = datetime.strptime(order['out_of_time'], '%Y-%m-%d')
@@ -113,15 +113,15 @@ def test_fifth():
     test_user_3 = {'id': 3, 'name': 'test', 'address': 'test',
                    'status': 'Student', 'phone': '987', 'history': [], 'current_books': []}
 
-    cntrl.BDmanager.add_patron(Packager(test_user_1))
-    cntrl.BDmanager.add_patron(Packager(test_user_2))
-    cntrl.BDmanager.add_patron(Packager(test_user_3))
+    cntrl.DBmanager.add_patron(Packager(test_user_1))
+    cntrl.DBmanager.add_patron(Packager(test_user_2))
+    cntrl.DBmanager.add_patron(Packager(test_user_3))
 
     test_book = {'title': 'Test', 'overview': 'TESTTEST', 'authors': 'tEsT', 'count': 2, 'price': 123, 'keywords': ''}
 
     cntrl.add_document(test_book, 'book')
 
-    book_id = cntrl.BDmanager.get_by('name', 'book', test_book['title'])[0][0]
+    book_id = cntrl.DBmanager.get_by('name', 'book', test_book['title'])[0][0]
 
     is_first_user_check_out = cntrl.check_out_doc(test_user_1['id'], book_id)
     is_second_user_check_out = cntrl.check_out_doc(test_user_3['id'], book_id)
@@ -137,9 +137,9 @@ def test_sixth():
                  'status': 'Student', 'phone': '987', 'history': [], 'current_books': []}
     test_book = {'title': 'Test', 'overview': 'TESTTEST', 'authors': 'tEsT', 'count': 2, 'price': 123, 'keywords': ''}
 
-    cntrl.BDmanager.add_patron(Packager(test_user))
+    cntrl.DBmanager.add_patron(Packager(test_user))
     cntrl.add_document(test_book, 'book')
-    book_id = cntrl.BDmanager.get_by('name', 'book', test_book['title'])[0][0]
+    book_id = cntrl.DBmanager.get_by('name', 'book', test_book['title'])[0][0]
 
     first_copy = cntrl.check_out_doc(test_user['id'], book_id)[0]
     second_copy = cntrl.check_out_doc(test_user['id'], book_id)[0]
@@ -155,14 +155,14 @@ def test_seventh():
     test_user_2 = {'id': 2, 'name': 'test', 'address': 'test',
                    'status': 'Student', 'phone': '987', 'history': [], 'current_books': []}
 
-    cntrl.BDmanager.add_patron(Packager(test_user_1))
-    cntrl.BDmanager.add_patron(Packager(test_user_2))
+    cntrl.DBmanager.add_patron(Packager(test_user_1))
+    cntrl.DBmanager.add_patron(Packager(test_user_2))
 
     test_book = {'title': 'Test', 'overview': 'TESTTEST', 'authors': 'tEsT', 'count': 2, 'price': 123, 'keywords': ''}
 
     cntrl.add_document(test_book, 'book')
 
-    book_id = cntrl.BDmanager.get_by('name', 'book', test_book['title'])[0][0]
+    book_id = cntrl.DBmanager.get_by('name', 'book', test_book['title'])[0][0]
 
     is_first_user_check_out = cntrl.check_out_doc(test_user_1['id'], book_id)
     is_second_user_check_out = cntrl.check_out_doc(test_user_2['id'], book_id)
@@ -177,18 +177,18 @@ def test_eighth():
                  'status': 'Student', 'phone': '987', 'history': [], 'current_books': []}
     test_book = {'title': 'Test', 'overview': 'TESTTEST', 'authors': 'tEsT', 'count': 2, 'price': 123, 'keywords': ''}
 
-    cntrl.BDmanager.add_patron(Packager(test_user))
+    cntrl.DBmanager.add_patron(Packager(test_user))
     cntrl.add_document(test_book, 'book')
-    book_id = cntrl.BDmanager.get_by('name', 'book', test_book['title'])[0][0]
+    book_id = cntrl.DBmanager.get_by('name', 'book', test_book['title'])[0][0]
 
     cntrl.check_out_doc(test_user['id'], book_id, 'book', 3)
 
     user_db = cntrl.get_user(test_user['id'])
-    book_db_t = list(cntrl.BDmanager.get_by('name', 'book', test_book['title'])[0])
+    book_db_t = list(cntrl.DBmanager.get_by('name', 'book', test_book['title'])[0])
     book_db = dict(zip(['id', 'title', 'author', 'overview', 'count', 'free_count', 'price', 'keywords'], book_db_t))
     order_id = int(eval(user_db['current_docs'])[0])
     order = dict(zip(['id', 'time', 'table', 'userId', 'docId', 'out_of_time'],
-                     list(cntrl.BDmanager.get_by('id', 'orders', order_id)[0])))
+                     list(cntrl.DBmanager.get_by('id', 'orders', order_id)[0])))
 
     order['time'] = datetime.strptime(order['time'], '%Y-%m-%d')
     order['out_of_time'] = datetime.strptime(order['out_of_time'], '%Y-%m-%d')
@@ -207,18 +207,18 @@ def test_ninth():
                  'status': 'Student', 'phone': '987', 'history': [], 'current_books': []}
     test_book = {'title': 'Test', 'overview': 'TESTTEST', 'authors': 'tEsT', 'count': 2, 'price': 123, 'keywords': ''}
 
-    cntrl.BDmanager.add_patron(Packager(test_user))
+    cntrl.DBmanager.add_patron(Packager(test_user))
     cntrl.add_document(test_book, 'book')
-    book_id = cntrl.BDmanager.get_by('name', 'book', test_book['title'])[0][0]
+    book_id = cntrl.DBmanager.get_by('name', 'book', test_book['title'])[0][0]
 
     cntrl.check_out_doc(test_user['id'], book_id)
 
     user_db = cntrl.get_user(test_user['id'])
-    book_db_t = list(cntrl.BDmanager.get_by('name', 'book', test_book['title'])[0])
+    book_db_t = list(cntrl.DBmanager.get_by('name', 'book', test_book['title'])[0])
     book_db = dict(zip(['id', 'title', 'authors', 'overview', 'count', 'free_count', 'price', 'keywords'], book_db_t))
     order_id = int(eval(user_db['current_docs'])[0])
     order = dict(zip(['id', 'time', 'table', 'userId', 'docId', 'out_of_time'],
-                     list(cntrl.BDmanager.get_by('id', 'orders', order_id)[0])))
+                     list(cntrl.DBmanager.get_by('id', 'orders', order_id)[0])))
 
     order['time'] = datetime.strptime(order['time'], '%Y-%m-%d')
     order['out_of_time'] = datetime.strptime(order['out_of_time'], '%Y-%m-%d')
@@ -239,12 +239,12 @@ def test_tenth():
     test_book_2 = {'title': 'TEEST', 'overview': 'TESTTEST',
                    'authors': 'tEsT', 'count': 0, 'price': 122, 'keywords': ''}
 
-    cntrl.BDmanager.add_patron(Packager(test_user))
+    cntrl.DBmanager.add_patron(Packager(test_user))
     cntrl.add_document(test_book_1, 'book')
     cntrl.add_document(test_book_2, 'book')
 
-    book_id_1 = cntrl.BDmanager.get_by('name', 'book', test_book_1['title'])[0][0]
-    book_id_2 = cntrl.BDmanager.get_by('name', 'book', test_book_2['title'])[0][0]
+    book_id_1 = cntrl.DBmanager.get_by('name', 'book', test_book_1['title'])[0][0]
+    book_id_2 = cntrl.DBmanager.get_by('name', 'book', test_book_2['title'])[0][0]
 
     regular_book = cntrl.check_out_doc(test_user['id'], book_id_1)[0]
     references_book = not cntrl.check_out_doc(test_user['id'], book_id_2)[0]
@@ -262,8 +262,8 @@ def test_add_book():
     cntrl.add_document(test_book_1, 'book')
     cntrl.add_document(test_book_2, 'book')
 
-    is_in_db_first_book = check_in_db_books(cntrl.BDmanager, test_book_1)
-    is_in_db_second_book = check_in_db_books(cntrl.BDmanager, test_book_2)
+    is_in_db_first_book = check_in_db_books(cntrl.DBmanager, test_book_1)
+    is_in_db_second_book = check_in_db_books(cntrl.DBmanager, test_book_2)
     clear_tables()
     assert (is_in_db_first_book and is_in_db_second_book)
 
@@ -273,13 +273,13 @@ def test_registration_confirm_uptolibrarian():
 
     test_user = {'id': 1, 'name': 'test', 'address': 'test', 'status': 'Student', 'phone': '987'}
     cntrl.registration(test_user)
-    if not check_in_db_users(cntrl.BDmanager, 'unconfirmed', test_user):
+    if not check_in_db_users(cntrl.DBmanager, 'unconfirmed', test_user):
         clear_tables()
         assert False
 
     cntrl.confirm_user(test_user['id'])
-    in_unconfirmed_table = check_in_db_users(cntrl.BDmanager, 'unconfirmed', test_user)
-    in_patrons_table = check_in_db_users(cntrl.BDmanager, 'patrons', test_user)
+    in_unconfirmed_table = check_in_db_users(cntrl.DBmanager, 'unconfirmed', test_user)
+    in_patrons_table = check_in_db_users(cntrl.DBmanager, 'patrons', test_user)
     if in_unconfirmed_table or not in_patrons_table:
         clear_tables()
         assert False
@@ -287,8 +287,8 @@ def test_registration_confirm_uptolibrarian():
     cntrl.upto_librarian(test_user['id'])
     test_user['status'] = 'librarian'
     if check_in_db_users(
-            cntrl.BDmanager, 'patrons', test_user) or not check_in_db_users(
-        cntrl.BDmanager, 'librarians', test_user):
+            cntrl.DBmanager, 'patrons', test_user) or not check_in_db_users(
+        cntrl.DBmanager, 'librarians', test_user):
         clear_tables()
         assert False
 
@@ -357,9 +357,9 @@ def test_check_out_media():
                  'status': 'Student', 'phone': '987', 'history': [], 'current_books': []}
 
     cntrl.add_document(test_media, 'media')
-    cntrl.BDmanager.add_patron(Packager(test_user))
+    cntrl.DBmanager.add_patron(Packager(test_user))
 
-    media_id = cntrl.BDmanager.get_by('name', 'media', test_media['title'])
+    media_id = cntrl.DBmanager.get_by('name', 'media', test_media['title'])
 
     if media_id == None:
         clear_tables()
@@ -371,7 +371,7 @@ def test_check_out_media():
         assert (False)
 
     test_user = cntrl.get_user(test_user['id'])
-    order = cntrl.BDmanager.select_label('orders', eval(test_user['current_docs'])[0])
+    order = cntrl.DBmanager.select_label('orders', eval(test_user['current_docs'])[0])
     is_order_media = order[2] == 'media'
     is_ids_match = order[3] == media_id
 
@@ -385,15 +385,15 @@ def test_modify_doc():
     test_book = {'title': 'Test', 'overview': 'TESTTEST', 'authors': 'tEsT', 'count': 2, 'price': 123, 'keywords': 0}
     cntrl.add_document(test_book, 'book')
 
-    book_id = cntrl.BDmanager.get_by('name', 'book', test_book['title'])[0][0]
+    book_id = cntrl.DBmanager.get_by('name', 'book', test_book['title'])[0][0]
     if book_id == None:
         clear_tables()
         assert False
     changes = {'id': book_id, 'price': 246, 'author': 'TTTTTTT'}
     cntrl.modify_document(changes, 'book')
     try:
-        price = cntrl.BDmanager.get_label('price', 'book', book_id)
-        authors = cntrl.BDmanager.get_label('author', 'book', book_id)
+        price = cntrl.DBmanager.get_label('price', 'book', book_id)
+        authors = cntrl.DBmanager.get_label('author', 'book', book_id)
         if price != changes['price'] or authors != changes['author']:
             clear_tables()
             assert False
@@ -412,10 +412,10 @@ def test_return_doc():
     test_user = {'id': 1, 'name': 'test', 'address': 'test',
                  'status': 'Student', 'phone': '987', 'history': [], 'current_books': []}
 
-    cntrl.BDmanager.add_patron(Packager(test_user))
+    cntrl.DBmanager.add_patron(Packager(test_user))
     cntrl.add_document(test_media, 'media')
 
-    media_id = cntrl.BDmanager.get_by('name', 'media', test_media['title'])[0][0]
+    media_id = cntrl.DBmanager.get_by('name', 'media', test_media['title'])[0][0]
 
     if not type(media_id) is int:
         clear_tables()
@@ -433,8 +433,8 @@ def test_return_doc():
         clear_tables()
         assert False
 
-    user_current_docs = eval(cntrl.BDmanager.get_label('current_books', 'patrons', test_user['id']))
-    media_count = cntrl.BDmanager.get_label('free_count', 'media', media_id)
+    user_current_docs = eval(cntrl.DBmanager.get_label('current_books', 'patrons', test_user['id']))
+    media_count = cntrl.DBmanager.get_label('free_count', 'media', media_id)
     clear_currents_doc = user_current_docs == []
     count_of_media = media_count == test_media['count']
     clear_tables()
@@ -448,13 +448,13 @@ def test_delete_doc():
 
     cntrl.add_document(test_book, 'book')
 
-    doc_db = cntrl.BDmanager.get_by('name', 'book', test_book['title'])
+    doc_db = cntrl.DBmanager.get_by('name', 'book', test_book['title'])
 
     is_save_in_db = doc_db != None
     doc_id = doc_db[0][0]
 
     cntrl.delete_document(doc_id, 'book')
-    doc_db = cntrl.BDmanager.select_label('book', doc_id)
+    doc_db = cntrl.DBmanager.select_label('book', doc_id)
     is_deleted_from_db = doc_db == None
     clear_tables()
     assert (is_deleted_from_db)
@@ -469,9 +469,9 @@ def test_get_user_orders():
 
     cntrl.add_document(test_book, 'book')
 
-    cntrl.BDmanager.add_patron(Packager(test_user))
+    cntrl.DBmanager.add_patron(Packager(test_user))
 
-    book_id = cntrl.BDmanager.get_by('name', 'book', test_book['title'])[0][0]
+    book_id = cntrl.DBmanager.get_by('name', 'book', test_book['title'])[0][0]
 
     success, _ = cntrl.check_out_doc(test_user['id'], book_id)
     if not success:
@@ -491,9 +491,9 @@ def test_get_orders():
 
     cntrl.add_document(test_book, 'book')
 
-    cntrl.BDmanager.add_patron(Packager(test_user))
+    cntrl.DBmanager.add_patron(Packager(test_user))
 
-    book_id = cntrl.BDmanager.get_by('name', 'book', test_book['title'])[0][0]
+    book_id = cntrl.DBmanager.get_by('name', 'book', test_book['title'])[0][0]
 
     success, _ = cntrl.check_out_doc(test_user['id'], book_id)
     if not success:
@@ -560,7 +560,7 @@ def test_check_out_article():
                  'status': 'Student', 'phone': '987', 'history': [], 'current_books': []}
     cntrl.add_document(test_article, 'article')
 
-    cntrl.BDmanager.add_patron(Packager(test_user))
+    cntrl.DBmanager.add_patron(Packager(test_user))
     doc_id = cntrl.get_documents_by_title(test_article['title'], 'article')[0]['id']
     cntrl.check_out_doc(test_user['id'], doc_id, 'article')
     is_decremented = cntrl.get_document(doc_id, 'article')['free_count'] == test_article['count'] - 1
