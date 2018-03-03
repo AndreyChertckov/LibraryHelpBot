@@ -9,6 +9,7 @@ keyboard_dict = {
     "lib_main": [['Books📖', 'Journal Articles📰', "Audio/Video materials📼", 'Cancel⤵️']],
     "cancel": [['Cancel⤵']],
     "status": [['Student', 'Faculty (professor, instructor, TA)']]
+
 }
 
 sample_messages = {
@@ -74,10 +75,10 @@ lists = {
     'book': ['title', 'list of authors (divided by ";")', 'description', 'keywords (divided by ";")', 'price', 'count'],
     "article": ['title', ' list of authors (separated by ";")', 'journal title', 'issue', 'issue editors',
                 'date of publication', 'keywords (separated by ";")', 'price', 'count'],
-    "media": ['title', ' list of authors (separated by ";")', 'keywords (separated by ";")', 'price', 'count'],
-    "book_bd": ['title', 'authors', 'description', 'keywords', 'price', 'count'],
-    "article_bd": ['title', 'authors', 'journal', 'issue', 'editors', 'date', 'keywords', 'price', 'count'],
-    "media_bd": ['title', 'authors', 'keywords', 'price', 'count'],
+    "media": ['title', ' list of authors (separated by ";")','type', 'keywords (separated by ";")', 'price', 'count'],
+    "book_bd": ['title', 'authors', 'description', 'keywords', 'price', 'count','free_count'],
+    "article_bd": ['title', 'authors', 'journal', 'issue', 'editors', 'date', 'keywords', 'price', 'count','free_count'],
+    "media_bd": ['title', 'authors','type', 'keywords', 'price', 'count','free_count'],
 }
 
 analog = {

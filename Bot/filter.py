@@ -50,3 +50,18 @@ class StateFilter(BaseFilter):
 
     def filter(self, message):
         return message.chat_id in self.state_table
+
+
+# Filter for cheking location users in system (stert menu, library etc.)
+class LocationFilter(BaseFilter):
+    # localUser -- dict of location of all users
+    # goalLocal -- need location
+    def __init__(self, localUser, goalLocal):
+        self.userlocal = localUser
+        self.goal = goalLocal
+
+    def filter(self, message):
+        if message.chat_id in self.userlocal:
+            return self.userlocal[message.chat_id] == self.goal
+        else:
+            return True

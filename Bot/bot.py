@@ -193,6 +193,39 @@ class LibraryBot:
             status, report = self.cntrl.check_out_doc(chat, doc['id'], type_bd=doc_type)
             message = "Your order was successful.\nYou may take the document during library working hours." if status else "You already have this document"
             bot.edit_message_text(text=message, chat_id=chat, message_id=query.message.message_id)
+        elif query.data.split(" ")[0] == 'modifier':
+        k = int(query.data.split(" ")[1])
+        self.material[chat] = docs[self.pages[chat][0]][k]
+        self.inline_key[chat] = 'modifier'
+        text = """"
+                               Choose modified parameters: \n
+                                \\authors \n  \\title \n  \\count \n  \\price \n  \\keywords \n   
+                           """
+        if doc_type == "book":
+            text += " \\best_seller \n \\overview \n "
+        elif doc_type == "article":
+            text += """\\journal \n\\issue \n \\editor \n \\date \n"""
+        elif doc_type == "media":
+            pass
+        self.modObj[chat] = ""
+        keyboard = self.keyboard_dict['modMat']
+        bot.send_message(chat_id=chat, text=text, reply_markup=RKM(keyboard, True))
+
+
+def modifier(self, bot, update):
+    text = update.message.text
+    chatId = update.message.chat_id
+    if text[:1] == '\\':
+        self.modObj[chatId] = text[1:]
+        bot.send_message(chatid=update.message.chat_id, text="Modifier " + text[1:])
+    else:
+        self.material[self.modObj[chatId]] = update.message.text
+        bot.send_message(chatid=update.message.chat_id, text="Updated.")
+
+
+def Apply(self, bot, update):
+    self.cntrl.modify_document(self.modObj[update.message.chat_id])
+    self.cancel(bot, update)
 
     def user_orders(self, bot, update):
         chat = update.message.chat_id
@@ -256,6 +289,7 @@ class LibraryBot:
             #     status, report = self.cntrl.check_out_doc(chat, doc['id'], type_bd=doc_type, returning_time=2)
             #     message = "Your order was successful.\nCollect the book from the library not later than 4 hours" if status else "You already have this document"
             #     bot.edit_message_text(text=message, chat_id=chat, message_id=query.message.message_id)
+
 
     # Cancel the operation
     # params:
