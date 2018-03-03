@@ -108,7 +108,7 @@ class Manager:
     def add_patron(self, newPatron):
         sql = """INSERT INTO patrons(id, name, address, phone, history, current_books, status) VALUES (?,?,?,?,?,?,?)"""
         self.add_new(sql, (newPatron.id, newPatron.name, newPatron.address, newPatron.phone,
-                           newPatron.history, newPatron.current_book, newPatron.status))
+                           str(newPatron.history), str(newPatron.current_books), newPatron.status))
 
     # Updates some record
     # params:

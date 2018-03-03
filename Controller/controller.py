@@ -393,7 +393,7 @@ class Controller:
 
     def get_documents_by_title(self, title, type_db, by_who_id=-1):
         by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)['name']
-        documents = self.DBmanager.get_by('name', type_db, title)
+        documents = self.DBmanager.get_by('title', type_db, title)
         self.log('INFO', 'Get {} by title {} by {}.'.format(type_db.capitalize(), title, by_who))
         return [self.doc_tuple_to_dict(type_db, i) for i in documents]
 

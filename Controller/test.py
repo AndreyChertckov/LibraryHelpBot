@@ -10,17 +10,17 @@ def test_first():
 
     test_user = {'id': 1, 'name': 'test', 'address': 'tEsT',
                  'status': 'Student', 'phone': '987', 'history': [], 'current_books': []}
-    test_book = {'title': 'Test', 'overview': 'TESTTEST', 'authors': 'tEsT', 'count': 2, 'price': 123, 'keywords': ''}
+    test_book = {'title': 'Test', 'description': 'TESTTEST', 'authors': 'tEsT', 'count': 2, 'price': 123, 'keywords': ''}
 
     cntrl.DBmanager.add_patron(Packager(test_user))
     cntrl.add_document(test_book, 'book')
-    book_id = cntrl.DBmanager.get_by('name', 'book', test_book['title'])[0][0]
+    book_id = cntrl.DBmanager.get_by('title', 'book', test_book['title'])[0][0]
 
     cntrl.check_out_doc(test_user['id'], book_id)
 
     user_db = cntrl.get_user(test_user['id'])
-    book_db_t = list(cntrl.DBmanager.get_by('name', 'book', test_book['title'])[0])
-    book_db = dict(zip(['id', 'title', 'authors', 'overview', 'count', 'free_count', 'price'], book_db_t))
+    book_db_t = list(cntrl.DBmanager.get_by('title', 'book', test_book['title'])[0])
+    book_db = dict(zip(['id', 'title', 'authors', 'description', 'count', 'free_count', 'price'], book_db_t))
     order_id = int(eval(user_db['current_docs'])[0])
     user_book_id = cntrl.DBmanager.get_by('id', 'orders', order_id)[0][3]
 
@@ -47,17 +47,17 @@ def test_third():
 
     test_user = {'id': 1, 'name': 'test', 'address': 'test',
                  'status': 'Faculty', 'phone': '987', 'history': [], 'current_books': []}
-    test_book = {'title': 'Test', 'overview': 'TESTTEST', 'authors': 'tEsT', 'count': 2, 'price': 123, 'keywords': ''}
+    test_book = {'title': 'Test', 'description': 'TESTTEST', 'authors': 'tEsT', 'count': 2, 'price': 123, 'keywords': ''}
 
     cntrl.DBmanager.add_patron(Packager(test_user))
     cntrl.add_document(test_book, 'book')
-    book_id = cntrl.DBmanager.get_by('name', 'book', test_book['title'])[0][0]
+    book_id = cntrl.DBmanager.get_by('title', 'book', test_book['title'])[0][0]
 
     cntrl.check_out_doc(test_user['id'], book_id)
 
     user_db = cntrl.get_user(test_user['id'])
-    book_db_t = list(cntrl.DBmanager.get_by('name', 'book', test_book['title'])[0])
-    book_db = dict(zip(['id', 'title', 'authors', 'overview', 'count', 'free_count', 'price', 'keywords'], book_db_t))
+    book_db_t = list(cntrl.DBmanager.get_by('title', 'book', test_book['title'])[0])
+    book_db = dict(zip(['id', 'title', 'authors', 'description', 'count', 'free_count', 'price', 'keywords'], book_db_t))
     order_id = int(eval(user_db['current_docs'])[0])
     order = dict(zip(['id', 'time', 'table', 'userId', 'docId', 'out_of_time'],
                      list(cntrl.DBmanager.get_by('id', 'orders', order_id)[0])))
@@ -77,18 +77,18 @@ def test_fourth():
 
     test_user = {'id': 1, 'name': 'test', 'address': 'test',
                  'status': 'Student', 'phone': '987', 'history': [], 'current_books': []}
-    test_book = {'title': 'Test', 'overview': 'TESTTEST', 'authors': 'tEsT',
+    test_book = {'title': 'Test', 'description': 'TESTTEST', 'authors': 'tEsT',
                  'count': 2, 'price': 123, 'best_seller': 1, 'keywords': ''}
 
     cntrl.DBmanager.add_patron(Packager(test_user))
     cntrl.add_document(test_book, 'book')
-    book_id = cntrl.DBmanager.get_by('name', 'book', test_book['title'])[0][0]
+    book_id = cntrl.DBmanager.get_by('title', 'book', test_book['title'])[0][0]
 
     cntrl.check_out_doc(test_user['id'], book_id)
 
     user_db = cntrl.get_user(test_user['id'])
-    book_db_t = list(cntrl.DBmanager.get_by('name', 'book', test_book['title'])[0])
-    book_db = dict(zip(['id', 'title', 'authors', 'overview', 'count', 'free_count', 'price', 'keywords'], book_db_t))
+    book_db_t = list(cntrl.DBmanager.get_by('title', 'book', test_book['title'])[0])
+    book_db = dict(zip(['id', 'title', 'authors', 'description', 'count', 'free_count', 'price', 'keywords'], book_db_t))
     order_id = int(eval(user_db['current_docs'])[0])
     order = dict(zip(['id', 'time', 'table', 'userId', 'docId', 'out_of_time'],
                      list(cntrl.DBmanager.get_by('id', 'orders', order_id)[0])))
@@ -98,7 +98,7 @@ def test_fourth():
 
     is_user_have_book = order['docId'] == book_id
     is_book_free_count_decremented = book_db['free_count'] == book_db['count'] - 1
-    is_out_of_time_equality = order['out_of_time'] == order['time'] + timedelta(weeks=2)
+    is_out_of_time_equality = order['out_of_time'] == order['time'] + timedelta(weeks=3)
     clear_tables()
     assert (is_user_have_book and is_book_free_count_decremented and is_out_of_time_equality)
 
@@ -117,11 +117,11 @@ def test_fifth():
     cntrl.DBmanager.add_patron(Packager(test_user_2))
     cntrl.DBmanager.add_patron(Packager(test_user_3))
 
-    test_book = {'title': 'Test', 'overview': 'TESTTEST', 'authors': 'tEsT', 'count': 2, 'price': 123, 'keywords': ''}
+    test_book = {'title': 'Test', 'description': 'TESTTEST', 'authors': 'tEsT', 'count': 2, 'price': 123, 'keywords': ''}
 
     cntrl.add_document(test_book, 'book')
 
-    book_id = cntrl.DBmanager.get_by('name', 'book', test_book['title'])[0][0]
+    book_id = cntrl.DBmanager.get_by('title', 'book', test_book['title'])[0][0]
 
     is_first_user_check_out = cntrl.check_out_doc(test_user_1['id'], book_id)
     is_second_user_check_out = cntrl.check_out_doc(test_user_3['id'], book_id)
@@ -135,11 +135,11 @@ def test_sixth():
 
     test_user = {'id': 1, 'name': 'test', 'address': 'test',
                  'status': 'Student', 'phone': '987', 'history': [], 'current_books': []}
-    test_book = {'title': 'Test', 'overview': 'TESTTEST', 'authors': 'tEsT', 'count': 2, 'price': 123, 'keywords': ''}
+    test_book = {'title': 'Test', 'description': 'TESTTEST', 'authors': 'tEsT', 'count': 2, 'price': 123, 'keywords': ''}
 
     cntrl.DBmanager.add_patron(Packager(test_user))
     cntrl.add_document(test_book, 'book')
-    book_id = cntrl.DBmanager.get_by('name', 'book', test_book['title'])[0][0]
+    book_id = cntrl.DBmanager.get_by('title', 'book', test_book['title'])[0][0]
 
     first_copy = cntrl.check_out_doc(test_user['id'], book_id)[0]
     second_copy = cntrl.check_out_doc(test_user['id'], book_id)[0]
@@ -158,11 +158,11 @@ def test_seventh():
     cntrl.DBmanager.add_patron(Packager(test_user_1))
     cntrl.DBmanager.add_patron(Packager(test_user_2))
 
-    test_book = {'title': 'Test', 'overview': 'TESTTEST', 'authors': 'tEsT', 'count': 2, 'price': 123, 'keywords': ''}
+    test_book = {'title': 'Test', 'description': 'TESTTEST', 'authors': 'tEsT', 'count': 2, 'price': 123, 'keywords': ''}
 
     cntrl.add_document(test_book, 'book')
 
-    book_id = cntrl.DBmanager.get_by('name', 'book', test_book['title'])[0][0]
+    book_id = cntrl.DBmanager.get_by('title', 'book', test_book['title'])[0][0]
 
     is_first_user_check_out = cntrl.check_out_doc(test_user_1['id'], book_id)
     is_second_user_check_out = cntrl.check_out_doc(test_user_2['id'], book_id)
@@ -175,17 +175,17 @@ def test_eighth():
 
     test_user = {'id': 1, 'name': 'test', 'address': 'test',
                  'status': 'Student', 'phone': '987', 'history': [], 'current_books': []}
-    test_book = {'title': 'Test', 'overview': 'TESTTEST', 'authors': 'tEsT', 'count': 2, 'price': 123, 'keywords': ''}
+    test_book = {'title': 'Test', 'description': 'TESTTEST', 'authors': 'tEsT', 'count': 2, 'price': 123, 'keywords': ''}
 
     cntrl.DBmanager.add_patron(Packager(test_user))
     cntrl.add_document(test_book, 'book')
-    book_id = cntrl.DBmanager.get_by('name', 'book', test_book['title'])[0][0]
+    book_id = cntrl.DBmanager.get_by('title', 'book', test_book['title'])[0][0]
 
     cntrl.check_out_doc(test_user['id'], book_id, 'book', 3)
 
     user_db = cntrl.get_user(test_user['id'])
-    book_db_t = list(cntrl.DBmanager.get_by('name', 'book', test_book['title'])[0])
-    book_db = dict(zip(['id', 'title', 'author', 'overview', 'count', 'free_count', 'price', 'keywords'], book_db_t))
+    book_db_t = list(cntrl.DBmanager.get_by('title', 'book', test_book['title'])[0])
+    book_db = dict(zip(['id', 'title', 'author', 'description', 'count', 'free_count', 'price', 'keywords'], book_db_t))
     order_id = int(eval(user_db['current_docs'])[0])
     order = dict(zip(['id', 'time', 'table', 'userId', 'docId', 'out_of_time'],
                      list(cntrl.DBmanager.get_by('id', 'orders', order_id)[0])))
@@ -205,17 +205,17 @@ def test_ninth():
 
     test_user = {'id': 1, 'name': 'test', 'address': 'test',
                  'status': 'Student', 'phone': '987', 'history': [], 'current_books': []}
-    test_book = {'title': 'Test', 'overview': 'TESTTEST', 'authors': 'tEsT', 'count': 2, 'price': 123, 'keywords': ''}
+    test_book = {'title': 'Test', 'description': 'TESTTEST', 'authors': 'tEsT', 'count': 2, 'price': 123, 'keywords': ''}
 
     cntrl.DBmanager.add_patron(Packager(test_user))
     cntrl.add_document(test_book, 'book')
-    book_id = cntrl.DBmanager.get_by('name', 'book', test_book['title'])[0][0]
+    book_id = cntrl.DBmanager.get_by('title', 'book', test_book['title'])[0][0]
 
     cntrl.check_out_doc(test_user['id'], book_id)
 
     user_db = cntrl.get_user(test_user['id'])
-    book_db_t = list(cntrl.DBmanager.get_by('name', 'book', test_book['title'])[0])
-    book_db = dict(zip(['id', 'title', 'authors', 'overview', 'count', 'free_count', 'price', 'keywords'], book_db_t))
+    book_db_t = list(cntrl.DBmanager.get_by('title', 'book', test_book['title'])[0])
+    book_db = dict(zip(['id', 'title', 'authors', 'description', 'count', 'free_count', 'price', 'keywords'], book_db_t))
     order_id = int(eval(user_db['current_docs'])[0])
     order = dict(zip(['id', 'time', 'table', 'userId', 'docId', 'out_of_time'],
                      list(cntrl.DBmanager.get_by('id', 'orders', order_id)[0])))
@@ -235,16 +235,16 @@ def test_tenth():
 
     test_user = {'id': 1, 'name': 'test', 'address': 'test',
                  'status': 'Student', 'phone': '987', 'history': [], 'current_books': []}
-    test_book_1 = {'title': 'Test', 'overview': 'TESTTEST', 'authors': 'tEsT', 'count': 2, 'price': 123, 'keywords': ''}
-    test_book_2 = {'title': 'TEEST', 'overview': 'TESTTEST',
+    test_book_1 = {'title': 'Test', 'description': 'TESTTEST', 'authors': 'tEsT', 'count': 2, 'price': 123, 'keywords': ''}
+    test_book_2 = {'title': 'TEEST', 'description': 'TESTTEST',
                    'authors': 'tEsT', 'count': 0, 'price': 122, 'keywords': ''}
 
     cntrl.DBmanager.add_patron(Packager(test_user))
     cntrl.add_document(test_book_1, 'book')
     cntrl.add_document(test_book_2, 'book')
 
-    book_id_1 = cntrl.DBmanager.get_by('name', 'book', test_book_1['title'])[0][0]
-    book_id_2 = cntrl.DBmanager.get_by('name', 'book', test_book_2['title'])[0][0]
+    book_id_1 = cntrl.DBmanager.get_by('title', 'book', test_book_1['title'])[0][0]
+    book_id_2 = cntrl.DBmanager.get_by('title', 'book', test_book_2['title'])[0][0]
 
     regular_book = cntrl.check_out_doc(test_user['id'], book_id_1)[0]
     references_book = not cntrl.check_out_doc(test_user['id'], book_id_2)[0]
@@ -255,17 +255,19 @@ def test_tenth():
 def test_add_book():
     cntrl = create_controller('test_add_book')
 
-    test_book_1 = {'title': 'Test', 'overview': 'TESTTEST', 'authors': 'tEsT', 'count': 2, 'price': 123, 'keywords': 0}
-    test_book_2 = {'title': 'Test2', 'overview': 'TESTTEST2',
-                   'authors': 'tEsT2', 'count': 1, 'price': 1223, 'keywords': 0}
+    test_book_1 = {'title': 'Test', 'description': 'TESTTEST', 'authors': 'tEsT', 'count': 2, 'price': 123, 'keywords': '0'}
+    test_book_2 = {'title': 'Test2', 'description': 'TESTTEST2',
+                   'authors': 'tEsT2', 'count': 1, 'price': 1223, 'keywords': '0'}
 
     cntrl.add_document(test_book_1, 'book')
     cntrl.add_document(test_book_2, 'book')
 
-    is_in_db_first_book = check_in_db_books(cntrl.DBmanager, test_book_1)
-    is_in_db_second_book = check_in_db_books(cntrl.DBmanager, test_book_2)
+    first_book_db = cntrl.get_documents_by_title(test_book_1['title'],'book')[0]
+    second_book_db = cntrl.get_documents_by_title(test_book_2['title'],'book')[0]
+    first_book_db.pop('id',0)
+    second_book_db.pop('id',0)
     clear_tables()
-    assert (is_in_db_first_book and is_in_db_second_book)
+    assert ((test_book_1 == first_book_db) and (test_book_2 == second_book_db))
 
 
 def test_registration_confirm_uptolibrarian():
@@ -309,33 +311,22 @@ def check_in_db_users(dbmanage, table, user):
     elif table == 'librarians':
         user_db['phone'] = user_db_t[3]
         user_db['address'] = user_db_t[2]
-        user_db['status'] = user_db_t[4]
     elif table == 'unconfirmed':
         user_db['address'] = user_db_t[3]
         user_db['phone'] = user_db_t[2]
         user_db['status'] = user_db_t[4]
-    for key in user.keys():
+    for key in user_db.keys():
         if user[key] != user_db[key]:
             return False
 
     return True
 
 
-def check_in_db_books(dbmanage, book):
-    book_db_t = list(dbmanage.get_by('name', 'book', book['title'])[0])
-    book_db = dict(zip(['id', 'title', 'authors', 'overview', 'count', 'free_count', 'price', 'keywords'], book_db_t))
-    for key in book.keys():
-        if book[key] != book_db[key]:
-            print(key + " : " + str(book[key]) + ' != ' + str(book_db[key]))
-            return False
-    return True
-
-
 def test_get_all_books():
     cntrl = create_controller('test_get_all_books')
 
-    test_book_1 = {'title': 'Test', 'overview': 'TESTTEST', 'authors': 'tEsT', 'count': 2, 'price': 123, 'keywords': 0}
-    test_book_2 = {'title': 'Test2', 'overview': 'TESTTEST2',
+    test_book_1 = {'title': 'Test', 'description': 'TESTTEST', 'authors': 'tEsT', 'count': 2, 'price': 123, 'keywords': 0}
+    test_book_2 = {'title': 'Test2', 'description': 'TESTTEST2',
                    'authors': 'tEsT2', 'count': 1, 'price': 1223, 'keywords': 0}
 
     cntrl.add_document(test_book_1, 'book')
@@ -359,7 +350,7 @@ def test_check_out_media():
     cntrl.add_document(test_media, 'media')
     cntrl.DBmanager.add_patron(Packager(test_user))
 
-    media_id = cntrl.DBmanager.get_by('name', 'media', test_media['title'])
+    media_id = cntrl.DBmanager.get_by('title', 'media', test_media['title'])
 
     if media_id == None:
         clear_tables()
@@ -382,19 +373,19 @@ def test_check_out_media():
 def test_modify_doc():
     cntrl = create_controller('test_modify_doc')
 
-    test_book = {'title': 'Test', 'overview': 'TESTTEST', 'authors': 'tEsT', 'count': 2, 'price': 123, 'keywords': 0}
+    test_book = {'title': 'Test', 'description': 'TESTTEST', 'authors': 'tEsT', 'count': 2, 'price': 123, 'keywords': 0}
     cntrl.add_document(test_book, 'book')
 
-    book_id = cntrl.DBmanager.get_by('name', 'book', test_book['title'])[0][0]
+    book_id = cntrl.DBmanager.get_by('title', 'book', test_book['title'])[0][0]
     if book_id == None:
         clear_tables()
         assert False
-    changes = {'id': book_id, 'price': 246, 'author': 'TTTTTTT'}
+    changes = {'id': book_id, 'price': 246, 'authors': 'TTTTTTT'}
     cntrl.modify_document(changes, 'book')
     try:
         price = cntrl.DBmanager.get_label('price', 'book', book_id)
-        authors = cntrl.DBmanager.get_label('author', 'book', book_id)
-        if price != changes['price'] or authors != changes['author']:
+        authors = cntrl.DBmanager.get_label('authors', 'book', book_id)
+        if price != changes['price'] or authors != changes['authors']:
             clear_tables()
             assert False
 
@@ -415,7 +406,7 @@ def test_return_doc():
     cntrl.DBmanager.add_patron(Packager(test_user))
     cntrl.add_document(test_media, 'media')
 
-    media_id = cntrl.DBmanager.get_by('name', 'media', test_media['title'])[0][0]
+    media_id = cntrl.DBmanager.get_by('title', 'media', test_media['title'])[0][0]
 
     if not type(media_id) is int:
         clear_tables()
@@ -444,11 +435,11 @@ def test_return_doc():
 def test_delete_doc():
     cntrl = create_controller('test_delete_doc')
 
-    test_book = {'title': 'Test', 'overview': 'TESTTEST', 'authors': 'tEsT', 'count': 2, 'price': 123, 'keywords': 0}
+    test_book = {'title': 'Test', 'description': 'TESTTEST', 'authors': 'tEsT', 'count': 2, 'price': 123, 'keywords': 0}
 
     cntrl.add_document(test_book, 'book')
 
-    doc_db = cntrl.DBmanager.get_by('name', 'book', test_book['title'])
+    doc_db = cntrl.DBmanager.get_by('title', 'book', test_book['title'])
 
     is_save_in_db = doc_db != None
     doc_id = doc_db[0][0]
@@ -463,7 +454,7 @@ def test_delete_doc():
 def test_get_user_orders():
     cntrl = create_controller('get_user_orders')
 
-    test_book = {'title': 'Test', 'overview': 'TESTTEST', 'authors': 'tEsT', 'count': 2, 'price': 123, 'keywords': '0'}
+    test_book = {'title': 'Test', 'description': 'TESTTEST', 'authors': 'tEsT', 'count': 2, 'price': 123, 'keywords': '0'}
     test_user = {'id': 1, 'name': 'test', 'address': 'tEsT',
                  'status': 'Student', 'phone': '987', 'history': [], 'current_books': []}
 
@@ -471,21 +462,24 @@ def test_get_user_orders():
 
     cntrl.DBmanager.add_patron(Packager(test_user))
 
-    book_id = cntrl.DBmanager.get_by('name', 'book', test_book['title'])[0][0]
+    book_id = cntrl.DBmanager.get_by('title', 'book', test_book['title'])[0][0]
 
     success, _ = cntrl.check_out_doc(test_user['id'], book_id)
     if not success:
         assert (success)
-
+    
     doc = cntrl.get_user_orders(test_user['id'])[0]['doc_dict']
+    test_book.pop('free_count')
+    doc.pop('free_count')
+    doc.pop('id')
     clear_tables()
-    assert (min([test_book[key] == doc[key] for key in test_book.keys()]))
+    assert (test_book == doc)
 
 
 def test_get_orders():
     cntrl = create_controller('get_orders')
 
-    test_book = {'title': 'Test', 'overview': 'TESTTEST', 'authors': 'tEsT', 'count': 2, 'price': 123, 'keywords': '0'}
+    test_book = {'title': 'Test', 'description': 'TESTTEST', 'authors': 'tEsT', 'count': 2, 'price': 123, 'keywords': '0'}
     test_user = {'id': 1, 'name': 'test', 'address': 'tEsT',
                  'status': 'Student', 'phone': '987', 'history': [], 'current_books': []}
 
@@ -493,7 +487,7 @@ def test_get_orders():
 
     cntrl.DBmanager.add_patron(Packager(test_user))
 
-    book_id = cntrl.DBmanager.get_by('name', 'book', test_book['title'])[0][0]
+    book_id = cntrl.DBmanager.get_by('title', 'book', test_book['title'])[0][0]
 
     success, _ = cntrl.check_out_doc(test_user['id'], book_id)
     if not success:
@@ -523,14 +517,13 @@ def test_get_orders():
 def test_get_documents_by_title():
     cntrl = create_controller('test_get_documents_by_title')
 
-    test_book = {'title': 'Test', 'overview': 'TESTTEST', 'authors': 'tEsT',
+    test_book = {'title': 'Test', 'description': 'TESTTEST', 'authors': 'tEsT',
                  'count': 2, 'price': 123, 'keywords': '0', 'best_seller': 0}
 
     cntrl.add_document(test_book, 'book')
 
     doc = cntrl.get_documents_by_title(test_book['title'], 'book')[0]
     doc.pop('id', 0)
-    doc.pop('free_count', 0)
     clear_tables()
     assert (doc == test_book)
 
@@ -538,7 +531,7 @@ def test_get_documents_by_title():
 def test_get_documents_by_authors():
     cntrl = create_controller('test_get_documents_by_authors')
 
-    test_book = {'title': 'Test', 'overview': 'TESTTEST', 'authors': 'tEsT;kek',
+    test_book = {'title': 'Test', 'description': 'TESTTEST', 'authors': 'tEsT;kek',
                  'count': 2, 'price': 123, 'keywords': '0', 'best_seller': 0}
 
     cntrl.add_document(test_book, 'book')
