@@ -561,6 +561,19 @@ def test_check_out_article():
     assert is_decremented
 
 
+def test_add_copies_of_document():
+    cntrl = create_controller('test_add_copies_of_document')
+    test_article = {'title': 'test_title', 'authors': 'test_author', 'journal': 'journala', 'issue': 'satohue',
+                    'editors': 'editor1', 'date': '2017-08-01', 'keywords': '', 'price': 1, 'count': 3,
+                    'best_seller': 0}
+    cntrl.add_document(test_article,'article')
+    test_article['id'] = cntrl.get_documents_by_title(test_article['title'],'article')[0]['id']
+    cntrl.add_copies_of_document('article',test_article['id'],2)
+    test_article = cntrl.get_documents_by_title(test_article['title'],'article')[0]
+    clear_tables()
+    assert(test_article['count'] == 2 and test_article['free_count'] == 2)
+
+
 def clear_tables():
     os.remove('test.db')
 

@@ -338,6 +338,11 @@ class Controller:
         log = 'Document with id {} was modified by {}: '.format(
             doc_id, by_who) + ', '.join(['new ' + str(key) + ' is ' + str(doc[key]) for key in doc.keys()])
         self.log('INFO', log)
+    
+    def add_copies_of_document(self, type,doc_id, new_count,by_who_id=0):
+        doc = self.get_document(doc_id,type)
+        new_free_count = doc['free_count'] + new_count - doc['count'] 
+        self.modify_document({'id':doc_id,'count':new_count,'free_count':new_free_count},type,by_who_id)
 
     def delete_document(self, doc_id, type):
         self.DBmanager.delete_label(type, doc_id)
