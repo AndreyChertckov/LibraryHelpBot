@@ -1,22 +1,16 @@
 import logging
 from datetime import datetime, timedelta
 
-from DataBase.BDmanagement import BDManagement
-from DataBase.UsersAndDocumentObjects.BaseDoc import BaseDoc
-from DataBase.UsersAndDocumentObjects.Document import Document
-from DataBase.UsersAndDocumentObjects.JournalArticle import JournalArticle
-from DataBase.UsersAndDocumentObjects.Librarian import Librarian
-from DataBase.UsersAndDocumentObjects.OrderHistory import OrderHistoryObject
-from DataBase.UsersAndDocumentObjects.Patron import Patron
+from DataBase.DBmanager import Manager
+from DataBase.DBPackager import Packager
 
 
 # Class booking system
 class Controller:
-
     def __init__(
             self, file_bd='DataBase.db', lc=False, lf=False, file_log='controller.log', test_logging=False,
             name_test='0'):
-        self.BDmanager = BDManagement(file_bd)
+        self.DBmanager = Manager(file_bd)
         self.is_log = False
         if lc or lf:
             self.is_log = True
@@ -46,18 +40,19 @@ class Controller:
     # Put user in queue for accepting to the library
     # param: user_info: dictionary {id,name,address,status,phone}
     def registration(self, user_info):
-        unconfirmed_patron = Patron(**user_info)
-        self.BDmanager.add_unconfirmed(unconfirmed_patron)
+        self.DBmanager.add_unconfirmed(Packager(user_info))
         self.log('INFO', 'User {} signed up. Whaiting for librarians confirmation.'.format(user_info['name']))
 
     # Accept user to the library
     # param: user_id - id of user
     def confirm_user(self, user_id, librarian_id=-1):
-        user = self.BDmanager.select_label("unconfirmed", user_id)
+        user = self.get_user(user_id)
+        user['history'] = str([])
+        user['current_books'] = str([])
         self.delete_user(user_id)
-        self.BDmanager.add_patron(Patron(user[1], user[3], user_id, user[4], user[2], [""], [""]))
+        self.DBmanager.add_patron(Packager(user))
         by_who = 'UNKNOW' if librarian_id == -1 else self.get_user(librarian_id)['name']
-        self.log('INFO', 'User status {} is confirmed by {}.'.format(user[1], by_who))
+        self.log('INFO', 'User status {} is confirmed by {}.'.format(user['name'], by_who))
 
     # Move patron from table patrons to table librarians
     # param: user_id : id of user
@@ -66,15 +61,16 @@ class Controller:
         user_info.pop('current_docs', 0)
         user_info.pop('history', 0)
         self.delete_user(user_id)
-        self.BDmanager.add_librarian(Librarian(**user_info))
+        self.DBmanager.add_librarian(Packager(user_info))
         self.log('INFO', 'User {} is upgraded to librarian'.format(user_info['name']))
 
     def modify_user(self, new_user_info, by_who_id=0):
         user_id = new_user_info['id']
-        self.BDmanager.edit_label('patrons', list(new_user_info.keys()), list(new_user_info.values()), user_id)
+        self.DBmanager.edit_label('patrons', list(new_user_info.keys()), list(new_user_info.values()), user_id)
         by_who = 'UNKNOW' if by_who_id == 0 else self.get_user(by_who_id)['name']
         log = 'User with id {} was modified by {}: '.format(
-            user_id, by_who) + ', '.join(['new ' + str(key) + ' is ' + str(new_user_info[key]) for key in new_user_info.keys()])
+            user_id, by_who) + ', '.join(
+            ['new ' + str(key) + ' is ' + str(new_user_info[key]) for key in new_user_info.keys()])
         self.log('INFO', log)
 
     # Delete user by user_info
@@ -83,18 +79,18 @@ class Controller:
         table = ['unauthorized', 'unconfirmed', 'patrons', 'librarians'][self.user_type(user_id)]
         if table != 'unauthorized':
             u_name = self.get_user(user_id)['name']
-            self.BDmanager.delete_label(table, user_id)
+            self.DBmanager.delete_label(table, user_id)
             self.log('INFO', 'User {} is deleted from table {}.'.format(u_name, table))
 
     # Return all users who don`t confirmed
     def get_all_unconfirmed(self):
-        rows = self.BDmanager.select_all("unconfirmed")
+        rows = self.DBmanager.select_all("unconfirmed")
         return [{'id': user[0], 'name': user[1], 'phone': user[2], 'address': user[3], 'status': user[4]} for user in
                 rows]
 
     # Return all patrons from database
     def get_all_patrons(self, by_who_id=-1):
-        rows = self.BDmanager.select_all("patrons")
+        rows = self.DBmanager.select_all("patrons")
         by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)['name']
         self.log('INFO', 'Get all patrons by {}'.format(by_who))
         return [{'id': user[0], 'name': user[1], 'phone': user[2], 'address': user[3], 'history': user[4],
@@ -104,7 +100,7 @@ class Controller:
     def get_all_librarians(self, by_who_id=-1):
         by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)['name']
         self.log('INFO', 'Get all librarians by {}'.format(by_who))
-        rows = self.BDmanager.select_all("librarians")
+        rows = self.DBmanager.select_all("librarians")
         return [{'id': user[0], 'name': user[1], 'phone': user[2], 'address': user[3]} for user in
                 rows]
 
@@ -113,7 +109,7 @@ class Controller:
     # return : bool value
     def chat_exists(self, user_id):
         return any(
-            [self.BDmanager.select_label('librarians', user_id), self.BDmanager.select_label('patrons', user_id)])
+            [self.DBmanager.select_label('librarians', user_id), self.DBmanager.select_label('patrons', user_id)])
 
     # Return user by id
     # param : user_id - id of user
@@ -122,8 +118,8 @@ class Controller:
     # or false if user doesn`t existе
     def get_user(self, user_id):
         user = {}
-        if self.BDmanager.select_label('patrons', user_id):
-            user_bd = self.BDmanager.select_label('patrons', user_id)
+        if self.DBmanager.select_label('patrons', user_id):
+            user_bd = self.DBmanager.select_label('patrons', user_id)
             user['id'] = user_bd[0]
             user['name'] = user_bd[1]
             user['address'] = user_bd[2]
@@ -131,14 +127,14 @@ class Controller:
             user['history'] = user_bd[4]
             user['current_docs'] = user_bd[5]
             user['status'] = user_bd[6]
-        elif self.BDmanager.select_label('librarians', user_id):
-            user_bd = self.BDmanager.select_label('librarians', user_id)
+        elif self.DBmanager.select_label('librarians', user_id):
+            user_bd = self.DBmanager.select_label('librarians', user_id)
             user['id'] = user_bd[0]
             user['name'] = user_bd[1]
             user['phone'] = user_bd[2]
             user['address'] = user_bd[3]
-        elif self.BDmanager.select_label('unconfirmed', user_id):
-            user_bd = self.BDmanager.select_label('unconfirmed', user_id)
+        elif self.DBmanager.select_label('unconfirmed', user_id):
+            user_bd = self.DBmanager.select_label('unconfirmed', user_id)
             user['id'] = user_bd[0]
             user['name'] = user_bd[1]
             user['phone'] = user_bd[2]
@@ -157,18 +153,18 @@ class Controller:
     #          if 3 then user is admin
     def user_type(self, user_id):
         d = {"unauthorized": 0, 'unconfirmed': 1, 'patron': 2, 'admin': 3}
-        if self.BDmanager.select_label('librarians', user_id):
+        if self.DBmanager.select_label('librarians', user_id):
             return d['admin']
-        elif self.BDmanager.select_label('patrons', user_id):
+        elif self.DBmanager.select_label('patrons', user_id):
             return d['patron']
-        elif self.BDmanager.select_label('unconfirmed', user_id):
+        elif self.DBmanager.select_label('unconfirmed', user_id):
             return d['unconfirmed']
         else:
             return d['unauthorized']
 
     def get_user_by_name(self, name, by_who_id=-1):
         by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)
-        user = self.BDmanager.get_by('name', 'patrons', name)[0]
+        user = self.DBmanager.get_by('name', 'patrons', name)[0]
         self.log('INFO', 'Get user with name {} by {}'.format(name, by_who))
         return dict(zip(['id', 'name', 'address', 'phone', 'history', 'current_docs', 'status'], user))
 
@@ -177,26 +173,26 @@ class Controller:
     # param : book_id - id of book
     def check_out_doc(self, user_id, doc_id, type_bd='book', returning_time=0):
 
-        if self.BDmanager.select_label(type_bd, doc_id) == None:
+        if self.DBmanager.select_label(type_bd, doc_id) == None:
             self.log('WARNING', 'Document with id {} not found.'.format(doc_id))
             return False, 'Document doesn`t exist'
 
         if returning_time == 0 and type_bd == 'book':
-            is_best_seller = self.BDmanager.get_label('best_seller', type_bd, doc_id) == 1
-            user_status = self.BDmanager.get_label('type', 'patrons', user_id)
+            is_best_seller = self.DBmanager.get_label('best_seller', type_bd, doc_id) == 1
+            user_status = self.DBmanager.get_label('status', 'patrons', user_id)
             returning_time = 3 if user_status == 'Student' else 4
             returning_time = 2 if is_best_seller else returning_time
         elif type_bd != 'book':
-            returning_time == 2
+            returning_time = 2
 
-        free_count = int(self.BDmanager.get_label("free_count", type_bd, doc_id))
+        free_count = int(self.DBmanager.get_label("free_count", type_bd, doc_id))
         if free_count > 0:
 
-            current_orders = eval(self.BDmanager.get_label("current_books", "patrons", user_id))
+            current_orders = eval(self.DBmanager.get_label("current_books", "patrons", user_id))
             current_docs_id = []
 
             for order_id in current_orders:
-                order = self.BDmanager.select_label('orders', order_id)
+                order = self.DBmanager.select_label('orders', order_id)
                 if order[2] == type_bd:
                     current_docs_id.append(order[3])
 
@@ -212,17 +208,18 @@ class Controller:
             time = time[:time.index(' ')]
             out_of_time = out_of_time[:out_of_time.index(' ')]
 
-            order = OrderHistoryObject(time, type_bd, user_id, doc_id, 0, out_of_time)
+            order = {'date': time, 'table': type_bd, "user_id": user_id, "doc_id": doc_id, "active": 0,
+                     'out_of_time': out_of_time}
 
-            self.BDmanager.add_order(order)
-            order_id = self.BDmanager.get_max_id('orders')
-            history = eval(self.BDmanager.get_label("history", "patrons", user_id))
+            self.DBmanager.add_order(Packager(order))
+            order_id = self.DBmanager.get_max_id('orders')
+            history = eval(self.DBmanager.get_label("history", "patrons", user_id))
             current_orders += [order_id]
             history += [order_id]
             free_count -= 1
 
-            self.BDmanager.edit_label(type_bd, ["free_count"], [free_count], doc_id)
-            self.BDmanager.edit_label("patrons", ["history", "current_books"], [str(history), str(current_orders)],
+            self.DBmanager.edit_label(type_bd, ["free_count"], [free_count], doc_id)
+            self.DBmanager.edit_label("patrons", ["history", "current_books"], [str(history), str(current_orders)],
                                       user_id)
             self.log(
                 'INFO', 'User {}({}) want to check out document \'{}\' for {} weeks. Returning time is {}'.format(
@@ -237,33 +234,33 @@ class Controller:
             return False, 'Not enough copies'
 
     def user_get_doc(self, order_id):
-        order = self.BDmanager.select_label('orders', order_id)
-        self.BDmanager.edit_label('orders', ['active'], [1], order_id)
+        order = self.DBmanager.select_label('orders', order_id)
+        self.DBmanager.edit_label('orders', ['active'], [1], order_id)
         self.log('INFO', 'User {} get document {}.'.format(self.get_user(
             order[3])['name'], self.get_document(order[3], order[2])['title']))
 
     def return_doc(self, user_id, doc_id):
 
-        order = self.BDmanager.get_by_parameters(['user_id', 'doc_id'], 'orders', [user_id, doc_id])
+        order = self.DBmanager.get_by_parameters(['user_id', 'doc_id'], 'orders', [user_id, doc_id])
         if order == None:
             self.log('WARNING', 'Can`t find the order for document {} of user {}.'.format(
                 self.get_document(doc_id, order[2])['title'], self.get_user(user_id)['name']))
             return False, 'Can`t find order in db'
         order = dict(zip(['id', 'time', 'table', 'user_id', 'doc_id', 'active', 'time_out'], order[0]))
 
-        if self.BDmanager.select_label(order['table'], doc_id) == None:
+        if self.DBmanager.select_label(order['table'], doc_id) == None:
             self.log('WARNING', 'Document with id {} doesn`t exist'.format(doc_id))
             return False, 'Document doesn`t exist'
 
-        curr_doc = eval(self.BDmanager.get_label('current_books', 'patrons', user_id))
+        curr_doc = eval(self.DBmanager.get_label('current_books', 'patrons', user_id))
         curr_doc.remove(order['id'])
 
-        free_count = int(self.BDmanager.get_label("free_count", order['table'], doc_id))
+        free_count = int(self.DBmanager.get_label("free_count", order['table'], doc_id))
         free_count += 1
 
-        self.BDmanager.edit_label(order['table'], ['free_count'], [free_count], doc_id)
-        self.BDmanager.edit_label('patrons', ['current_books'], [str(curr_doc)], user_id)
-        self.BDmanager.edit_label('orders', ['active'], [2], order['id'])
+        self.DBmanager.edit_label(order['table'], ['free_count'], [free_count], doc_id)
+        self.DBmanager.edit_label('patrons', ['current_books'], [str(curr_doc)], user_id)
+        self.DBmanager.edit_label('orders', ['active'], [2], order['id'])
         self.log('INFO', 'User {} is returned document {}.'.format(
             self.get_user(user_id)['name'],
             self.get_document(doc_id, order['table'])['title']))
@@ -277,10 +274,10 @@ class Controller:
         output = []
         keys = ['doc_dict', 'time', 'time_out']
         for order_id in orders_id:
-            order = self.BDmanager.select_label('orders', order_id)
+            order = self.DBmanager.select_label('orders', order_id)
             if order == None:
                 continue
-            doc = self.BDmanager.select_label(order[2], order[3])
+            doc = self.DBmanager.select_label(order[2], order[3])
             if doc == None:
                 continue
             doc_dict = self.doc_tuple_to_dict(order[2], doc)
@@ -289,73 +286,68 @@ class Controller:
 
     def get_all_orders(self, by_who_id=-1):
         by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)['name']
-        orders = self.BDmanager.select_all('orders')
+        orders = self.DBmanager.select_all('orders')
         self.log('INFO', 'Librarian {} whant to see all orders'.format(by_who))
-        return [dict(zip(['id', 'time', 'table', 'user_id', 'doc_id', 'active', 'time_out'], order)) for order in orders]
+        return [dict(zip(['id', 'time', 'table', 'user_id', 'doc_id', 'active', 'time_out'], order)) for order in
+                orders]
 
     def get_all_active_orders(self, by_who_id=-1):
         by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)['name']
-        orders = self.BDmanager.get_by('active', 'orders', 1)
+        orders = self.DBmanager.get_by('active', 'orders', 1)
         self.log('INFO', 'Librarian {} whant to see all active orders'.format(by_who))
-        return [dict(zip(['id', 'time', 'table', 'user_id', 'doc_id', 'active', 'time_out'], order)) for order in orders]
+        return [dict(zip(['id', 'time', 'table', 'user_id', 'doc_id', 'active', 'time_out'], order)) for order in
+                orders]
 
     def get_all_whaiting_doc(self, by_who_id=-1):
         by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)['name']
-        orders = self.BDmanager.get_by('active', 'orders', 0)
+        orders = self.DBmanager.get_by('active', 'orders', 0)
         self.log('INFO', 'Librarian {} whant to see all whaiting orders'.format(by_who))
-        return [dict(zip(['id', 'time', 'table', 'user_id', 'doc_id', 'active', 'time_out'], order)) for order in orders]
+        return [dict(zip(['id', 'time', 'table', 'user_id', 'doc_id', 'active', 'time_out'], order)) for order in
+                orders]
 
     def get_all_returned_orders(self, by_who_id=-1):
         by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)['name']
-        orders = self.BDmanager.get_by('active', 'orders', 2)
+        orders = self.DBmanager.get_by('active', 'orders', 2)
         self.log('INFO', 'Librarian {} whant to see all returned orders'.format(by_who))
-        return [dict(zip(['id', 'time', 'table', 'user_id', 'doc_id', 'active', 'time_out'], order)) for order in orders]
+        return [dict(zip(['id', 'time', 'table', 'user_id', 'doc_id', 'active', 'time_out'], order)) for order in
+                orders]
 
-    # Method for adding the book in database
-    # param: name - Name of the book
-    # param: description - about what this book
+    # Method for adding the document in database
+    # param: name - Name of the document
+    # param: description - about what this document
     # param: author - author of the book
     # param: count - amount of books
     # param: price - price of the book
-    def add_book(self, title, overview, authors, count, price, keywords, best_seller=0):
-        self.BDmanager.add_document(
-            Document(title, overview, authors, count, count, price, best_seller,
-                     keywords))
-
-    def add_media(self, title, authors, keywords, price, best_seller, count):
-        self.BDmanager.add_media(BaseDoc(authors, title, count, count, price, 'MEDIA', keywords, best_seller))
-
-    def add_article(self, title, authors, journal, issue, editors, date, keywords, price, count, best_seller):
-        self.BDmanager.add_article(
-            JournalArticle(title, authors, journal, count, count, price, keywords, issue, editors, date, best_seller))
 
     def add_document(self, doc, key, by_who_id=0):
-        doc['best_seller'] = 0
+        doc['free_count'] = doc['count']
         if key == 'book':
-            self.add_book(**doc)
+            doc['best_seller'] = 0
+            self.DBmanager.add_book(Packager(doc))
         elif key == 'article':
-            self.add_article(**doc)
+            self.DBmanager.add_article(Packager(doc))
         elif key == 'media':
-            self.add_media(**doc)
+            self.DBmanager.add_media(Packager(doc))
         by_who = 'UNKNOW' if by_who_id == 0 else self.get_user(by_who_id)['name']
         self.log('INFO', '{} \'{}\' is added to system by {}.'.format(key.capitalize(), doc['title'], by_who))
 
     def modify_document(self, doc, type, by_who_id=0):
         doc_id = doc.pop('id')
-        self.BDmanager.edit_label(type, list(doc.keys()), list(doc.values()), doc_id)
+        self.DBmanager.edit_label(type, list(doc.keys()), list(doc.values()), doc_id)
         by_who = 'UNKNOW' if by_who_id == 0 else self.get_user(by_who_id)['name']
         log = 'Document with id {} was modified by {}: '.format(
             doc_id, by_who) + ', '.join(['new ' + str(key) + ' is ' + str(doc[key]) for key in doc.keys()])
         self.log('INFO', log)
 
     def delete_document(self, doc_id, type):
-        self.BDmanager.delete_label(type, doc_id)
+        self.DBmanager.delete_label(type, doc_id)
         self.log('INFO', 'Document {} was deleted'.format(doc_id))
 
     def doc_tuple_to_dict(self, type, doc_tuple):
         if type == 'book':
             return dict(
-                zip(['id', 'title', 'authors', 'description', 'count', 'free_count', 'price', 'best_seller', 'keywords'],
+                zip(['id', 'title', 'authors', 'description', 'count', 'free_count', 'price', 'best_seller',
+                     'keywords'],
                     list(doc_tuple)))
         elif type == 'article':
             return dict(zip(
@@ -363,29 +355,29 @@ class Controller:
                  'date'], list(doc_tuple)))
         elif type == 'media':
             return dict(
-                zip(['id', 'title', 'authors', 'type', 'count', 'free_count', 'price', 'keywords'], list(doc_tuple)))
+                zip(['id', 'title', 'authors', 'count', 'free_count', 'price', 'keywords'], list(doc_tuple)))
 
     def get_document(self, doc_id, type_bd):
-        return self.doc_tuple_to_dict(type_bd, self.BDmanager.select_label(type_bd, doc_id))
+        return self.doc_tuple_to_dict(type_bd, self.DBmanager.select_label(type_bd, doc_id))
 
     # Return all books from database
     def get_all_books(self):
-        rows = self.BDmanager.select_all("book")
+        rows = self.DBmanager.select_all("book")
         return [dict(
-                zip(['id', 'title', 'authors', 'description', 'count', 'free_count', 'price', 'best_seller', 'keywords'],
-                    list(book))) for book in
-                rows]
+            zip(['id', 'title', 'authors', 'description', 'count', 'free_count', 'price', 'best_seller', 'keywords'],
+                list(book))) for book in
+            rows]
 
     # Return all articles from database
     def get_all_articles(self):
-        rows = self.BDmanager.select_all("article")
+        rows = self.DBmanager.select_all("article")
         return [dict(zip(
-                ['id', 'title', 'authors', 'journal', 'count', 'free_count', 'price', 'keywords', 'issue', 'editors',
-                 'date'], list(article))) for article in rows]
+            ['id', 'title', 'authors', 'journal', 'count', 'free_count', 'price', 'keywords', 'issue', 'editors',
+             'date'], list(article))) for article in rows]
 
     # Return all media from database
     def get_all_media(self):
-        rows = self.BDmanager.select_all("media")
+        rows = self.DBmanager.select_all("media")
         return [dict(zip(['id', 'title', 'authors', 'type', 'count', 'free_count', 'price', 'keywords'], list(media)))
                 for media in rows]
 
@@ -401,7 +393,7 @@ class Controller:
 
     def get_documents_by_title(self, title, type_db, by_who_id=-1):
         by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)['name']
-        documents = self.BDmanager.get_by('name', type_db, title)
+        documents = self.DBmanager.get_by('name', type_db, title)
         self.log('INFO', 'Get {} by title {} by {}.'.format(type_db.capitalize(), title, by_who))
         return [self.doc_tuple_to_dict(type_db, i) for i in documents]
 

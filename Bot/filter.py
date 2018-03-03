@@ -18,7 +18,10 @@ class LocationFilter(BaseFilter):
         self.loc = loc
 
     def filter(self, message):
-        return self.obj[message.chat_id][0] == self.loc
+        if message.chat_id in self.obj:
+            return self.obj[message.chat_id][0] == self.loc
+        else:
+            return False
 
 
 # Filter for check word

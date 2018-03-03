@@ -27,8 +27,7 @@ class User_module:
             bot.send_message(chat_id=chat, text="There are no users")
             return
         patrons = [patrons[i * n:(i + 1) * n] for i in range(len(patrons) // n + 1) if i * n < len(patrons)]
-        if not (chat in self.pages):
-            self.pages[chat] = [0, 0, []]
+        self.pages[chat] = [0, 0, []]
         text_message = ("\n" + "-" * 50 + "\n").join(
             ["{}) {} - {}".format(i + 1, user['name'], user["status"]) for i, user in enumerate(patrons[0])])
         keyboard = [[IKB(str(i + 1), callback_data=str(i)) for i in range(len(patrons[0]))]]

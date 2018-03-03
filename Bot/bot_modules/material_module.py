@@ -17,12 +17,14 @@ class Material_module:
         bot.send_message(chat_id=update.message.chat_id, text="Choose option", reply_markup=reply_markup)
 
     def add_doc(self, bot, update):
+        self.location[update.message.chat_id] = ["add_doc"]
         reply_markup = RKM(self.keyboard_dict["lib_main"], True)
         bot.send_message(chat_id=update.message.chat_id, text="Choose type of material", reply_markup=reply_markup)
 
-    def start_adding(self, bot, update, key):
+    def start_adding(self, bot, update):
+        key = func_data.analog[update.message.text]
         chat = update.message.chat_id
-        self.is_adding[chat] = [0, {}, key]
+        self.location[chat] = ["add_doc", 0, {}, key]
         bot.send_message(chat_id=chat, text=func_data.sample_messages[key])
         bot.send_message(chat_id=chat, text="Enter title", reply_markup=RKR([[]]))
 
@@ -33,9 +35,9 @@ class Material_module:
     #  update -- This object represents an incoming update
     def adding_steps(self, bot, update):
         chat = update.message.chat_id
-        step = self.is_adding[chat][0]
-        doc = self.is_adding[chat][1]
-        key = self.is_adding[chat][2]
+        step = self.location[chat][1]
+        doc = self.location[chat][2]
+        key = self.location[chat][3]
         fields_bd = func_data.lists[key + "_bd"]
         fields = func_data.lists[key]
 
@@ -43,7 +45,7 @@ class Material_module:
             text = update.message.text
             doc[fields_bd[step]] = int(text) if utils.is_int(text) else text
             step += 1
-            self.is_adding[chat][0] += 1
+            self.location[chat][1] += 1
             if step < len(fields):
                 bot.send_message(chat_id=update.message.chat_id, text="Enter {}".format(fields[step]))
             else:
@@ -53,9 +55,9 @@ class Material_module:
         elif step == len(fields):
             if update.message.text == "All is correct✅":
                 self.cntrl.add_document(doc, key)
-                self.is_adding.pop(chat)
+                self.location.pop(chat)
                 bot.send_message(chat_id=chat, text="Document has been added",
                                  reply_markup=RKM(self.keyboard_dict["admin"], True))
             elif update.message.text == "Something is incorrect❌":
-                self.is_adding[chat] = [0, {}]
+                self.location[chat] = ["add_doc", 0, {}, key]
                 bot.send_message(chat_id=chat, text="Enter title", reply_markup=RKR([[]]))

@@ -8,14 +8,13 @@ from sqlite3 import Error
 # existing tables:
 # ---patrons
 # ---librarians
-# ---chats - table containing chat id and type of the users
 # ---article
 # ---media
 # ---orders - table for keeping order history
 # ---book
 # ---unconfirmed - table containing new unconfirmed users
 
-class BDManagement:
+class Manager:
     # initializion of object
     def __init__(self, file='DataBase.db'):
         self.file = file
@@ -32,21 +31,14 @@ class BDManagement:
         rows = cur.fetchall()
         return rows
 
-    # Add new chat to DB
-    # params:
-    # ---newChat -  'Chat' Object
-
-    def add_chat(self, newChat):
-        sql = """INSERT INTO chats(chat_id,table_,id) VALUES(?,?,?)"""
-        self.__add_new(sql, newChat)
-
     # Add new order to DB
     # params:
     #  ---newOrder -  'Order' Object
 
     def add_order(self, newOrder):
         sql = """INSERT INTO orders(date,storing_table,doc_id,user_id,out_of_time,active) VALUES(?,?,?,?,?,?)"""
-        self.__add_new(sql, newOrder)
+        self.add_new(sql, (newOrder.date, newOrder.table, newOrder.doc_id,
+                           newOrder.user_id, newOrder.out_of_time, newOrder.active))
 
     # Add new Librarian to DB
     # params:
@@ -55,7 +47,7 @@ class BDManagement:
     def add_librarian(self, newLibr):
         sql = """INSERT INTO librarians(id,name,phone,address)
                     VALUES(?,?,?,?)"""
-        self.__add_new(sql, newLibr)
+        self.add_new(sql, (newLibr.id, newLibr.name, newLibr.phone, newLibr.address))
 
     # Add new unconfirmed user to DB
     # params:
@@ -65,7 +57,7 @@ class BDManagement:
     def add_unconfirmed(self, unconf):
         sql = """INSERT INTO unconfirmed(id,name,phone,address,status)
                     VALUES(?,?,?,?,?)"""
-        self.__add_new(sql, unconf)
+        self.add_new(sql, (unconf.id, unconf.name, unconf.phone, unconf.address, unconf.status))
 
     # Select some label
     # params:
@@ -81,48 +73,42 @@ class BDManagement:
     #  params:
     #  ---newDoc -  'Document' Object
 
-    def add_document(self, newDoc):
-        sql = """INSERT INTO book(title,author,description,count,free_count,price,best_seller,keywords)
+    def add_book(self, newDoc):
+        sql = """INSERT INTO book(title,authors,description,count,free_count,price,best_seller,keywords)
             VALUES (?,?,?,?,?,?,?,?)"""
 
         cur = self.__create_connection(self.file).cursor()
-        cur.execute(sql,
-                    (newDoc.name, newDoc.authors, newDoc.description, newDoc.count,
-                     newDoc.free_count,
-                     newDoc.price, newDoc.best_seller, newDoc.keywords))
+        self.add_new(sql, (newDoc.title, newDoc.authors, newDoc.description, newDoc.count, newDoc.free_count,
+                           newDoc.price, newDoc.best_seller, newDoc.keywords))
 
     # Add new media to DB
     # params:
     # ---newMed - 'Media' object
 
     def add_media(self, newMed):
-        sql = """INSERT INTO media(id,title,authors,type,count,free_count,price,keywords,best_seller)
-        VALUES(?,?,?,?,?,?,?,?,?)"""
-        cur = self.__create_connection(self.file).cursor()
-        cur.execute(sql, (
-            self.get_max_id("media") + 1, newMed.name, newMed.authors, newMed.type, newMed.count, newMed.free_count,
-            newMed.price, newMed.keywords, newMed.best_seller))
+        sql = """INSERT INTO media(id,title,authors,count,free_count,price,keywords)
+        VALUES(?,?,?,?,?,?,?)"""
+        self.add_new(sql, (self.get_max_id("media") + 1, newMed.title, newMed.authors, newMed.count,
+                           newMed.free_count, newMed.price, newMed.keywords))
 
     # Add new article to DB
     # params:
     # --- newArticle - 'JournalArticle' object
 
     def add_article(self, newArticle):
-        sql = """INSERT INTO article(title,authors,journal_name,count,free_count,price,keywords,issue,editor,date,best_seller)
-        VALUES(?,?,?,?,?,?,?,?,?,?,?)"""
-        cur = self.__create_connection(self.file).cursor()  # cursor()
-
-        cur.execute(sql, (newArticle.name, newArticle.authors, newArticle.journal_name,
-                          newArticle.count, newArticle.free_count, newArticle.price, newArticle.keywords,
-                          newArticle.issue, newArticle.editor, newArticle.date, newArticle.best_seller))
+        sql = """INSERT INTO article(title,authors,journal,count,free_count,price,keywords,issue,editors,date)
+        VALUES(?,?,?,?,?,?,?,?,?,?)"""
+        self.add_new(sql, (newArticle.title, newArticle.authors, newArticle.journal,
+                           newArticle.count, newArticle.free_count, newArticle.price, newArticle.keywords,
+                           newArticle.issue, newArticle.editors, newArticle.date))
 
     # Add new 'patron' to DB
     # params:
     # ---newPatron - 'Patron' object
     def add_patron(self, newPatron):
-        sql = """ INSERT INTO patrons(id,name,address,phone,history,current_books,status)
-                VALUES (?,?,?,?,?,?,?)"""
-        self.__add_new(sql, newPatron)
+        sql = """INSERT INTO patrons(id, name, address, phone, history, current_books, status) VALUES (?,?,?,?,?,?,?)"""
+        self.add_new(sql, (newPatron.id, newPatron.name, newPatron.address, newPatron.phone,
+                           newPatron.history, newPatron.current_book, newPatron.status))
 
     # Updates some record
     # params:
@@ -182,7 +168,7 @@ class BDManagement:
                 name TEXT NOT NULL,
                 phone TEXT,
                 address TEXT
-              ); """);
+              ); """)
         self.__create_table("""
                         CREATE TABLE IF NOT EXISTS unconfirmed (
                         id INTEGER PRIMARY KEY,
@@ -190,7 +176,7 @@ class BDManagement:
                         phone TEXT,
                         address TEXT,
                         status TEXT
-                      ); """);
+                      ); """)
         self.__create_table("""
                  CREATE TABLE IF NOT EXISTS patrons (
                  id INTEGER PRIMARY KEY,
@@ -200,7 +186,7 @@ class BDManagement:
                  history TEXT,
                  current_books TEXT,
                  status TEXT
-                  ); """);
+                  ); """)
 
         self.__create_table("""
               CREATE TABLE IF NOT EXISTS book(
@@ -218,7 +204,7 @@ class BDManagement:
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             title TEXT NOT NULL,
             authors TEXT,
-            journal_name TEXT,
+            journal TEXT,
             count INTEGER,
             free_count INTEGER,
             price INTEGER,
@@ -232,20 +218,12 @@ class BDManagement:
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 title TEXT NOT NULL,
                 authors TEXT,
-                type TEXT,
                 count INTEGER,
                 free_count INTEGER,
                 price INTEGER,
                 keywords TEXT,
                 best_seller INTEGER);
                 """)
-        self.__create_table("""
-            CREATE TABLE IF NOT EXISTS chats (
-            chat_id INTEGER PRIMARY KEY,
-            table_text NOT NULL,
-            id INTEGER);
-        """)
-
         self.__create_table("""
              CREATE TABLE  IF NOT EXISTS orders (
              id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -263,9 +241,9 @@ class BDManagement:
     # params:
     # ---sql - sql command for adding new record
     # ---new - new record
-    def __add_new(self, sql, new):
+    def add_new(self, sql, new):
         cur = self.__create_connection(self.file).cursor()
-        cur.execute(sql, new.get_info())
+        cur.execute(sql, new)
         return cur.lastrowid
 
     def get_max_id(self, table):
