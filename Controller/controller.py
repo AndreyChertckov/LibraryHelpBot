@@ -332,7 +332,7 @@ class Controller:
         self.log('INFO', '{} \'{}\' is added to system by {}.'.format(key.capitalize(), doc['title'], by_who))
 
     def modify_document(self, doc, type, by_who_id=0):
-        doc_id = doc.pop('id')
+        doc_id = doc['id']
         self.DBmanager.edit_label(type, list(doc.keys()), list(doc.values()), doc_id)
         by_who = 'UNKNOW' if by_who_id == 0 else self.get_user(by_who_id)['name']
         log = 'Document with id {} was modified by {}: '.format(
@@ -372,8 +372,8 @@ class Controller:
     def get_all_articles(self):
         rows = self.DBmanager.select_all("article")
         return [dict(zip(
-            ['id', 'title', 'authors', 'journal', 'count', 'free_count', 'price', 'keywords', 'issue', 'editors',
-             'date'], list(article))) for article in rows]
+                ['id', 'title', 'authors', 'journal', 'count', 'free_count', 'price', 'keywords', 'issue', 'editors',
+                 'date'], list(article))) for article in rows]
 
     # Return all media from database
     def get_all_media(self):
