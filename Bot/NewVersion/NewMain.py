@@ -229,9 +229,10 @@ class LibraryBot:
             k = int(query.data.split(" ")[1])
             doc = docs[self.buffer[chat][0]][k]
             print(doc)
-            status, report = self.cntrl.check_out_doc(chat, doc['id'], type_bd=doc_type, returning_time=2)
+            status, report = self.cntrl.check_out_doc(chat, doc['id'], type_bd=doc_type)
             message = "Your order was successful.\nCollect the book from the library not later than 4 hours" if status else "You already have this document"
             bot.edit_message_text(text=message, chat_id=chat, message_id=query.message.message_id)
+
         elif query.data.split(' ')[0] == 'update':
 
             k = int(query.data.split(" ")[1])
@@ -262,7 +263,9 @@ class LibraryBot:
             self.buffer[chat][3] = 2
             self.buffer[chat][4] = text
             mes_text = 'Enter new {}.\nOld value - {}.'.format(text, self.buffer[chat][2][text])
-            bot.send_message(chat_id=chat, text=mes_text)
+            keyboard = [[IKB("Cancel", callback_data='cancel')]]
+            bot.edit_message_text(text=mes_text, chat_id=chat, message_id=update.callback_query.message.message_id,
+                                  reply_markup=IKM(keyboard))
         elif self.buffer[chat][3] == 2:
             self.buffer[chat][3] = 1
             if text != 'cancel':
@@ -276,7 +279,15 @@ class LibraryBot:
         pass
 
     def MyBooks(self, bot, update):
-        pass
+        chat = update.message.chat_id
+        orders = self.cntrl.get_user_orders(chat)
+        print(orders)
+        orders = ("\n" + "-" * 50 + "\n").join(
+            ["{}) {} written by {}\n Available till {}".format(i + 1, doc['doc_dict']['title'],
+                                                               doc['doc_dict']['authors'], doc['time_out']) for
+             i, doc in
+             enumerate(orders)])
+        bot.send_message(text=orders, chat_id=chat,  reply_markup=None)
 
     def Help(self, bot, update):
         bot.send_message(chat_id=update.message.chat_id, text="If you have any question, you can wtite to @Sermark.")
