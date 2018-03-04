@@ -8,7 +8,7 @@ from Controller.controller import Controller
 
 def main():
     file_log = 'controller.log'
-    file_db = 'Database.db'
+    file_db = 'DataBase.db'
     lc = False
     lf = False
     try:

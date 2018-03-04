@@ -418,7 +418,7 @@ def test_return_doc():
         clear_tables()
         assert False
 
-    success, msg = cntrl.return_doc(test_user['id'], media_id)
+    success, msg = cntrl.return_doc(test_user['id'], media_id,'media')
 
     if not success:
         clear_tables()
@@ -505,7 +505,7 @@ def test_get_orders():
         clear_tables()
         assert False
 
-    cntrl.return_doc(orders[0]['id'], book_id)
+    cntrl.return_doc(orders[0]['id'], book_id,'book')
     orders = cntrl.get_all_returned_orders(-1)
     if len(orders) != 1:
         clear_tables()

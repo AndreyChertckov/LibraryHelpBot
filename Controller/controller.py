@@ -239,9 +239,9 @@ class Controller:
         self.log('INFO', 'User {} get document {}.'.format(self.get_user(
             order[3])['name'], self.get_document(order[3], order[2])['title']))
 
-    def return_doc(self, user_id, doc_id):
+    def return_doc(self, user_id, doc_id,doc_type):
 
-        order = self.DBmanager.get_by_parameters(['user_id', 'doc_id'], 'orders', [user_id, doc_id])
+        order = self.DBmanager.get_by_parameters(['user_id', 'doc_id','storing_table'], 'orders', [user_id, doc_id,doc_type])
         if order == None:
             self.log('WARNING', 'Can`t find the order for document {} of user {}.'.format(
                 self.get_document(doc_id, order[2])['title'], self.get_user(user_id)['name']))
