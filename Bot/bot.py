@@ -24,7 +24,7 @@ class LibraryBot:
         self.updater = Updater(token=token)
         self.dispatcher = self.updater.dispatcher
         logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
-        # self.logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger(__name__)
         self.keyboard_dict = func_data.keyboard_dict
         self.types = func_data.lists["user_types"]
         self.location = {}
@@ -33,7 +33,7 @@ class LibraryBot:
         self.dispatcher.add_handler(CommandHandler('start', self.main_menu))
         self.add_handlers()
 
-        # self.dispatcher.add_error_handler(self.error)
+        self.dispatcher.add_error_handler(self.error)
 
         self.updater.start_polling()
         self.updater.idle()
