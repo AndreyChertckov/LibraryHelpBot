@@ -11,19 +11,6 @@ class BooleanFilter(BaseFilter):
         return self.var
 
 
-# Filter for check location
-class LocationFilter(BaseFilter):
-    def __init__(self, obj, loc):
-        self.obj = obj
-        self.loc = loc
-
-    def filter(self, message):
-        if message.chat_id in self.obj:
-            return self.obj[message.chat_id][0] == self.loc
-        else:
-            return False
-
-
 # Filter for check word
 class WordFilter(BaseFilter):
     def __init__(self, word):
@@ -43,25 +30,16 @@ class UserFilter(BaseFilter):
         return (self.user_type == Controller().user_type(message.chat_id)) != self.invert
 
 
-# Filter for checking state of users
-class StateFilter(BaseFilter):
-    def __init__(self, state_table):
-        self.state_table = state_table
-
-    def filter(self, message):
-        return message.chat_id in self.state_table
-
-
-# Filter for cheking location users in system (stert menu, library etc.)
+# Filter for checking location users in system (main menu, library etc.)
 class LocationFilter(BaseFilter):
-    # localUser -- dict of location of all users
-    # goalLocal -- need location
-    def __init__(self, localUser, goalLocal):
-        self.userlocal = localUser
-        self.goal = goalLocal
+    # user_locations -- a dictionary containing the locations of all users
+    # location -- required location
+    def __init__(self, user_locations, location):
+        self.user_location = user_locations
+        self.location = location
 
     def filter(self, message):
-        if message.chat_id in self.userlocal:
-            return self.userlocal[message.chat_id] == self.goal
+        if message.chat_id in self.user_location:
+            return self.user_location[message.chat_id] == self.location
         else:
-            return True
+            return False

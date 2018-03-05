@@ -18,9 +18,9 @@ class Reg_module:
     #  bot -- This object represents a Bot's commands
     #  update -- This object represents an incoming update
     #  args -- Arguments
-    def reg_admin(self, bot, update, args):
+    def upto_admin(self, bot, update, args):
         if args and args[0] == open('Bot/key.txt').read():
-            self.cntrl.upto_librarian(update.message.chat_id)
+            self.controller.upto_librarian(update.message.chat_id)
             bot.send_message(chat_id=update.message.chat_id, text="You have been update to Librarian",
                              reply_markup=RKM(self.keyboard_dict["admin"], True))
             utils.key_gen()
@@ -32,115 +32,61 @@ class Reg_module:
     def registration(self, bot, update):
         # self.location = {}
         chat = update.message.chat_id
-        self.location[chat] = ['reg', 0, {"id": chat}]
+        self.location[chat] = 'reg'
+        self.user_data[chat] = [0, {"id": chat}]
         bot.send_message(chat_id=chat, text=func_data.sample_messages['reg'])
         bot.send_message(chat_id=chat, text="Enter your name", reply_markup=RKR([[]]))
 
-
-        # Steps of the registration
-        # params:
-        #  bot -- This object represents a Bot's commands
-        #  update -- This object represents an incoming update
-
+    # Steps of the registration
+    # params:
+    #  bot -- This object represents a Bot's commands
+    #  update -- This object represents an incoming update
     def reg_steps(self, bot, update):
         chat = update.message.chat_id
-        step = self.location[chat][1]
-        user = self.location[chat][2]
+        step, user = self.user_data[chat]
         fields = func_data.lists["reg_fields"]
 
         if step < len(fields):
             text = update.message.text
             user[fields[step]] = text if text != "Faculty (professor, instructor, TA)" else "Faculty"
             step += 1
-            self.location[chat][1] += 1
+            self.user_data[chat][0] += 1
             if step < len(fields):
                 keyboard = RKM(self.keyboard_dict["status"], True) if fields[step] == "status" else None
                 bot.send_message(chat_id=update.message.chat_id, text="Enter your {}".format(fields[step]),
                                  reply_markup=keyboard)
             else:
                 text_for_message = func_data.sample_messages['correctness'].format(**user)
-                bot.send_message(chat_id=update.message.chat_id, text=text_for_message,
+                bot.send_message(chat_id=chat, text=text_for_message,
                                  reply_markup=RKM(self.keyboard_dict["reg_confirm"], True))
         elif step == len(fields):
             if update.message.text == "All is correct✅":
-                is_incorrect = utils.data_checker(self.location[chat][2])
+                is_incorrect = utils.data_checker(self.user_data[chat][1])
                 if is_incorrect[0]:
                     bot.send_message(chat_id=chat, text=is_incorrect[1],
                                      reply_markup=RKM(self.keyboard_dict["unauth"], True))
                 else:
-                    print(user)
-                    self.cntrl.registration(user)
-                    self.location.pop(chat)
+                    self.controller.registration(user)
                     bot.send_message(chat_id=chat, text="Your request has been sent.\n Wait for librarian confirmation",
                                      reply_markup=RKM(self.keyboard_dict["unconf"], True))
+                    self.main_menu(bot, update)
             elif update.message.text == "Something is incorrect❌":
-                self.location[chat] = ["reg", 0, {"id": update.message.chat_id}]
+                self.user_data[chat] = [0, {"id": chat}]
                 bot.send_message(chat_id=chat, text="Enter your name", reply_markup=RKR([[]]))
 
     def confirm(self, bot, update):
-        chat = update.message.chat_id
-        self.inline_key[chat] = 'conf_flip'
-        n = 3
-        unconf_users = self.cntrl.get_all_unconfirmed()
-        if len(unconf_users) == 0:
-            bot.send_message(chat_id=chat, text="There are no application to confirm")
-            return
-        unconf_users = [unconf_users[i * n:(i + 1) * n] for i in range(len(unconf_users) // n + 1)]
-        self.pages[chat] = 0
-        text_message = ("\n" + "-" * 50 + "\n").join(
-            ["{}) {} - {}".format(i + 1, user['name'], user["status"]) for i, user in enumerate(unconf_users[0])])
-        keyboard = [[IKB(str(i + 1), callback_data=str(i)) for i in range(len(unconf_users[0]))]]
-        keyboard += [[IKB("⬅", callback_data='prev'), IKB("➡️", callback_data='next')]]
-        update.message.reply_text(text=text_message + "\nCurrent page: " + str(1), reply_markup=IKM(keyboard))
+        self.location[update.message.chat_id] = 'confirm'
+        self.online_init(bot, update)
 
-    def conf_flip(self, bot, update):
-        query = update.callback_query
-        chat = query.message.chat_id
-        n = 3
-        unconf_users = self.cntrl.get_all_unconfirmed()
-        unconf_users = [unconf_users[i * n:(i + 1) * n] for i in range(len(unconf_users) // n + 1)]
-        max_page = len(unconf_users) - 1
-        if (query.data == "prev" or "next" == query.data) and max_page:
-            if query.data == "next":
-                if self.pages[chat] == max_page:
-                    self.pages[chat] = 0
-                else:
-                    self.pages[chat] += 1
-            if query.data == "prev":
-                if self.pages[chat] == 0:
-                    self.pages[chat] = max_page
-                else:
-                    self.pages[chat] -= 1
-
-            text_message = ("\n" + "-" * 50 + "\n").join(
-                ["{}) {} - {}".format(i + 1, user['name'], user["status"]) for i, user in
-                 enumerate(unconf_users[self.pages[chat]])])
-            keyboard = [[IKB(str(i + 1), callback_data=str(i)) for i in range(len(unconf_users[self.pages[chat]]))]]
-            keyboard += [[IKB("⬅", callback_data='prev'), IKB("➡️", callback_data='next')]]
-            bot.edit_message_text(text=text_message + "\nCurrent page: " + str(self.pages[chat] + 1), chat_id=chat,
-                                  message_id=query.message.message_id, reply_markup=IKM(keyboard))
-        elif utils.is_int(query.data):
-            k = int(query.data)
-            user = unconf_users[self.pages[chat]][k]
-            text = """
-            Check whether all data is correct:\nName: {name}\nAddress: {address}\nPhone: {phone}\nStatus: {status}
-            """.format(**user)
-            keyboard = [[IKB("Accept✅", callback_data='accept ' + query.data),
-                         IKB("Reject️❌", callback_data='reject ' + query.data)]]
-            bot.edit_message_text(text=text, chat_id=chat, message_id=query.message.message_id,
-                                  reply_markup=IKM(keyboard))
-        elif query.data.split(" ")[0] == 'accept':
-            k = int(query.data.split(" ")[1])
-            user_id = unconf_users[self.pages[chat]][k]["id"]
-            self.cntrl.confirm_user(user_id)
-            bot.edit_message_text(text="This user was confirmed", chat_id=chat, message_id=query.message.message_id)
+    def conf_user(self, bot, ids, user_id, action):
+        if action == 'accept':
+            self.controller.confirm_user(user_id)
+            bot.edit_message_text(text="This user was confirmed", chat_id=ids[0], message_id=ids[1])
             bot.send_message(chat_id=user_id, text="Your application was confirmed",
                              reply_markup=RKM(self.keyboard_dict[self.types[2]], True))
-        elif query.data.split(" ")[0] == 'reject':
-            k = int(query.data.split(" ")[1])
-            user_id = unconf_users[self.pages[chat]][k]["id"]
-            self.cntrl.delete_user(user_id)
-            bot.edit_message_text(text="This user was rejected", chat_id=chat, message_id=query.message.message_id)
+        elif action == 'reject':
+            self.controller.delete_user(user_id)
+            bot.edit_message_text(text="This user was rejected", chat_id=ids[0], message_id=ids[1])
             bot.send_message(chat_id=user_id, text="Your application was rejected",
                              reply_markup=RKM(self.keyboard_dict[self.types[0]], True))
 

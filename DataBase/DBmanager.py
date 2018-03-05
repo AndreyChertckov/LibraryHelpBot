@@ -218,7 +218,6 @@ class Manager:
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 title TEXT NOT NULL,
                 authors TEXT,
-                type TEXT,
                 count INTEGER,
                 free_count INTEGER,
                 price INTEGER,

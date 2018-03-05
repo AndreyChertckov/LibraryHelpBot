@@ -16,7 +16,7 @@ class LibraryBot:
     # Intialization of Bot
     # params:
     # token -- Token from BotFather
-    # cntrl -- Bot's data base
+    # controller -- Bot's data base
     def __init__(self, token, cntrl):
         self.cntrl = cntrl
         self.updater = Updater(token=token)
@@ -31,7 +31,7 @@ class LibraryBot:
         self.inline_key = {}
         self.material = {}
         self.modObj = {}
-        start_handler = CommandHandler('start', self.start)
+        start_handler = CommandHandler('main_menu', self.start)
         self.dispatcher.add_handler(start_handler)
         self.add_user_handlers()
         self.add_admin_handlers()
@@ -89,7 +89,7 @@ class LibraryBot:
     def start(self, bot, update):
         user_type = self.cntrl.user_type(update.message.chat_id)
         keyboard = self.keyboard_dict[self.types[user_type]]
-        self.inline_key[update.message.chat_id] = "start menu"
+        self.inline_key[update.message.chat_id] = "main_menu menu"
         bot.send_message(chat_id=update.message.chat_id, text="I'm bot, Hello",
                          reply_markup=RKM(keyboard, True))
 
@@ -455,7 +455,7 @@ class LibraryBot:
             self.material[self.modObj[chatId]] = update.message.text
             bot.send_message(chatid=update.message.chat_id, text="Updated.")
     def Apply(self,bot,update):
-        self.cntrl.modify_document(self.modObj[update.message.chat_id])
+        self.cntrl.update_doc_param(self.modObj[update.message.chat_id])
         self.cancel(bot,update)
 
     def user_orders(self, bot, update):
@@ -523,7 +523,7 @@ class LibraryBot:
         # elif query.data.split(" ")[0] == 'order':
         #     k = int(query.data.split(" ")[1])
         #     doc = docs[self.pages[chat][0]][k]
-        #     status, report = self.cntrl.check_out_doc(chat, doc['id'], type_bd=doc_type, returning_time=2)
+        #     status, report = self.controller.check_out_doc(chat, doc['id'], type_bd=doc_type, returning_time=2)
         #     message = "Your order was successful.\nCollect the book from the library not later than 4 hours" if status else "You already have this document"
         #     bot.edit_message_text(text=message, chat_id=chat, message_id=query.message.message_id)
 

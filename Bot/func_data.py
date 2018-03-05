@@ -71,14 +71,14 @@ sample_messages = {
 
 lists = {
     "user_types": ['unauth', "unconf", "auth", 'admin'],
-    "reg_fields": ["name", "address", "phone", "status"],
+    "reg_fields": ["name", 'phone', "address", "status"],
     'book': ['title', 'list of authors (divided by ";")', 'description', 'keywords (divided by ";")', 'price', 'count'],
     "article": ['title', ' list of authors (separated by ";")', 'journal title', 'issue', 'issue editors',
                 'date of publication', 'keywords (separated by ";")', 'price', 'count'],
-    "media": ['title', ' list of authors (separated by ";")','type', 'keywords (separated by ";")', 'price', 'count'],
-    "book_bd": ['title', 'authors', 'description', 'keywords', 'price', 'count','free_count'],
-    "article_bd": ['title', 'authors', 'journal', 'issue', 'editors', 'date', 'keywords', 'price', 'count','free_count'],
-    "media_bd": ['title', 'authors','type', 'keywords', 'price', 'count','free_count'],
+    "media": ['title', ' list of authors (separated by ";")', 'keywords (separated by ";")', 'price', 'count'],
+    "book_bd": ['title', 'authors', 'description', 'keywords', 'price', 'count'],
+    "article_bd": ['title', 'authors', 'journal', 'issue', 'editors', 'date', 'keywords', 'price', 'count'],
+    "media_bd": ['title', 'authors', 'keywords', 'price', 'count'],
 }
 
 analog = {
@@ -86,3 +86,19 @@ analog = {
     'Journal Articles📰': 'article',
     "Audio/Video materials📼": 'media'
 }
+
+
+def text_gen(data, location, page=0):
+    sep = "\n" + "-" * 50 + "\n"
+    text = [""]
+    page = enumerate(data[page])
+    if location in ['confirm', 'patrons']:
+        text = ["{}) {} - {}".format(i + 1, item['name'], item["status"]) for i, item in page]
+    if location == 'library':
+        text = ["{}) {} - {}".format(i + 1, item['title'], item["authors"]) for i, item in page]
+    if location == 'my_orders':
+        text = ["{}) {}, till {}".format(i + 1, item['doc_dict']['title'], item["time_out"]) for i, item in page]
+    if location == 'orders':
+        base = "{}) {} written by {}\n Available till {}"
+        text = [base.format(i + 1, doc['doc_dict']['title'], doc['doc_dict']['authors'], doc['time_out']) for i, doc in page]
+    return sep.join(text)

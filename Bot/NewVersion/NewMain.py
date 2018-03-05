@@ -18,7 +18,7 @@ class LibraryBot:
     # Intialization of Bot
     # params:
     # token -- Token from BotFather
-    # cntrl -- Bot's data base
+    # controller -- Bot's data base
     def __init__(self, token, cntrl):
         # Main component
         self.cntrl = cntrl
@@ -31,10 +31,9 @@ class LibraryBot:
         self.keyboard_dict = func_data.keyboard_dict
         self.location = {}
         self.buffer = {}
-        self.flag = {}
         # #
         # Dispatchers
-        self.dispatcher.add_handler(CommandHandler('start', self.Main_menu))
+        self.dispatcher.add_handler(CommandHandler('main_menu', self.Main_menu))
         self.dispatcher.add_handler(MHandler(LocationFilter(self.location, None), self.cancel))
 
         self.dispatcher.add_handler(MHandler(WordFilter('Cancel⤵️'), self.cancel))
@@ -270,7 +269,7 @@ class LibraryBot:
             self.buffer[chat][3] = 1
             if text != 'cancel':
                 self.buffer[chat][2][self.buffer[chat][4]] = update.message.text
-                self.cntrl.modify_document(self.buffer[chat][2], self.buffer[chat][1])
+                self.cntrl.update_doc_param(self.buffer[chat][2], self.buffer[chat][1])
                 bot.send_message(chat_id=chat, text="Updated.")
             else:
                 bot.send_message(chat_id=chat, text='Cancel')
@@ -434,7 +433,7 @@ class LibraryBot:
                 self.cntrl.confirm_user(user_id)
                 bot.edit_message_text(text="This user was confirmed", chat_id=chat, message_id=query.message.message_id)
                 bot.send_message(chat_id=user_id,
-                                 text="Your application was confirmed. Send /start for update functions",
+                                 text="Your application was confirmed. Send /main_menu for update functions",
                                  reply_markup=None)
             else:
                 self.cntrl.delete_user(user_id)

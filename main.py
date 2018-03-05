@@ -2,7 +2,7 @@ import getopt
 import os
 import sys
 
-from Bot.NewVersion.NewMain import start_bot
+from Bot.bot import start_bot
 from Controller.controller import Controller
 
 
