@@ -92,13 +92,14 @@ def text_gen(data, location, page=0):
     sep = "\n" + "-" * 50 + "\n"
     text = [""]
     page = enumerate(data[page])
-    if location in ['confirm', 'patrons']:
+    if location in ['confirm', 'users']:
         text = ["{}) {} - {}".format(i + 1, item['name'], item["status"]) for i, item in page]
     if location == 'library':
         text = ["{}) {} - {}".format(i + 1, item['title'], item["authors"]) for i, item in page]
     if location == 'my_orders':
         text = ["{}) {}, till {}".format(i + 1, item['doc_dict']['title'], item["time_out"]) for i, item in page]
     if location == 'orders':
+        page = enumerate(data)
         base = "{}) {} written by {}\n Available till {}"
         text = [base.format(i + 1, doc['doc_dict']['title'], doc['doc_dict']['authors'], doc['time_out']) for i, doc in page]
     return sep.join(text)

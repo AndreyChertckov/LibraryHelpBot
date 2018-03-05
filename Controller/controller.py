@@ -239,27 +239,29 @@ class Controller:
         self.log('INFO', 'User {} get document {}.'.format(self.get_user(
             order[3])['name'], self.get_document(order[3], order[2])['title']))
 
-    def return_doc(self, user_id, doc_id,doc_type):
+    def return_doc(self, user_id, doc_id, doc_type):
 
-        order = self.DBmanager.get_by_parameters(['user_id', 'doc_id','storing_table'], 'orders', [user_id, doc_id,doc_type])
+        order = self.DBmanager.get_by_parameters(['user_id', 'doc_id', 'storing_table'], 'orders',
+                                                 [user_id, doc_id, doc_type])
         if order == None:
             self.log('WARNING', 'Can`t find the order for document {} of user {}.'.format(
                 self.get_document(doc_id, order[2])['title'], self.get_user(user_id)['name']))
             return False, 'Can`t find order in db'
+        print(order[0])
         order = dict(zip(['id', 'time', 'table', 'user_id', 'doc_id', 'active', 'time_out'], order[0]))
 
         if self.DBmanager.select_label(order['table'], doc_id) == None:
             self.log('WARNING', 'Document with id {} doesn`t exist'.format(doc_id))
             return False, 'Document doesn`t exist'
 
-        curr_doc = eval(self.DBmanager.get_label('current_books', 'patrons', user_id))
+        curr_doc = eval(self.DBmanager.get_label('current_docs', 'patrons', user_id))
         curr_doc.remove(order['id'])
 
         free_count = int(self.DBmanager.get_label("free_count", order['table'], doc_id))
         free_count += 1
 
         self.DBmanager.edit_label(order['table'], ['free_count'], [free_count], doc_id)
-        self.DBmanager.edit_label('patrons', ['current_books'], [str(curr_doc)], user_id)
+        self.DBmanager.edit_label('patrons', ['current_docs'], [str(curr_doc)], user_id)
         self.DBmanager.edit_label('orders', ['active'], [2], order['id'])
         self.log('INFO', 'User {} is returned document {}.'.format(
             self.get_user(user_id)['name'],
@@ -272,16 +274,17 @@ class Controller:
             return []
         orders_id = eval(user['current_docs'])
         output = []
-        keys = ['doc_dict', 'time', 'time_out']
+        keys = ['doc_dict', "doc_type",  'time', 'time_out']
         for order_id in orders_id:
             order = self.DBmanager.select_label('orders', order_id)
+            # print(order)
             if order == None:
                 continue
             doc = self.DBmanager.select_label(order[2], order[3])
             if doc == None:
                 continue
             doc_dict = self.doc_tuple_to_dict(order[2], doc)
-            output.append(dict(zip(keys, [doc_dict, order[1], order[5]])))
+            output.append(dict(zip(keys, [doc_dict, order[2], order[1], order[5]])))
         return output
 
     def get_all_orders(self, by_who_id=-1):

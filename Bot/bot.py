@@ -118,8 +118,7 @@ class LibraryBot:
                 bot.send_message(chat_id=chat, text="There are no patrons")
                 return
 
-
-        data_list = [data_list[i * n:(i + 1) * n] for i in range(len(data_list) // n + 1)]  # if i * n < len(docs)
+        data_list = [data_list[i * n:(i + 1) * n] for i in range(len(data_list) // n + 1) if i * n < len(data_list)]
         max_page = len(data_list) - 1
         return data_list, max_page
 
@@ -173,7 +172,7 @@ class LibraryBot:
             if orders:
                 keyboard[0].insert(1, IKB("Orders", callback_data='orders {} {} {}'.format(page, user_id, loc)))
             else:
-                keyboard[0].insert(1, IKB("Delete", callback_data='dell {} {} {}'.format(page, user_id, loc)))
+                keyboard[0].insert(1, IKB("Delete", callback_data='delete {} {} {}'.format(page, user_id, loc)))
             message[0] = text.format(**user)
             message[1] = IKM(keyboard)
 
@@ -236,77 +235,7 @@ class LibraryBot:
             self.modify_document(bot, ids, action, args)
         elif loc == 'users':
             ids = [chat, message_id]
-
-
-
-
-    def user_flip(self, bot, ids, action, args):
-        chat, message_id = ids
-        user_id = args[1]
-        if action == 'orders':
-            orders = self.controller.get_user_orders(user_id)
-            keyboard = [[IKB(str(i + 1), callback_data='order {} {} {} users'.format(*args, i)) for i in range(len(orders))]]
-            orders = func_data.text_gen(orders, orders)
-            keyboard += [[IKB('Cancel️', callback_data='cancel {} {} users'.format(*args))]]
-            bot.edit_message_text(text=orders, chat_id=chat, message_id=message_id, reply_markup=IKM(keyboard))
-        elif action == 'edit':
-            callback = ['e{} {} {} users'.format(i, *args) for i in range(4)]
-            keyboard = [[IKB("Name", callback_data=callback[0]), IKB("Phone", callback_data=callback[1])],
-                        [IKB("Address", callback_data=callback[2]), IKB("Status", callback_data=callback[3])],
-                        [IKB('Cancel️', callback_data='cancel {} {} users'.format(*args))]]
-            text = "Choose edited parameter or press cancel"
-            bot.edit_message_text(text=text, chat_id=chat, message_id=message_id, reply_markup=IKM(keyboard))
-        elif action == 'delete':
-            self.controller.delete_user(user_id)
-            text = "User card has been deleted"
-            bot.edit_message_text(text=text, chat_id=chat, message_id=message_id)
-        elif action in ['e0', 'e1', 'e2', 'e3']:
-            user = self.controller.get_user(user_id)
-            keyboard = [[IKB("Cancel", callback_data='cancel')]]
-            params = dict(zip(['e0', 'e1', 'e2', 'e3'], func_data.lists["reg_fields"]))
-            text = 'Enter new {}.\nOld value - {}.'.format(params[action], user[params[action]])
-            self.location[chat] = "user_modify"
-            self.user_data[chat] = [user, params[action]]
-            bot.edit_message_text(text=text, chat_id=chat, message_id=message_id, reply_markup=IKM(keyboard))
-        elif action == 'order':
-            self.user_data[chat] = user_id
-            user = self.controller.get_user(user_id)
-            doc, time, time_out = self.controller.get_user_orders(user_id)[int(args[-1])].values()
-            text = "User name: {name}\nPhone: {phone}\nStatus: {status}\n\n".format(**user)
-            text += "Document title: {title}\nAuthors: {authors}\n\n".format(**doc)
-            text += "Date of taking: {}\nDate of returning: {}".format(time, time_out)
-            keyboard = [[IKB("Book return", callback_data='return {} {} {} users'.format(*args)),
-                         IKB("Send notification", callback_data='notice {} {} {} users'.format(*args)),
-                         IKB('Cancel️', callback_data='cancel {} {} users'.format(*args[:-1]))]]
-            bot.edit_message_text(text=text, chat_id=chat, message_id=message_id, reply_markup=IKM(keyboard))
-        elif action == 'notice':
-            self.location[chat] = "notice"
-            keyboard = [[IKB('Cancel️', callback_data='cancel {} {} users'.format(*args))]]
-            text = "Enter message to user"
-            bot.edit_message_text(text=text, chat_id=chat, message_id=message_id, reply_markup=IKM(keyboard))
-        elif action == 'return':
-            doc, time, time_out = self.controller.get_user_orders(user_id)[int(args[-1])].values()
-            self.controller.return_doc(user_id=user_id, doc_id=doc['id'], doc['storing_table'])
-            keyboard = [[IKB("Return to the list", callback_data='cancel {} {} users'.format(*args))]]
-
-            bot.edit_message_text(text='Document was returned', chat_id=chat, message_id=message_id, reply_markup=IKM(keyboard))
-
-    def modify_user(self, bot, update):
-        chat = update.message.chat_id
-        user, parameter = self.location[chat][1:]
-        user[parameter] = update.message.text
-        self.controller.modify_user(user)
-        self.location[chat] = 'users'
-        bot.send_message(text='User data was updated', chat_id=chat)
-
-    def notice_user(self, bot, update):
-        chat = update.message.chat_id
-        user_id = self.location[chat][1]
-        self.location[chat] = 'users'
-        bot.send_message(text=update.message.text, chat_id=user_id)
-        bot.send_message(text='Message sent', chat_id=chat)
-
-
+            self.user_flip(bot, ids, action, args)
 
     def error(self, bot, update, error):
         """Log Errors caused by Updates."""

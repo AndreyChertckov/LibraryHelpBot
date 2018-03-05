@@ -106,7 +106,7 @@ class Manager:
     # params:
     # ---newPatron - 'Patron' object
     def add_patron(self, newPatron):
-        sql = """INSERT INTO patrons(id, name, address, phone, history, current_books, status) VALUES (?,?,?,?,?,?,?)"""
+        sql = """INSERT INTO patrons(id, name, address, phone, history, current_docs, status) VALUES (?,?,?,?,?,?,?)"""
         self.add_new(sql, (newPatron.id, newPatron.name, newPatron.address, newPatron.phone,
                            str(newPatron.history), str(newPatron.current_books), newPatron.status))
 
@@ -184,7 +184,7 @@ class Manager:
                  phone TEXT,
                  address TEXT,
                  history TEXT,
-                 current_books TEXT,
+                 current_docs TEXT,
                  status TEXT
                   ); """)
 
