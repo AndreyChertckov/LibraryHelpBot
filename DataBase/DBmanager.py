@@ -108,7 +108,7 @@ class Manager:
     def add_patron(self, newPatron):
         sql = """INSERT INTO patrons(id, name, address, phone, history, current_docs, status) VALUES (?,?,?,?,?,?,?)"""
         self.add_new(sql, (newPatron.id, newPatron.name, newPatron.address, newPatron.phone,
-                           str(newPatron.history), str(newPatron.current_books), newPatron.status))
+                           str(newPatron.history), str(newPatron.current_docs), newPatron.status))
 
     # Updates some record
     # params:
@@ -132,6 +132,8 @@ class Manager:
     # params:
     # ---table - table to clear(string)
     def clear_table(self, table):
+        self.__create_connection(self.file).cursor().execute("UPDATE sqlite_sequence SET seq=? where name=?",
+                                                             (0, table,))
         self.__create_connection(self.file).cursor().execute("DELETE FROM " + table)
 
     # Deletes some table
@@ -263,3 +265,9 @@ class Manager:
     def get_label(self, what_to_select, from_table, id):
         return self.__create_connection(self.file).execute(
             "SELECT " + what_to_select + " from " + from_table + " WHERE id=" + str(id)).fetchone()[0]
+
+    def get_count(self, table):
+        return self.__create_connection(self.file).execute("SELECT count(*) from " + table).fetchone()[0]
+
+    def get_connection(self):
+        return self.__create_connection(self.file).cursor()
