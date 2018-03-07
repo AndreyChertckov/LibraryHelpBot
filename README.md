@@ -29,12 +29,12 @@ management. LMS is implemented as a Telegram bot.
  * First way is to download zip archive and then unzip it to the work directory.
  * Second way is to clone repository to the work directory via
 ```bash
-git clone https://github.com/LibrinnoTeam/LibraryHelpBot.git
+    git clone https://github.com/LibrinnoTeam/LibraryHelpBot.git
 ```
 ##### Running
 1. To run the application with default parameters just typing the command below in command line.
  ```bash
- python3 main.py
+    python3 main.py
  ```
  2. General view of the command that starts a bot
 ```bash
