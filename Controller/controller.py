@@ -96,11 +96,14 @@ class Controller:
 
     # Return all patrons from database
     def get_all_patrons(self, by_who_id=-1):
-        rows = self.DBmanager.get_connection().execute("SELECT id FROM patrons")
+        rows = self.DBmanager.select_all("patrons")
+        #rows = self.DBmanager.get_connection().execute("SELECT id FROM patrons")
         # rows = self.DBmanager.select_all("patrons")
         by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)['name']
         self.log('INFO', 'Get all patrons by {}'.format(by_who))
-        return [self.get_patron(id) for id in rows]
+        return [{'id': user[0], 'name': user[1], 'phone': user[2], 'address': user[3], 'history': user[4],
+                                 'current_books': user[5], 'status': user[6]} for user in rows]
+        #return [self.get_patron(id) for id in rows]
 
     # Return all librarians from database
     def get_all_librarians(self, by_who_id=-1):
