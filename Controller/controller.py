@@ -90,7 +90,7 @@ class Controller:
 
     # Return some patron
     def get_patron(self, id):
-        user = self.DBmanager.select_label("patrons", *id)
+        user = self.DBmanager.select_label("patrons", id)
         return {'id': user[0], 'name': user[1], 'phone': user[2], 'address': user[3], 'history': user[4],
                 'current_docs': user[5], 'status': user[6]}
 
@@ -100,7 +100,7 @@ class Controller:
         # rows = self.DBmanager.select_all("patrons")
         by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)['name']
         self.log('INFO', 'Get all patrons by {}'.format(by_who))
-        return [self.get_patron(id) for id in rows]
+        return [self.get_patron(*id) for id in rows]
 
     # Return all librarians from database
     def get_all_librarians(self, by_who_id=-1):
@@ -246,9 +246,9 @@ class Controller:
             order[3])['name'], self.get_document(order[3], order[2])['title']))
 
     def return_doc(self, user_id, doc_id, doc_type):
-
-        order = self.DBmanager.get_by_parameters(['user_id', 'doc_id', 'storing_table'], 'orders',
-                                                 [user_id, doc_id, doc_type])
+        # TODO: Поменять 0 на 1
+        order = self.DBmanager.get_by_parameters(['user_id', 'doc_id', 'storing_table', 'active'], 'orders',
+                                                 [user_id, doc_id, doc_type, 0])
         if order == None:
             self.log('WARNING', 'Can`t find the order for document {} of user {}.'.format(
                 self.get_document(doc_id, order[2])['title'], self.get_user(user_id)['name']))
@@ -260,6 +260,7 @@ class Controller:
             return False, 'Document doesn`t exist'
 
         curr_doc = eval(self.DBmanager.get_label('current_docs', 'patrons', user_id))
+        print(order['id'])
         curr_doc.remove(order['id'])
 
         free_count = int(self.DBmanager.get_label("free_count", order['table'], doc_id))

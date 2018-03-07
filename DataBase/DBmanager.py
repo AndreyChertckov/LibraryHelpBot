@@ -85,9 +85,9 @@ class Manager:
     # ---newMed - 'Media' object
 
     def add_media(self, newMed):
-        sql = """INSERT INTO media(id,title,authors,count,free_count,price,keywords)
-        VALUES(?,?,?,?,?,?,?)"""
-        self.add_new(sql, (self.get_max_id("media") + 1, newMed.title, newMed.authors, newMed.count,
+        sql = """INSERT INTO media(title,authors,count,free_count,price,keywords)
+        VALUES(?,?,?,?,?,?)"""
+        self.add_new(sql, (newMed.title, newMed.authors, newMed.count,
                            newMed.free_count, newMed.price, newMed.keywords))
 
     # Add new article to DB
