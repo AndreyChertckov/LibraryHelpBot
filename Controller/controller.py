@@ -90,13 +90,9 @@ class Controller:
 
     # Return some patron
     def get_patron(self, id):
-        try:
-            user = self.DBmanager.select_label("patrons", id)
-            return {'id': user[0], 'name': user[1], 'phone': user[2], 'address': user[3], 'history': user[4],
-                    'current_docs': user[5], 'status': user[6]}
-        except:
-            # Radi testa(udalit potom)
-            return 'information no available, patron does not exist.'
+        user = self.DBmanager.select_label("patrons", *id)
+        return {'id': user[0], 'name': user[1], 'phone': user[2], 'address': user[3], 'history': user[4],
+                'current_docs': user[5], 'status': user[6]}
 
     # Return all patrons from database
     def get_all_patrons(self, by_who_id=-1):

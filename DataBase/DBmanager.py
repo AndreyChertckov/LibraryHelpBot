@@ -66,8 +66,7 @@ class Manager:
     # returns:cortege with all attributes
 
     def select_label(self, selecting_table, id):
-        return self.__create_connection(self.file).cursor().execute("SELECT * FROM " + selecting_table + " WHERE id=?",
-                                                                    (id,)).fetchone()
+        return self.__create_connection(self.file).cursor().execute("SELECT * FROM " + selecting_table + " WHERE id={}".format(id)).fetchone()
 
     # Add new  book to DB
     #  params:
@@ -190,17 +189,16 @@ class Manager:
                  status TEXT
                   ); """)
 
-        self.__create_table("""
-              CREATE TABLE IF NOT EXISTS book(
+        self.__create_table("""CREATE TABLE IF NOT EXISTS book(
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               title TEXT NOT NULL,
               authors TEXT NOT NULL,
               description TEXT NOT NULL,
               count INTEGER,
-             free_count INTEGER,
-             price INTEGER,
-             best_seller INTEGER,
-             keywords TEXT);
+              free_count INTEGER,
+              price INTEGER,
+              best_seller INTEGER,
+              keywords TEXT);
         """)
         self.__create_table("""CREATE TABLE IF NOT EXISTS article(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
