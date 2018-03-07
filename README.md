@@ -7,7 +7,7 @@ contains all information about books, magazines, audio/video materials, as
 well as people allowed to check out the materials or those in charge of the
 management. LMS is implemented as a Telegram bot.
 ### How it works
-[](https://github.com/LibrinnoTeam/LibraryHelpBot/raw/master/howitworks.png)
+[](https://raw.githubusercontent.com/LibrinnoTeam/LibraryHelpBot/master/howitworks.png)
 1. Bot package sends request to Telegram via API and as a response it gets messages from users exploiting the bot.
 2. Bot analyzes the response and sends commands to the controller which executes the command and makes according changes in the database.
 ### Dependencies
