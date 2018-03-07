@@ -100,23 +100,23 @@ class LibraryBot:
             data_list = self.controller.get_all_unconfirmed()
             if len(data_list) == 0:
                 bot.send_message(chat_id=chat, text="There are no application to confirm")
-                return
+                return [], 0
         elif location == 'library':
             doc_type = func_data.analog.get(text, text)
             data_list = self.controller.get_all_doctype(doc_type)
             if len(data_list) == 0:
                 bot.send_message(chat_id=chat, text="There are no materials in the library")
-                return
+                return [], 0
         elif location == "my_orders":
             data_list = self.controller.get_user_orders(chat)
             if len(data_list) == 0:
                 bot.send_message(chat_id=chat, text="You do not have active orders")
-                return
+                return [], 0
         elif location == 'users':
             data_list = self.controller.get_all_patrons()
             if len(data_list) == 0:
                 bot.send_message(chat_id=chat, text="There are no patrons")
-                return
+                return [], 0
 
         data_list = [data_list[i * n:(i + 1) * n] for i in range(len(data_list) // n + 1) if i * n < len(data_list)]
         max_page = len(data_list) - 1
@@ -144,6 +144,8 @@ class LibraryBot:
                     [IKB("Order the document", callback_data='order {} {} {}'.format(item['id'], doc_type, loc)),
                      IKB('Cancel', callback_data='cancel {} {} {}'.format(page, doc_type, loc))]]
             elif self.controller.user_type(chat) == 3:
+                print(item)
+                print(item['free_count'], item['count'])
                 if item['free_count'] == item['count']:
                     keyboard = [[IKB('Edit', callback_data='edit {} {} {} {}'.format(page, item['id'], doc_type, loc)),
                                  IKB('Delete', callback_data='del {} {} {} {}'.format(page, item['id'], doc_type, loc)),
@@ -156,7 +158,7 @@ class LibraryBot:
             message[0] = text.format(**item)
             message[1] = IKM(keyboard)
         if loc == 'my_orders':
-            doc, time, time_out = item.values()
+            doc, doc_type, time, time_out = item.values()
             message[0] = "Title: {}\nAuthors: {}\nAvailable till: {}".format(doc['title'], doc['authors'], time_out)
             message[1] = IKM([[IKB("Cancel⤵️", callback_data='cancel {} {}'.format(page, loc))]])
         if loc == 'users':

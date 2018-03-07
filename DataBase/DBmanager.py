@@ -213,8 +213,7 @@ class Manager:
             keywords TEXT,
             issue TEXT,
             editors TEXT,
-            date TEXT,
-            best_seller INTEGER);
+            date TEXT);
         """)
         self.__create_table("""CREATE TABLE IF NOT EXISTS media(
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -223,8 +222,7 @@ class Manager:
                 count INTEGER,
                 free_count INTEGER,
                 price INTEGER,
-                keywords TEXT,
-                best_seller INTEGER);
+                keywords TEXT);
                 """)
         self.__create_table("""
              CREATE TABLE  IF NOT EXISTS orders (

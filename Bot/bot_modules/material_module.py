@@ -88,12 +88,13 @@ class Material_module:
             bot.edit_message_text(text=message, chat_id=chat, message_id=message_id)
         elif action == 'del':
             message = "Are you sure want to delete this document?"
-            markup = IKM([[IKB('Yes', callback_data='yes {} library'.format(args[1])),
+            markup = IKM([[IKB('Yes', callback_data='yes {} {} library'.format(*args[1:])),
                            IKB('No', callback_data='cancel {} {} library'.format(args[0], args[-1]))]])
             bot.edit_message_text(chat_id=chat, message_id=message_id, text=message, reply_markup=markup)
         elif action == 'yes':
+            print(action, args)
             message = 'Document was deleted successfully'
-            self.controller.delete_document(*args[1:])
+            self.controller.delete_document(*args)
             bot.edit_message_text(text=message, chat_id=chat, message_id=message_id)
         elif action == 'edit':
             doc_type = args[-1]
@@ -131,7 +132,7 @@ class Material_module:
         chat = update.message.chat_id
         doc, parameter, doc_type = self.user_data[chat]
         doc[parameter] = update.message.text
-        self.controller.update_doc_param(doc, doc_type)
+        self.controller.modify_document(doc, doc_type)
         self.location[chat] = 'library'
         bot.send_message(text='Document was updated', chat_id=chat)
 

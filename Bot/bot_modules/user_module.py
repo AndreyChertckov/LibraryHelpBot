@@ -41,6 +41,8 @@ class User_module:
             self.controller.delete_user(user_id)
             text = "User card has been deleted"
             bot.edit_message_text(text=text, chat_id=chat, message_id=message_id)
+            bot.send_message(text="You user card was deleted.", chat_id=user_id,
+                             reply_markup=RKM(self.keyboard_dict['unauth'], True))
         elif action in ['e0', 'e1', 'e2', 'e3']:
             user = self.controller.get_user(user_id)
             keyboard = [[IKB("Cancel", callback_data='cancel {} {} users'.format(*args))]]
@@ -85,7 +87,8 @@ class User_module:
 
     def notice_user(self, bot, update):
         chat = update.message.chat_id
-        user_id = self.location[chat][1]
+        user_id = self.user_data[chat]
+        print(user_id)
         self.location[chat] = 'users'
         bot.send_message(text=update.message.text, chat_id=user_id)
         bot.send_message(text='Message sent', chat_id=chat)
