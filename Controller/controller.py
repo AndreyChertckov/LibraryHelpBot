@@ -90,7 +90,7 @@ class Controller:
 
     # Return some patron
     def get_patron(self, id):
-        user = self.DBmanager.select_label("patrons", *id)
+        user = self.DBmanager.select_label("patrons", id)
         return {'id': user[0], 'name': user[1], 'phone': user[2], 'address': user[3], 'history': user[4],
                 'current_docs': user[5], 'status': user[6]}
 

@@ -153,7 +153,7 @@ def test_four(info=False):
     assert (c.get_patron(p2['id']) == 'information no available, patron does not exist.')
     p3_ = c.get_patron(p3['id'])
     assert (p3_is_correct(p3_))
-    print(c.get_patron(p2['id']))
+    #print(c.get_patron(p2['id']))
     return True
     # print_patron_info(c.get_patron(p3['id']))
 
@@ -164,7 +164,7 @@ def test_five(info=False):
         c.check_out_doc(p2['id'], 1, 'book')
         return False
     except:
-        print('Error,patron is not a patron of the library')
+        #print('Error,patron is not a patron of the library')
         return True
 
 
@@ -224,7 +224,18 @@ def test_nine():
              and d.get_label('name', 'patrons', p2['id']) != None
             )
     return True
+def test_all():
+    test_one()
+    test_two()
+    test_three()
+    test_five()
+    test_five()
+    test_six()
+    test_seven()
+    test_eight()
+    test_nine()
 def main():
+    #test_all()
     while 1:
         print('Enter the number of the test:')
         r = int(input())
