@@ -92,7 +92,6 @@ class Material_module:
                            IKB('No', callback_data='cancel {} {} library'.format(args[0], args[-1]))]])
             bot.edit_message_text(chat_id=chat, message_id=message_id, text=message, reply_markup=markup)
         elif action == 'yes':
-            print(action, args)
             message = 'Document was deleted successfully'
             self.controller.delete_document(*args)
             bot.edit_message_text(text=message, chat_id=chat, message_id=message_id)

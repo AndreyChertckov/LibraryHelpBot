@@ -69,7 +69,6 @@ class User_module:
             bot.edit_message_text(text=text, chat_id=chat, message_id=message_id, reply_markup=IKM(keyboard))
         elif action == 'return':
             f = self.controller.get_user_orders(user_id)[int(args[-1])]
-            print(f)
             doc, doc_type, time, time_out = f.values()
             self.controller.return_doc(user_id=user_id, doc_id=doc['id'], doc_type=doc_type)
             keyboard = [[IKB("Return to the list", callback_data='cancel {} {} users'.format(*args))]]
@@ -88,7 +87,6 @@ class User_module:
     def notice_user(self, bot, update):
         chat = update.message.chat_id
         user_id = self.user_data[chat]
-        print(user_id)
         self.location[chat] = 'users'
         bot.send_message(text=update.message.text, chat_id=user_id)
         bot.send_message(text='Message sent', chat_id=chat)

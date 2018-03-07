@@ -257,7 +257,6 @@ class Controller:
             self.log('WARNING', 'Can`t find the order for document {} of user {}.'.format(
                 self.get_document(doc_id, order[2])['title'], self.get_user(user_id)['name']))
             return False, 'Can`t find order in db'
-        print(order[0])
         order = dict(zip(['id', 'time', 'table', 'user_id', 'doc_id', 'active', 'time_out'], order[0]))
 
         if self.DBmanager.select_label(order['table'], doc_id) == None:
@@ -287,7 +286,6 @@ class Controller:
         keys = ['doc_dict', "doc_type", 'time', 'time_out']
         for order_id in orders_id:
             order = self.DBmanager.select_label('orders', order_id)
-            # print(order)
             if order == None:
                 continue
             doc = self.DBmanager.select_label(order[2], order[3])
