@@ -235,8 +235,8 @@ def test_all():
     test_eight()
     test_nine()
 def main():
-    test_one()
-    print(c.get_all_patrons())
+    #test_one()
+   # print(c.get_all_patrons())
     #test_all()
     while 1:
         print('Enter the number of the test:')
