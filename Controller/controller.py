@@ -260,7 +260,6 @@ class Controller:
             return False, 'Document doesn`t exist'
 
         curr_doc = eval(self.DBmanager.get_label('current_docs', 'patrons', user_id))
-        print(order['id'])
         curr_doc.remove(order['id'])
 
         free_count = int(self.DBmanager.get_label("free_count", order['table'], doc_id))
