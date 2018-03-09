@@ -4,6 +4,7 @@ import sys
 
 from Bot.bot import start_bot
 from Controller.controller import Controller
+from AdminSite.api import API
 
 
 def main():
@@ -35,6 +36,8 @@ def main():
         elif opt == '--database':
             file_db = arg
     c = Controller(file_db, lc, lf, file_log)
+    api = API(c)
+    api.run()
     start_bot(c)
 
 
