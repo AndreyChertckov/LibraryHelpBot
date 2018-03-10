@@ -12,13 +12,13 @@ def main():
     file_db = 'DataBase.db'
     lc = False
     lf = False
+    cleanup_database = False
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'h:s:t:c', ['log_file=', 'database='])
+        opts, args = getopt.getopt(sys.argv[1:], 'h:s:t:c', ['log_file=', 'database=','cleanup_database'])
     except getopt.GetoptError:
         print('main.py -t -c --log_file=<filelog> --database=<filedb>')
         sys.exit(2)
     for opt, arg in opts:
-        print(opt)
         if opt == '-h':
             print('main.py -t -c --log_file=<filelog> --database=<filedb>')
             sys.exit()
@@ -35,8 +35,13 @@ def main():
             file_log = arg
         elif opt == '--database':
             file_db = arg
+        elif opt == '--cleanup_database':
+            cleanup_database = True
     c = Controller(file_db, lc, lf, file_log)
     api = API(c)
+    if cleanup_database:
+        api.dbmanager.cleanup_database()
+        api.dbmanager.init_tables()
     api.run()
     start_bot(c)
 
