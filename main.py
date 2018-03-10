@@ -29,7 +29,7 @@ def main():
             lc = True
         elif opt == "--log_file":
             if arg == '':
-                print('main.py -lc --log_file=<filelog> --database=<filedb>')
+                print('main.py -c --log_file=<filelog> --database=<filedb>')
                 sys.exit()
             lf = True
             file_log = arg

@@ -1,0 +1,1 @@
+CREATE TABLE IF NOT EXISTS librarians (id INTEGER PRIMARY KEY ,login TEXT,password TEXT,name TEXT NOT NULL,phone TEXT,address TEXT);
