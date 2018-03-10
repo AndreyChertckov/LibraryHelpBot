@@ -33,5 +33,5 @@ class DBManager:
     
     def create_session(self, session_id,user_id):
         cursor = self.db_connectionn.cursor()
-        cursor.execute("INSERT INTO librarians VALUES (%s,%s) ",(session_id,user_id,))
+        cursor.execute("INSERT INTO sessions VALUES (%s,%s) ",(session_id,user_id,))
     

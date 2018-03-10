@@ -26,7 +26,7 @@ class API:
         
     def create_session(self,login,passwd):
         hasher = hashlib.md5()
-        hasher.update((login + passwd + self.generate_sault()).encode('utf-8'))
+        hasher.update((login + str(passwd) + str(self.generate_sault())).encode('utf-8'))
         user_id = self.dbmanager.get_user_id(login,passwd)[0]
         self.dbmanager.create_session(hasher.hexdigest(),user_id)
         return hasher.hexdigest()
@@ -38,9 +38,8 @@ class API:
         passwd = hasher.hexdigest()
         if self.dbmanager.get_user(login,passwd) == None:
             return self.app.make_response(redirect('/signin'))
-
         response = self.app.make_response(redirect('/'))
-        response.set_cookie('session_id',self.generate_sault())
+        response.set_cookie('session_id',self.create_session(login,passwd))
         return response
     
     def signup_post(self):
