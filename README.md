@@ -25,11 +25,24 @@ management. LMS is implemented as a Telegram bot.
 ```bash
     pip3 install -r requirements.txt
 ```
+2. Install MariaDB from official [site](https://mariadb.org/)
 2. Downlaod the repository from [Github](https://github.com/LibrinnoTeam/LibraryHelpBot)
  * First way is to download zip archive and then unzip it to the work directory.
  * Second way is to clone repository to the work directory via
 ```bash
     git clone https://github.com/LibrinnoTeam/LibraryHelpBot.git
+```
+3. Change password in database-schema.sql
+4. Execute database-schema.sql in MariaDB
+```sql
+    source path/to/work/directory/AdminSite/database-schema.sql
+```
+5. Create file configs.py in work directory
+``` python
+    token                  = '*' # Token for telegram bot https://core.telegram.org/bots
+    site_login_databse     = 'admin_site' # login for MariaDB
+    site_password_database = '*' # password for MariaDB
+    site_database          = 'librarian_site' # Name of Database in MariaDB
 ```
 ##### Running
 1. To run the application with default parameters just typing the command below in command line.
@@ -38,9 +51,10 @@ management. LMS is implemented as a Telegram bot.
  ```
  2. General view of the command that starts a bot
 ```bash
-    python3 main.py -t -c --log_file=<filelog> --database=<filedb>
+    python3 main.py -t -c --log_file=<filelog> --database=<filedb> --cleanup_database
 ```
 * Argument -t means that the command runs the tests
 * Argument -c means that the application will write logs into console
 * Argument --log_file=<filelog> means that the application will write logs into file with name in parameter <filelog>
 * Argument --database=<filedb> means that the application will use bd in file with name in parameter <filedb>
+* Argument --cleanup_database means that the application will drop tables in database
