@@ -9,7 +9,7 @@ def test_first():
     cntrl = create_controller(1)
 
     test_user = {'id': 1, 'name': 'test', 'address': 'tEsT',
-                 'status': 'Student', 'phone': '987', 'history': [], 'current_books': []}
+                 'status': 'Student', 'phone': '987', 'history': [], 'current_docs': []}
     test_book = {'title': 'Test', 'description': 'TESTTEST', 'authors': 'tEsT', 'count': 2, 'price': 123, 'keywords': ''}
 
     cntrl.DBmanager.add_patron(Packager(test_user))
@@ -35,7 +35,7 @@ def test_second():
 
     id_book_A = 1
     test_user = {'id': 1, 'name': 'test', 'address': 'test',
-                 'status': 'Student', 'phone': '987', 'history': [], 'current_books': []}
+                 'status': 'Student', 'phone': '987', 'history': [], 'current_docs': []}
     cntrl.DBmanager.add_patron(Packager(test_user))
     can_get_book = cntrl.check_out_doc(test_user['id'], id_book_A)
     clear_tables()
@@ -46,7 +46,7 @@ def test_third():
     cntrl = create_controller(3)
 
     test_user = {'id': 1, 'name': 'test', 'address': 'test',
-                 'status': 'Faculty', 'phone': '987', 'history': [], 'current_books': []}
+                 'status': 'Faculty', 'phone': '987', 'history': [], 'current_docs': []}
     test_book = {'title': 'Test', 'description': 'TESTTEST', 'authors': 'tEsT', 'count': 2, 'price': 123, 'keywords': ''}
 
     cntrl.DBmanager.add_patron(Packager(test_user))
@@ -76,7 +76,7 @@ def test_fourth():
     cntrl = create_controller(4)
 
     test_user = {'id': 1, 'name': 'test', 'address': 'test',
-                 'status': 'Student', 'phone': '987', 'history': [], 'current_books': []}
+                 'status': 'Student', 'phone': '987', 'history': [], 'current_docs': []}
     test_book = {'title': 'Test', 'description': 'TESTTEST', 'authors': 'tEsT',
                  'count': 2, 'price': 123, 'best_seller': 1, 'keywords': ''}
 
@@ -107,11 +107,11 @@ def test_fifth():
     cntrl = create_controller(5)
 
     test_user_1 = {'id': 1, 'name': 'test', 'address': 'test',
-                   'status': 'Student', 'phone': '987', 'history': [], 'current_books': []}
+                   'status': 'Student', 'phone': '987', 'history': [], 'current_docs': []}
     test_user_2 = {'id': 2, 'name': 'test', 'address': 'test',
-                   'status': 'Student', 'phone': '987', 'history': [], 'current_books': []}
+                   'status': 'Student', 'phone': '987', 'history': [], 'current_docs': []}
     test_user_3 = {'id': 3, 'name': 'test', 'address': 'test',
-                   'status': 'Student', 'phone': '987', 'history': [], 'current_books': []}
+                   'status': 'Student', 'phone': '987', 'history': [], 'current_docs': []}
 
     cntrl.DBmanager.add_patron(Packager(test_user_1))
     cntrl.DBmanager.add_patron(Packager(test_user_2))
@@ -134,7 +134,7 @@ def test_sixth():
     cntrl = create_controller(6)
 
     test_user = {'id': 1, 'name': 'test', 'address': 'test',
-                 'status': 'Student', 'phone': '987', 'history': [], 'current_books': []}
+                 'status': 'Student', 'phone': '987', 'history': [], 'current_docs': []}
     test_book = {'title': 'Test', 'description': 'TESTTEST', 'authors': 'tEsT', 'count': 2, 'price': 123, 'keywords': ''}
 
     cntrl.DBmanager.add_patron(Packager(test_user))
@@ -151,9 +151,9 @@ def test_seventh():
     cntrl = create_controller(7)
 
     test_user_1 = {'id': 1, 'name': 'test', 'address': 'test',
-                   'status': 'Student', 'phone': '987', 'history': [], 'current_books': []}
+                   'status': 'Student', 'phone': '987', 'history': [], 'current_docs': []}
     test_user_2 = {'id': 2, 'name': 'test', 'address': 'test',
-                   'status': 'Student', 'phone': '987', 'history': [], 'current_books': []}
+                   'status': 'Student', 'phone': '987', 'history': [], 'current_docs': []}
 
     cntrl.DBmanager.add_patron(Packager(test_user_1))
     cntrl.DBmanager.add_patron(Packager(test_user_2))
@@ -174,7 +174,7 @@ def test_eighth():
     cntrl = create_controller(8)
 
     test_user = {'id': 1, 'name': 'test', 'address': 'test',
-                 'status': 'Student', 'phone': '987', 'history': [], 'current_books': []}
+                 'status': 'Student', 'phone': '987', 'history': [], 'current_docs': []}
     test_book = {'title': 'Test', 'description': 'TESTTEST', 'authors': 'tEsT', 'count': 2, 'price': 123, 'keywords': ''}
 
     cntrl.DBmanager.add_patron(Packager(test_user))
@@ -204,7 +204,7 @@ def test_ninth():
     cntrl = create_controller(9)
 
     test_user = {'id': 1, 'name': 'test', 'address': 'test',
-                 'status': 'Student', 'phone': '987', 'history': [], 'current_books': []}
+                 'status': 'Student', 'phone': '987', 'history': [], 'current_docs': []}
     test_book = {'title': 'Test', 'description': 'TESTTEST', 'authors': 'tEsT', 'count': 2, 'price': 123, 'keywords': ''}
 
     cntrl.DBmanager.add_patron(Packager(test_user))
@@ -234,7 +234,7 @@ def test_tenth():
     cntrl = create_controller(10)
 
     test_user = {'id': 1, 'name': 'test', 'address': 'test',
-                 'status': 'Student', 'phone': '987', 'history': [], 'current_books': []}
+                 'status': 'Student', 'phone': '987', 'history': [], 'current_docs': []}
     test_book_1 = {'title': 'Test', 'description': 'TESTTEST', 'authors': 'tEsT', 'count': 2, 'price': 123, 'keywords': ''}
     test_book_2 = {'title': 'TEEST', 'description': 'TESTTEST',
                    'authors': 'tEsT', 'count': 0, 'price': 122, 'keywords': ''}
@@ -345,7 +345,7 @@ def test_check_out_media():
 
     test_media = {'title': 'Teste', 'authors': 'XY', 'keywords': 'oansedi', 'price': 123, 'best_seller': 1, 'count': 1}
     test_user = {'id': 1, 'name': 'test', 'address': 'test',
-                 'status': 'Student', 'phone': '987', 'history': [], 'current_books': []}
+                 'status': 'Student', 'phone': '987', 'history': [], 'current_docs': []}
 
     cntrl.add_document(test_media, 'media')
     cntrl.DBmanager.add_patron(Packager(test_user))
@@ -401,7 +401,7 @@ def test_return_doc():
 
     test_media = {'title': 'Teste', 'authors': 'XY', 'keywords': 'oansedi', 'price': 123, 'best_seller': 1, 'count': 1}
     test_user = {'id': 1, 'name': 'test', 'address': 'test',
-                 'status': 'Student', 'phone': '987', 'history': [], 'current_books': []}
+                 'status': 'Student', 'phone': '987', 'history': [], 'current_docs': []}
 
     cntrl.DBmanager.add_patron(Packager(test_user))
     cntrl.add_document(test_media, 'media')
@@ -417,14 +417,14 @@ def test_return_doc():
     if not success:
         clear_tables()
         assert False
-
-    success, msg = cntrl.return_doc(test_user['id'], media_id,'media')
+    order_id = cntrl.get_all_orders(test_user['id'])[0]['id']
+    success, msg = cntrl.return_doc(order_id)
 
     if not success:
         clear_tables()
         assert False
 
-    user_current_docs = eval(cntrl.DBmanager.get_label('current_books', 'patrons', test_user['id']))
+    user_current_docs = eval(cntrl.DBmanager.get_label('current_docs', 'patrons', test_user['id']))
     media_count = cntrl.DBmanager.get_label('free_count', 'media', media_id)
     clear_currents_doc = user_current_docs == []
     count_of_media = media_count == test_media['count']
@@ -456,7 +456,7 @@ def test_get_user_orders():
 
     test_book = {'title': 'Test', 'description': 'TESTTEST', 'authors': 'tEsT', 'count': 2, 'price': 123, 'keywords': '0'}
     test_user = {'id': 1, 'name': 'test', 'address': 'tEsT',
-                 'status': 'Student', 'phone': '987', 'history': [], 'current_books': []}
+                 'status': 'Student', 'phone': '987', 'history': [], 'current_docs': []}
 
     cntrl.add_document(test_book, 'book')
 
@@ -468,7 +468,7 @@ def test_get_user_orders():
     if not success:
         assert (success)
     
-    doc = cntrl.get_user_orders(test_user['id'])[0]['doc_dict']
+    doc = cntrl.get_user_orders(test_user['id'])[0]['doc']
     test_book.pop('free_count')
     doc.pop('free_count')
     doc.pop('id')
@@ -481,7 +481,7 @@ def test_get_orders():
 
     test_book = {'title': 'Test', 'description': 'TESTTEST', 'authors': 'tEsT', 'count': 2, 'price': 123, 'keywords': '0'}
     test_user = {'id': 1, 'name': 'test', 'address': 'tEsT',
-                 'status': 'Student', 'phone': '987', 'history': [], 'current_books': []}
+                 'status': 'Student', 'phone': '987', 'history': [], 'current_docs': []}
 
     cntrl.add_document(test_book, 'book')
 
@@ -505,7 +505,7 @@ def test_get_orders():
         clear_tables()
         assert False
 
-    cntrl.return_doc(orders[0]['id'], book_id,'book')
+    cntrl.return_doc(orders[0]['id'])
     orders = cntrl.get_all_returned_orders(-1)
     if len(orders) != 1:
         clear_tables()
@@ -550,7 +550,7 @@ def test_check_out_article():
                     'editors': 'editor1', 'date': '2017-08-01', 'keywords': '', 'price': 1, 'count': 3,
                     'best_seller': 0}
     test_user = {'id': 1, 'name': 'test', 'address': 'tEsT',
-                 'status': 'Student', 'phone': '987', 'history': [], 'current_books': []}
+                 'status': 'Student', 'phone': '987', 'history': [], 'current_docs': []}
     cntrl.add_document(test_article, 'article')
 
     cntrl.DBmanager.add_patron(Packager(test_user))
@@ -571,7 +571,7 @@ def test_add_copies_of_document():
     cntrl.add_copies_of_document('article',test_article['id'],2)
     test_article = cntrl.get_documents_by_title(test_article['title'],'article')[0]
     clear_tables()
-    assert(test_article['count'] == 2 and test_article['free_count'] == 2)
+    assert(test_article['count'] == 5 and test_article['free_count'] == 5)
 
 
 def clear_tables():
