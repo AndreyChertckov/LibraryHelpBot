@@ -19,19 +19,27 @@ class DBManager:
 
     def get_user(self, login, hash_passwd):
         cursor = self.db_connectionn.cursor()
-        cursor.execute("SELECT * FROM librarians WHERE login=%s AND password=%s",(login,hash_passwd,))
+        cursor.execute("SELECT * FROM librarians WHERE login=%s AND password=%s;",(login,hash_passwd,))
         return cursor.fetchone()
     
     def create_user(self, user):
         cursor = self.db_connectionn.cursor()
-        cursor.execute("INSERT INTO librarians(login,password,name,phone,address) VALUES (%s,%s,%s,%s,%s)",(user['login'],user['passwd'],user['name'],user['phone'],user['address'],))
+        cursor.execute("INSERT INTO librarians(login,password,name,phone,address) VALUES (%s,%s,%s,%s,%s);",(user['login'],user['passwd'],user['name'],user['phone'],user['address'],))
     
     def get_user_id(self,login,hash_passwd):
         cursor = self.db_connectionn.cursor()
-        cursor.execute("SELECT (id) FROM librarians WHERE login=%s AND password=%s",(login,hash_passwd,))
+        cursor.execute("SELECT (id) FROM librarians WHERE login=%s AND password=%s;",(login,hash_passwd,))
         return cursor.fetchone()
     
     def create_session(self, session_id,user_id):
         cursor = self.db_connectionn.cursor()
-        cursor.execute("INSERT INTO sessions VALUES (%s,%s) ",(session_id,user_id,))
+        cursor.execute("INSERT INTO sessions VALUES (%s,%s);",(session_id,user_id,))
     
+    def get_user_id_by_session(self, session_id):
+        cursor = self.db_connectionn.cursor()
+        cursor.execute("SELECT * FROM sessions WHERE id=%s;",(session_id,))
+        return cursor.fetchone()
+    
+    def delete_session(self, session_id):
+        cursor = self.db_connectionn.cursor()
+        cursor.execute("DELETE FROM sessions WHERE id=%s;",(session_id,))

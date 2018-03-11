@@ -31,6 +31,9 @@ class API:
         self.dbmanager.create_session(hasher.hexdigest(),user_id)
         return hasher.hexdigest()
 
+    def check_session(self, session_id):
+        return self.dbmanager.get_user_id_by_session(session_id) != None
+
     def signin_post(self):
         login = request.values.get('login')
         hasher = hashlib.md5()
@@ -54,8 +57,22 @@ class API:
         response.set_cookie('session_id',self.create_session(user['login'],user['passwd']))
         return response
 
+    def logount_post(self):
+        session_id = request.cookies['session_id']
+        self.dbmanager.delete_session(session_id)
+        response = self.app.make_response(redirect('/'))
+        response.set_cookie('session_id', '', expires=0)
+        return response
+
     def add_document_post(self):
-        document = []
-        keys = ['title','description','authors','count','price','keywords']
-        doc_type = request.values.get('doc_type')
-        
+        if 'session_id' in request.cookies and self.check_session(session_id):
+            document = []
+            keys = ['title','description','authors','count','price','keywords','best_seller']
+            doc_type = request.values.get('doc_type')
+            if doc_type == 'article':
+                keys.extend(['journal','issue','editors','date'])
+            document = dict(zip(keys,[request.values.get(key) for key in keys]))
+            self.cntrl.add_document(document,doc_type)
+            return 'OK'
+        else:
+            return 'Sign in before'        
