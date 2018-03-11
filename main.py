@@ -4,7 +4,7 @@ import sys
 
 from Bot.bot import start_bot
 from Controller.controller import Controller
-from AdminSite.api import API
+from AdminSite.site import Main 
 
 
 def main():
@@ -38,11 +38,11 @@ def main():
         elif opt == '--cleanup_database':
             cleanup_database = True
     c = Controller(file_db, lc, lf, file_log)
-    api = API(c)
+    site = Main(c)
     if cleanup_database:
-        api.dbmanager.cleanup_database()
-        api.dbmanager.init_tables()
-    api.run()
+        site.api.dbmanager.cleanup_database()
+        site.api.dbmanager.init_tables()
+    site.run()
     start_bot(c)
 
 
