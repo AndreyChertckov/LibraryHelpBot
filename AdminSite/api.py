@@ -18,6 +18,7 @@ class API:
     def init_handlers(self):
         self.blueprint.add_url_rule('/signin','signin',self.signin_post,methods=['POST'])
         self.blueprint.add_url_rule('/signup','signup',self.signup_post,methods=['POST'])
+        self.blueprint.add_url_rule('/api/add_document','add_document',self.add_document_post,methods=['POST'])
 
     def generate_sault(self):
         sault = bytes([random.randint(0,16) for i in range(16)])
@@ -42,14 +43,19 @@ class API:
         return response
 
     def signup_post(self):
-        print(request.method)
-        print(request.form)
         keys = ['login','name','phone','address']
         user = dict(zip(keys,[request.values.get(key) for key in keys]))
-        print(user)
         hasher = hashlib.md5()
         hasher.update(request.values.get('password').encode('utf-8'))
         user['passwd'] = hasher.hexdigest()
-        self.dbmanager.create_user(user)
-        return 'OK'
+        if not self.dbmanager.create_user(user):
+            return redirect('/signup')
+        response = self.app.make_response(redirect('/'))
+        response.set_cookie('session_id',self.create_session(user['login'],user['passwd']))
+        return response
 
+    def add_document_post(self):
+        document = []
+        keys = ['title','description','authors','count','price','keywords']
+        doc_type = request.values.get('doc_type')
+        
