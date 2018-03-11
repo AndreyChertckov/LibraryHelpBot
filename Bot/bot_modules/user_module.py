@@ -54,25 +54,45 @@ class User_module:
         elif action == 'order':
             self.user_data[chat] = user_id
             user = self.controller.get_user(user_id)
-            doc, doc_type, time, time_out = self.controller.get_user_orders(user_id)[int(args[-1])].values()
+            order = self.controller.get_user_orders(user_id)[int(args[-1])]
+            doc, order_id, active = order['doc'], order['id'], order['active']
+            doc_type, time, time_out = order['table'], order['time'], order['time_out']
+
             text = "User name: {name}\nPhone: {phone}\nStatus: {status}\n\n".format(**user)
-            text += "Document title: {title}\nAuthors: {authors}\n\n".format(**doc)
+            text += "Document title: {title}\nAuthors: {authors}\nType of document: {dt}\n\n".format(**doc, dt=doc_type)
             text += "Date of taking: {}\nDate of returning: {}".format(time, time_out)
-            keyboard = [[IKB("Book return", callback_data='return {} {} {} users'.format(*args)),
-                         IKB("Send notification", callback_data='notice {} {} {} users'.format(*args)),
-                         IKB('Cancel️', callback_data='cancel {} {} users'.format(*args[:-1]))]]
+
+            if int(active) == 0:
+                keyboard = [[IKB("Activate order", callback_data='activate {} {} {} users'.format(*args)),
+                            IKB("Decline order", callback_data='decline {} {} {} users'.format(*args)),
+                            IKB('Cancel️', callback_data='cancel {} {} users'.format(*args[:-1]))]]
+            elif int(active) == 1:
+                keyboard = [[IKB("Book return", callback_data='return {} {} {} users'.format(*args)),
+                            IKB("Send notification", callback_data='notice {} {} {} users'.format(*args)),
+                            IKB('Cancel️', callback_data='cancel {} {} users'.format(*args[:-1]))]]
             bot.edit_message_text(text=text, chat_id=chat, message_id=message_id, reply_markup=IKM(keyboard))
+        elif action == 'activate':
+            order = self.controller.get_user_orders(user_id)[int(args[-1])]
+            self.controller.user_get_doc(order['id'])
+            keyboard = [[IKB("Return to the list", callback_data='cancel {} {} users'.format(*args))]]
+
+            bot.edit_message_text(text='Document was taken', chat_id=chat, message_id=message_id,
+                                  reply_markup=IKM(keyboard))
+        elif action == 'decline':
+            order = self.controller.get_user_orders(user_id)[int(args[-1])]
+            self.controller.return_doc(order['id'])
+            keyboard = [[IKB("Return to the list", callback_data='cancel {} {} users'.format(*args))]]
+            bot.edit_message_text(text='Order was declined', chat_id=chat, message_id=message_id,
+                                  reply_markup=IKM(keyboard))
         elif action == 'notice':
             self.location[chat] = "notice"
             keyboard = [[IKB('Cancel️', callback_data='cancel {} {} users'.format(*args))]]
             text = "Enter message to user"
             bot.edit_message_text(text=text, chat_id=chat, message_id=message_id, reply_markup=IKM(keyboard))
         elif action == 'return':
-            f = self.controller.get_user_orders(user_id)[int(args[-1])]
-            doc, doc_type, time, time_out = f.values()
-            self.controller.return_doc(user_id=user_id, doc_id=doc['id'], doc_type=doc_type)
+            order = self.controller.get_user_orders(user_id)[int(args[-1])]
+            self.controller.return_doc(order['id'])
             keyboard = [[IKB("Return to the list", callback_data='cancel {} {} users'.format(*args))]]
-
             bot.edit_message_text(text='Document was returned', chat_id=chat, message_id=message_id,
                                   reply_markup=IKM(keyboard))
 

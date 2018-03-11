@@ -240,25 +240,11 @@ class Controller:
             return False, 'Not enough copies'
 
     def user_get_doc(self, order_id):
-        order = self.DBmanager.select_label('orders', order_id)
         self.DBmanager.edit_label('orders', ['active'], [1], order_id)
-        self.log('INFO', 'User {} get document {}.'.format(self.get_user(
-            order[3])['name'], self.get_document(order[3], order[2])['title']))
 
-    def return_doc(self, user_id, doc_id, doc_type):
-        # TODO: Поменять 0 на 1
-        order = self.DBmanager.get_by_parameters(['user_id', 'doc_id', 'storing_table', 'active'], 'orders',
-                                                 [user_id, doc_id, doc_type, 0])
-        if order == None:
-            self.log('WARNING', 'Can`t find the order for document {} of user {}.'.format(
-                self.get_document(doc_id, order[2])['title'], self.get_user(user_id)['name']))
-            return False, 'Can`t find order in db'
-        order = dict(zip(['id', 'time', 'table', 'user_id', 'doc_id', 'active', 'time_out'], order[0]))
-
-        if self.DBmanager.select_label(order['table'], doc_id) == None:
-            self.log('WARNING', 'Document with id {} doesn`t exist'.format(doc_id))
-            return False, 'Document doesn`t exist'
-
+    def return_doc(self, order_id):
+        order = self.get_order(order_id)
+        user_id, doc_id, doc_type = order["user_id"], order["doc_id"], order["table"]
         curr_doc = eval(self.DBmanager.get_label('current_docs', 'patrons', user_id))
         curr_doc.remove(order['id'])
 
@@ -279,21 +265,24 @@ class Controller:
             return []
         orders_id = eval(user['current_docs'])
         output = []
-        keys = ['doc_dict', "doc_type", 'time', 'time_out']
+
         for order_id in orders_id:
-            order = self.DBmanager.select_label('orders', order_id)
-            if order == None:
+            order = self.get_order(order_id)
+            if order is None:
                 continue
-            doc = self.DBmanager.select_label(order[2], order[3])
-            if doc == None:
+            doc = self.DBmanager.select_label(order['table'], order['doc_id'])
+            if doc is None:
                 continue
-            doc_dict = self.doc_tuple_to_dict(order[2], doc)
-            output.append(dict(zip(keys, [doc_dict, order[2], order[1], order[5]])))
+            order['doc'] = self.doc_tuple_to_dict(order['table'], doc)
+            output.append(order)
         return output
 
-    def get_order(self, id):
-        return dict(zip(['id', 'time', 'table', 'doc_id', 'user_id', 'time_out', 'active'],
-                        self.DBmanager.select_label("orders", id)))
+    def get_order(self, order_id):
+        order = self.DBmanager.select_label("orders", order_id)
+        if order is None:
+            self.log('WARNING', 'Can`t find the order for giving id.')
+            return None
+        return dict(zip(['id', 'time', 'table', 'doc_id', 'user_id', 'time_out', 'active'], order))
 
     def get_all_orders(self, by_who_id=-1):
         by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)['name']
