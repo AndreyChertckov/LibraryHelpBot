@@ -12,7 +12,7 @@ class API:
         self.init_handlers()
         self.app = app
         self.app.register_blueprint(self.blueprint)
-        self.cntrl = controller
+        self.controller = controller
         self.dbmanager = DBManager()
 
     def init_handlers(self):
@@ -70,14 +70,68 @@ class API:
             doc_type = request.values.get('doc_type')
             if doc_type == 'article':
                 keys.extend(['journal','issue','editors','date'])
-            document = dict(zip(keys,[request.values.get(key) for key in keys]))
-            self.cntrl.add_document(document,doc_type)
-            return 'OK'
+            if all([key in request.values for key in keys]):
+                document = dict(zip(keys,[request.values.get(key) for key in keys]))
+                self.controller.add_document(document,doc_type)
+                return 'OK'
+            else:
+                return 'Not enough keys'
         else:
             return 'Sign in before'
     
     def get_all_unconfirmed_post(self):
         if 'session_id' in request.cookies and self.check_session(request.cookies.get('session_id')):
-            return jsonify(self.cntrl.get_all_unconfirmed())
+            return jsonify(self.controller.get_all_unconfirmed())
+        else:
+            return 'Sign in before'
+    
+    def confirm_user_post(self):
+        if 'session_id' in request.cookies and self.check_session(request.cookies.get('session_id')):
+            if 'user_id' in request.values:
+                user_id = request.values.get('user_id')
+                return 'OK'
+            else:
+                return 'Need id of user'
+        else:
+            return 'Sign in before'
+    
+    def modify_user_post(self):
+        if 'session_id' in request.cookies and self.check_session(request.cookies.get('seesion_id')):
+            keys = ['id','name','phone','address','status']
+            user = {}
+            for key in keys:
+                if key in request.values:
+                    user[key] = request.values.get(key)
+            if 'id' in user:
+                return 'Need id'
+            self.controller.modify_user(user)
+            return 'OK'
+        else:
+            return 'Sign in before'
+    
+    def delete_user_post(self):
+        if 'session_id' in request.cookies and self.check_session(request.cookies.get('session_id')):
+            if 'user_id' in request.values:
+                self.controller.delete_user(request.values.get('user_id'))
+                return 'OK'
+            else:
+                return 'Need id of user'
+        else:
+            return 'Sign in before'
+    
+    def get_all_patrons_post(self):
+        if 'session_id' in request.cookies and self.check_session(request.cookies.get('session_id')):
+            return jsonify(self.controller.get_all_patrons())
+        else:
+            return 'Sign in before'
+    
+
+    def get_user(self):
+        if 'session_id' in request.cookies and self.check_session(request.cookies.get('session_id')):
+            if 'user_id' in request.values:
+                self.controller.get_user(request.values.get('user_id'))
+                return 'OK'
+            else:
+                return 'Need id of user'
         else:
             return 'Sign in before'
