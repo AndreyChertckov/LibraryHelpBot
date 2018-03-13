@@ -1,4 +1,4 @@
-from flask import Blueprint, request, redirect
+from flask import Blueprint, request, redirect,jsonify
 from AdminSite.DBmanager import DBManager
 import hashlib
 import random
@@ -51,8 +51,7 @@ class API:
         hasher = hashlib.md5()
         hasher.update(request.values.get('password').encode('utf-8'))
         user['passwd'] = hasher.hexdigest()
-        if not self.dbmanager.create_user(user):
-            return redirect('/signup')
+        self.dbmanager.create_user(user)
         response = self.app.make_response(redirect('/'))
         response.set_cookie('session_id',self.create_session(user['login'],user['passwd']))
         return response
@@ -65,7 +64,7 @@ class API:
         return response
 
     def add_document_post(self):
-        if 'session_id' in request.cookies and self.check_session(session_id):
+        if 'session_id' in request.cookies and self.check_session(request.cookies.get('session_id')):
             document = []
             keys = ['title','description','authors','count','price','keywords','best_seller']
             doc_type = request.values.get('doc_type')
@@ -75,4 +74,10 @@ class API:
             self.cntrl.add_document(document,doc_type)
             return 'OK'
         else:
-            return 'Sign in before'        
+            return 'Sign in before'
+    
+    def get_all_unconfirmed_post(self):
+        if 'session_id' in request.cookies and self.check_session(request.cookies.get('session_id')):
+            return jsonify(self.cntrl.get_all_unconfirmed())
+        else:
+            return 'Sign in before'
