@@ -18,7 +18,30 @@ class API:
     def init_handlers(self):
         self.blueprint.add_url_rule('/signin','signin',self.signin_post,methods=['POST'])
         self.blueprint.add_url_rule('/signup','signup',self.signup_post,methods=['POST'])
+        self.blueprint.add_url_rule('/logout','logout',self.logout_post,methods=['POST'])
+        self.blueprint.add_url_rule('/api/get_all_unconfirmed','get_all_unconfirmed',self.get_all_unconfirmed_post,methods=['POST'])
+        self.blueprint.add_url_rule('/api/confirm_user','confirm_user',self.confirm_user_post,methods=['POST'])
+        self.blueprint.add_url_rule('/api/modify_user','modify_user',self.modify_user_post,methods=['POST'])
+        self.blueprint.add_url_rule('/api/delete_user','delete_user',self.delete_user_post,methods=['POST'])
+        self.blueprint.add_url_rule('/api/get_all_patrons','get_all_patrons',self.get_all_patrons_post,methods=['POST'])
+        self.blueprint.add_url_rule('/api/get_user','get_user',self.get_user_post,methods=['POST'])
+        self.blueprint.add_url_rule('/api/get_user_by_name','get_user_by_name',self.get_user_by_name_post,methods=['POST'])
+        self.blueprint.add_url_rule('/api/user_get_doc','user_get_doc',self.user_get_doc_post,methods=['POST'])
+        self.blueprint.add_url_rule('/api/return_doc','return_doc',self.return_doc_post,methods=['POST'])
+        self.blueprint.add_url_rule('/api/get_user_orders','get_user_orders',self.get_user_orders_post,methods=['POST'])
+        self.blueprint.add_url_rule('/api/get_order','get_order',self.get_order_post,methods=['POST'])
+        self.blueprint.add_url_rule('/api/get_all_orders','get_all_orders',self.get_all_orders_post,methods=['POST'])
+        self.blueprint.add_url_rule('/api/get_all_active_orders','get_all_active_orders',self.get_all_active_orders_post,methods=['POST'])
+        self.blueprint.add_url_rule('/api/get_all_whaiting_doc','get_all_whaiting_doc',self.get_all_whaiting_doc_post,methods=['POST'])
+        self.blueprint.add_url_rule('/api/get_all_returned_doc','get_all_returned_doc',self.get_all_returned_doc,methods=['POST'])
         self.blueprint.add_url_rule('/api/add_document','add_document',self.add_document_post,methods=['POST'])
+        self.blueprint.add_url_rule('/api/modify_document','modify_document',self.modify_docment_post,methods=['POST'])
+        self.blueprint.add_url_rule('/api/add_copies_of_doc','add_copies_of_doc',self.add_copies_of_book_post,methods=['POST'])
+        self.blueprint.add_url_rule('/api/delete_document','delete_document',self.delete_document_post,methods=['POST'])
+        self.blueprint.add_url_rule('/api/get_document','get_document',self.get_document_post,methods=['POST'])
+        self.blueprint.add_url_rule('/api/get_all_doctype','get_all_doctype',self.get_all_doctype_post,methods=['POST'])
+        self.blueprint.add_url_rule('/api/get_documents_by_title','get_documents_by_title',self.get_documents_by_title_post,methods=['POST'])
+        self.blueprint.add_url_rule('/api/get_documents_by_authors','get_documents_by_authors',self.get_documents_by_authors_post,methods=['POST'])
 
     def generate_sault(self):
         sault = bytes([random.randint(0,16) for i in range(16)])
@@ -56,7 +79,7 @@ class API:
         response.set_cookie('session_id',self.create_session(user['login'],user['passwd']))
         return response
 
-    def logount_post(self):
+    def logout_post(self):
         session_id = request.cookies['session_id']
         self.dbmanager.delete_session(session_id)
         response = self.app.make_response(redirect('/'))
