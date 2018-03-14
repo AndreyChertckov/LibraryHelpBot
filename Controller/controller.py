@@ -116,33 +116,23 @@ class Controller:
     # or {id,name,address,phone,history,current_docs,status},
     # or false if user doesn`t existе
     def get_user(self, user_id):
+        keys = ['id','name']
+        status = self.user_type(user_id)
         user = {}
-        if self.DBmanager.select_label('patrons', user_id):
-            user_bd = self.DBmanager.select_label('patrons', user_id)
-            user['id'] = user_bd[0]
-            user['name'] = user_bd[1]
-            user['address'] = user_bd[2]
-            user['phone'] = user_bd[3]
-            user['history'] = user_bd[4]
-            user['current_docs'] = user_bd[5]
-            user['status'] = user_bd[6]
-        elif self.DBmanager.select_label('librarians', user_id):
-            user_bd = self.DBmanager.select_label('librarians', user_id)
-            user['id'] = user_bd[0]
-            user['name'] = user_bd[1]
-            user['phone'] = user_bd[2]
-            user['address'] = user_bd[3]
-        elif self.DBmanager.select_label('unconfirmed', user_id):
-            user_bd = self.DBmanager.select_label('unconfirmed', user_id)
-            user['id'] = user_bd[0]
-            user['name'] = user_bd[1]
-            user['phone'] = user_bd[2]
-            user['address'] = user_bd[3]
-            user['status'] = user_bd[4]
+        user_db = None
+        if status == 2:
+            user_db = self.DBmanager.select_label('patrons', user_id)
+            keys.extend(['address','phone','history','current_docs','status'])
+        elif status == 3:
+            user_db = self.DBmanager.select_label('librarians', user_id)
+            keys.extend(['phone','address'])
+        elif status == 1:
+            user_db = self.DBmanager.select_label('unconfirmed', user_id)
+            keys.extend(['phone','address','status'])
         else:
             self.log('WARNING', 'User with id {} not found.'.format(user_id))
             return False
-        return user
+        return dict(zip(keys,user_db))
 
     # Returns in which table the user is located
     # param : user_id - id of user
