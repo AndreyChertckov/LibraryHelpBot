@@ -88,19 +88,12 @@ class Controller:
         return [{'id': user[0], 'name': user[1], 'phone': user[2], 'address': user[3], 'status': user[4]} for user in
                 rows]
 
-    # Return some patron
-    def get_patron(self, id):
-        user = self.DBmanager.select_label("patrons", id)
-        return {'id': user[0], 'name': user[1], 'phone': user[2], 'address': user[3], 'history': user[4],
-                'current_docs': user[5], 'status': user[6]}
-
     # Return all patrons from database
     def get_all_patrons(self, by_who_id=-1):
-        rows = self.DBmanager.get_connection().execute("SELECT id FROM patrons")
-        # rows = self.DBmanager.select_all("patrons")
+        rows = self.DBmanager.select_all("patrons")
         by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)['name']
         self.log('INFO', 'Get all patrons by {}'.format(by_who))
-        return [self.get_patron(*id) for id in rows]
+        return [dict(zip(['id','name','phone','address','history','current_docs','status'],user)) for user in rows]
 
     # Return all librarians from database
     def get_all_librarians(self, by_who_id=-1):
