@@ -10,7 +10,7 @@ class Controller:
     def __init__(
             self, file_bd='DataBase.db', lc=False, lf=False, file_log='controller.log', test_logging=False,
             name_test='0'):
-        self.DBmanager = Manager(file_bd)
+        self.DBmanager = Manager()
         self.is_log = False
         if lc or lf:
             self.is_log = True
@@ -87,13 +87,21 @@ class Controller:
         rows = self.DBmanager.select_all("unconfirmed")
         return [{'id': user[0], 'name': user[1], 'phone': user[2], 'address': user[3], 'status': user[4]} for user in
                 rows]
+    #По-другому чет не работает
+    #ToDo: исправить костыль
+    def get_patron(self, patron_id):
+        patrons = self.get_all_patrons()
+        for i in patrons:
+            if (i['id'] == patron_id):
+                return i
 
     # Return all patrons from database
     def get_all_patrons(self, by_who_id=-1):
         rows = self.DBmanager.select_all("patrons")
         by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)['name']
         self.log('INFO', 'Get all patrons by {}'.format(by_who))
-        return [dict(zip(['id','name','phone','address','history','current_docs','status'],user)) for user in rows]
+        return [dict(zip(['id', 'name', 'phone', 'address', 'history', 'current_docs', 'status'], user)) for user in
+                rows]
 
     # Return all librarians from database
     def get_all_librarians(self, by_who_id=-1):
@@ -116,23 +124,23 @@ class Controller:
     # or {id,name,address,phone,history,current_docs,status},
     # or false if user doesn`t existе
     def get_user(self, user_id):
-        keys = ['id','name']
+        keys = ['id', 'name']
         status = self.user_type(user_id)
         user = {}
         user_db = None
         if status == 2:
             user_db = self.DBmanager.select_label('patrons', user_id)
-            keys.extend(['address','phone','history','current_docs','status'])
+            keys.extend(['address', 'phone', 'history', 'current_docs', 'status'])
         elif status == 3:
             user_db = self.DBmanager.select_label('librarians', user_id)
-            keys.extend(['phone','address'])
+            keys.extend(['phone', 'address'])
         elif status == 1:
             user_db = self.DBmanager.select_label('unconfirmed', user_id)
-            keys.extend(['phone','address','status'])
+            keys.extend(['phone', 'address', 'status'])
         else:
             self.log('WARNING', 'User with id {} not found.'.format(user_id))
             return False
-        return dict(zip(keys,user_db))
+        return dict(zip(keys, user_db))
 
     # Returns in which table the user is located
     # param : user_id - id of user

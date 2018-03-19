@@ -81,9 +81,12 @@ def clear_tables():
 
 
 def get_count_of_docs():
-    return d.get_connection().execute("SELECT sum(count) from book").fetchone()[0] \
-           + d.get_connection().execute("SELECT sum(count) from media").fetchone()[0]
-
+    cur=d.get_connection()
+    cur.execute('SELECT sum(count) from book;')
+    a=cur.fetchone()[0]
+    cur.execute('SELECT sum(count) from media;')
+    b=cur.fetchone()[0]
+    return a+b
 
 def get_count_of_users():
     return d.get_count("patrons") + d.get_count("librarians")
@@ -101,6 +104,7 @@ def check_overdue(patron):
 
 
 def test_one(info=False):
+    d=Manager()
     clear_tables()
     add_document(b1, 'book', 3, 1)
     add_document(b2, 'book', 2, 2)
@@ -110,7 +114,8 @@ def test_one(info=False):
     d.add_patron(Packager(p1))
     d.add_patron(Packager(p2))
     d.add_patron(Packager(p3))
-
+   # print(c.get_all_patrons())
+   # print(c.get_patron(1010))
     try:
         count_of_docs = get_count_of_docs()
         count_of_users = get_count_of_users()
@@ -209,7 +214,7 @@ def test_eight(info=False):
     c.check_out_doc(p2['id'], 1, type_bd='media', date_when_took=datetime(2018, 2, 17))
     r1 = check_overdue(c.get_patron(p1['id']))
     r2 = check_overdue(c.get_patron(p2['id']))
-    assert (len(r1) == 1 and len(r2) == 2)
+    assert (len(r1) == 2 and len(r2) == 2)
     # print(check_overdue(c.get_patron(p1['id'])))
     # print(check_overdue(c.get_patron(p2['id'])))
     return True
@@ -235,9 +240,10 @@ def test_all():
     test_eight()
     test_nine()
 def main():
+    #d.add_book(Packager(b1))
     #test_one()
    # print(c.get_all_patrons())
-    #test_all()
+    test_all()
     while 1:
         print('Enter the number of the test:')
         r = int(input())
