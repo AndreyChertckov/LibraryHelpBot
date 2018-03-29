@@ -18,7 +18,7 @@ class API:
     def init_handlers(self):
         self.blueprint.add_url_rule('/signin','signin',self.signin_post,methods=['POST'])
         self.blueprint.add_url_rule('/signup','signup',self.signup_post,methods=['POST'])
-        self.blueprint.add_url_rule('/logout','logout',self.logout_post,methods=['POST'])
+        self.blueprint.add_url_rule('/signout','signout',self.signout_get,methods=['GET'])
         self.blueprint.add_url_rule('/api/get_all_unconfirmed','get_all_unconfirmed',self.get_all_unconfirmed_post,methods=['POST'])
         self.blueprint.add_url_rule('/api/confirm_user','confirm_user',self.confirm_user_post,methods=['POST'])
         self.blueprint.add_url_rule('/api/modify_user','modify_user',self.modify_user_post,methods=['POST'])
@@ -79,7 +79,7 @@ class API:
         response.set_cookie('session_id',self.create_session(user['login'],user['passwd']))
         return response
 
-    def logout_post(self):
+    def signout_get(self):
         session_id = request.cookies['session_id']
         self.dbmanager.delete_session(session_id)
         response = self.app.make_response(redirect('/'))

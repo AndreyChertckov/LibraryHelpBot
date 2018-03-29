@@ -1,5 +1,5 @@
 import pymysql
-from configs import site_login_databse,site_password_database, site_database
+from configs import *
 
 
 # Class,for saving data in the database,
@@ -19,7 +19,7 @@ class Manager:
     def __init__(self):
         # self.drop_table("orders")
 
-        self.db_connectionn = pymysql.connect('localhost', site_login_databse, site_password_database, site_database,
+        self.db_connectionn = pymysql.connect('localhost', library_login_database, library_password_database, library_database,
                                           autocommit=True)
        # self.drop_tables()
         self.__create_tables()
