@@ -374,15 +374,15 @@ class Controller:
         if type == 'book':
             return dict(
                 zip(['id', 'title', 'authors', 'description', 'count', 'free_count', 'price', 'best_seller',
-                     'keywords'],
+                     'keywords','queue'],
                     list(doc_tuple)))
         elif type == 'article':
             return dict(zip(
                 ['id', 'title', 'authors', 'journal', 'count', 'free_count', 'price', 'keywords', 'issue', 'editors',
-                 'date'], list(doc_tuple)))
+                 'date','queue'], list(doc_tuple)))
         elif type == 'media':
             return dict(
-                zip(['id', 'title', 'authors', 'count', 'free_count', 'price', 'keywords'], list(doc_tuple)))
+                zip(['id', 'title', 'authors', 'count', 'free_count', 'price', 'keywords','queue'], list(doc_tuple)))
 
     def get_document(self, doc_id, type_bd):
         return self.doc_tuple_to_dict(type_bd, self.DBmanager.select_label(type_bd, doc_id))
@@ -391,7 +391,7 @@ class Controller:
     def get_all_books(self):
         rows = self.DBmanager.select_all("book")
         return [dict(
-            zip(['id', 'title', 'authors', 'description', 'count', 'free_count', 'price', 'best_seller', 'keywords'],
+            zip(['id', 'title', 'authors', 'description', 'count', 'free_count', 'price', 'best_seller', 'keywords','queue'],
                 list(book))) for book in rows]
 
     # Return all articles from database
@@ -399,12 +399,12 @@ class Controller:
         rows = self.DBmanager.select_all("article")
         return [dict(zip(
             ['id', 'title', 'authors', 'journal', 'count', 'free_count', 'price', 'keywords', 'issue', 'editors',
-             'date'], list(article))) for article in rows]
+             'date','queue'], list(article))) for article in rows]
 
     # Return all media from database
     def get_all_media(self):
         rows = self.DBmanager.select_all("media")
-        return [dict(zip(['id', 'title', 'authors', 'count', 'free_count', 'price', 'keywords'], list(media)))
+        return [dict(zip(['id', 'title', 'authors', 'count', 'free_count', 'price', 'keywords','queue'], list(media)))
                 for media in rows]
 
     def get_all_doctype(self, doc_type, by_who_id=-1):
