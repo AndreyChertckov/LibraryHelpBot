@@ -21,7 +21,7 @@ class Manager:
 
         self.db_connectionn = pymysql.connect('localhost', site_login_databse, site_password_database, site_database,
                                           autocommit=True)
-        self.drop_tables()
+       # self.drop_tables()
         self.__create_tables()
 
     # Get all data from some table
@@ -88,41 +88,41 @@ class Manager:
     #  ---newDoc -  'Document' Object
 
     def add_book(self, newDoc):
-        sql = """INSERT INTO book(title,authors,description,count,free_count,price,best_seller,keywords)
-            VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"""
+        sql = """INSERT INTO book(title,authors,description,count,free_count,price,best_seller,keywords,queue)
+            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
 
         cur = self.__create_connection().cursor()
         self.add_new(sql, (newDoc.title, newDoc.authors, newDoc.description, newDoc.count, newDoc.free_count,
-                           newDoc.price, newDoc.best_seller, newDoc.keywords))
+                           newDoc.price, newDoc.best_seller, newDoc.keywords,'[[],[],[],[],[]]'))
 
     # Add new media to DB
     # params:
     # ---newMed - 'Media' object
 
     def add_media(self, newMed):
-        sql = """INSERT INTO media(title,authors,count,free_count,price,keywords)
-        VALUES(%s,%s,%s,%s,%s,%s)"""
+        sql = """INSERT INTO media(title,authors,count,free_count,price,keywords,queue)
+        VALUES(%s,%s,%s,%s,%s,%s,%s)"""
         self.add_new(sql, (newMed.title, newMed.authors, newMed.count,
-                           newMed.free_count, newMed.price, newMed.keywords))
+                           newMed.free_count, newMed.price, newMed.keywords,'[[],[],[],[],[]]'))
 
     # Add new article to DB
     # params:
     # --- newArticle - 'JournalArticle' object
 
     def add_article(self, newArticle):
-        sql = """INSERT INTO article(title,authors,journal,count,free_count,price,keywords,issue,editors,date)
-        VALUES(%s,%s,%s,%i,%i,%i,%s,%s,%s,%s)"""
+        sql = """INSERT INTO article(title,authors,journal,count,free_count,price,keywords,issue,editors,date,queue)
+        VALUES(%s,%s,%s,%i,%i,%i,%s,%s,%s,%s,%s)"""
         self.add_new(sql, (newArticle.title, newArticle.authors, newArticle.journal,
                            newArticle.count, newArticle.free_count, newArticle.price, newArticle.keywords,
-                           newArticle.issue, newArticle.editors, newArticle.date))
+                           newArticle.issue, newArticle.editors, newArticle.date,'[[],[],[],[],[]]'))
 
     # Add new 'patron' to DB
     # params:
     # ---newPatron - 'Patron' object
     def add_patron(self, newPatron):
-        sql = """INSERT INTO patrons(id, name, address, phone, history, current_docs, status) VALUES (%s,%s,%s,%s,%s,%s,%s)"""
+        sql = """INSERT INTO patrons(id, name, address, phone, history, current_docs, status,queue) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"""
         self.add_new(sql, (newPatron.id, newPatron.name, newPatron.address, newPatron.phone,
-                           str(newPatron.history), str(newPatron.current_docs), newPatron.status))
+                           str(newPatron.history), str(newPatron.current_docs), newPatron.status,'[]'))
 
     # Updates some record
     # params:
@@ -195,7 +195,8 @@ class Manager:
                  address TEXT,
                  history TEXT,
                  current_docs TEXT,
-                 status TEXT
+                 status TEXT,
+                 queue TEXT
                   ); """)
 
         self.__create_table("""CREATE TABLE IF NOT EXISTS book(
@@ -208,6 +209,7 @@ class Manager:
               price INTEGER,
               best_seller INTEGER,
               keywords TEXT,
+              queue TEXT,
               PRIMARY KEY(id)
               );
         """)
@@ -222,7 +224,8 @@ class Manager:
             keywords TEXT,
             issue TEXT,
             editors TEXT,
-            date TEXT);
+            date TEXT,
+            queue TEXT);
         """)
         self.__create_table("""CREATE TABLE IF NOT EXISTS media(
                 id INTEGER PRIMARY KEY AUTO_INCREMENT,
@@ -231,7 +234,8 @@ class Manager:
                 count INTEGER,
                 free_count INTEGER,
                 price INTEGER,
-                keywords TEXT);
+                keywords TEXT,
+                queue TEXT);
                 """)
         self.__create_table("""
              CREATE TABLE  IF NOT EXISTS orders (

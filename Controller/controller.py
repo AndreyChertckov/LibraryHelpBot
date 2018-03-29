@@ -8,7 +8,7 @@ from DataBase.DBPackager import Packager
 # Class booking system
 class Controller:
     def __init__(
-            self, file_bd='DataBase.db', lc=False, lf=False, file_log='controller.log', test_logging=False,
+            self, lc=False, lf=False, file_log='controller.log', test_logging=False,
             name_test='0'):
         self.DBmanager = Manager()
         self.is_log = False
@@ -87,8 +87,9 @@ class Controller:
         rows = self.DBmanager.select_all("unconfirmed")
         return [{'id': user[0], 'name': user[1], 'phone': user[2], 'address': user[3], 'status': user[4]} for user in
                 rows]
-    #По-другому чет не работает
-    #ToDo: исправить костыль
+
+    # По-другому чет не работает
+    # ToDo: исправить костыль
     def get_patron(self, patron_id):
         patrons = self.get_all_patrons()
         for i in patrons:
@@ -100,7 +101,8 @@ class Controller:
         rows = self.DBmanager.select_all("patrons")
         by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)['name']
         self.log('INFO', 'Get all patrons by {}'.format(by_who))
-        return [dict(zip(['id', 'name', 'phone', 'address', 'history', 'current_docs', 'status'], user)) for user in
+        return [dict(zip(['id', 'name', 'phone', 'address', 'history', 'current_docs', 'status', 'queue'], user)) for
+                user in
                 rows]
 
     # Return all librarians from database
@@ -159,6 +161,28 @@ class Controller:
         else:
             return d['unauthorized']
 
+    def add_queue_order(self, user_id, type_of_media, doc_id):
+        status = self.DBmanager.get_label('status', 'patrons', user_id)
+        if (status == 'Student'):
+            priority = 0
+        elif (status == 'Instructor'):
+            priority = 1
+        elif (status == 'TA'):
+            priority = 2
+        elif (status == 'VP'):
+            priority = 3
+        else:
+            priority = 4
+        mas = eval(self.DBmanager.get_label('queue', type_of_media, doc_id))
+        if (mas[priority].__contains__(user_id)):
+            return
+        mas[priority] += [user_id]
+        self.DBmanager.edit_label(type_of_media, ['queue'], [str(mas)], doc_id)
+        queue = eval(self.DBmanager.get_label('queue', 'patrons', user_id))
+        queue += [doc_id]
+        self.DBmanager.edit_label('patrons', ['queue'], [str(queue)], user_id)
+
+
     def get_user_by_name(self, name, by_who_id=-1):
         by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)
         user = self.DBmanager.get_by('name', 'patrons', name)[0]
@@ -173,14 +197,19 @@ class Controller:
         if self.DBmanager.select_label(type_bd, doc_id) == None:
             self.log('WARNING', 'Document with id {} not found.'.format(doc_id))
             return False, 'Document doesn`t exist'
+        user_status = self.DBmanager.get_label('status', 'patrons', user_id)
 
         if returning_time == 0 and type_bd == 'book':
             is_best_seller = self.DBmanager.get_label('best_seller', type_bd, doc_id) == 1
-            user_status = self.DBmanager.get_label('status', 'patrons', user_id)
+
+
             returning_time = 3 if user_status == 'Student' else 4
-            returning_time = 2 if is_best_seller else returning_time
+            returning_time = 2 if is_best_seller  else returning_time
+
+
         elif type_bd != 'book':
             returning_time = 2
+        returning_time = 1 if user_status == 'VP' else returning_time
 
         free_count = int(self.DBmanager.get_label("free_count", type_bd, doc_id))
         if free_count > 0:
