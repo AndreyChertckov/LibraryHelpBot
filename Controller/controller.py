@@ -47,13 +47,16 @@ class Controller:
     # param: user_id - id of user
     def confirm_user(self, user_id, librarian_id=-1):
         user = self.get_user(user_id)
+        if not user:
+            return False
         user['history'] = str([])
         user['current_docs'] = str([])
         self.delete_user(user_id)
         self.DBmanager.add_patron(Packager(user))
         by_who = 'UNKNOW' if librarian_id == -1 else self.get_user(librarian_id)['name']
         self.log('INFO', 'User status {} is confirmed by {}.'.format(user['name'], by_who))
-
+        return True
+        
     # Move patron from table patrons to table librarians
     # param: user_id : id of user
     def upto_librarian(self, user_id):

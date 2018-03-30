@@ -76,7 +76,8 @@ class API:
         if 'session_id' in request.cookies and check_session(request.cookies.get('session_id'),self.dbmanager):
             if 'user_id' in request.values:
                 user_id = request.values.get('user_id')
-                return 'OK'
+                success = self.controller.confirm_user(user_id)
+                return 'OK' if success else "Somthing went wrong"
             else:
                 return 'Need id of user'
         else:
