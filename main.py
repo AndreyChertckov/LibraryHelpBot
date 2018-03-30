@@ -1,6 +1,7 @@
 import getopt
 import os
 import sys
+import threading
 
 from Bot.bot import start_bot
 from Controller.controller import Controller
@@ -42,7 +43,8 @@ def main():
     if cleanup_database:
         site.api.dbmanager.cleanup_database()
         site.api.dbmanager.init_tables()
-    site.run()
+    thread_site = threading.Thread(target=site.run)
+    thread_site.start()
     start_bot(c)
 
 
