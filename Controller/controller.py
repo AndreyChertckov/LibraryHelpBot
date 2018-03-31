@@ -182,6 +182,22 @@ class Controller:
         queue += [doc_id]
         self.DBmanager.edit_label('patrons', ['queue'], [str(queue)], user_id)
 
+    def get_user_queue(self, user_id):
+        queue = eval(self.DBmanager.get_label('queue', 'patrons', user_id))
+        return queue
+
+    def renew_item(self, user_id, doc_type, doc_id):
+        user = self.get_user(user_id)
+        orders_id = eval(user['current_docs'])
+        returning_time=self.get_returning_time(0,doc_type,doc_id,user_id)
+        for id in orders_id:
+            order=self.get_order(id)
+            if (order['table'] == doc_type and
+                   order['doc_id'] == doc_id
+                    and order['renewed'] == 0):
+                self.DBmanager.edit_label('orders', ['out_of_time','renewed'],
+                                          [str(datetime.now()+timedelta(weeks=returning_time)),1],id)
+
 
     def get_user_by_name(self, name, by_who_id=-1):
         by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)
@@ -192,25 +208,24 @@ class Controller:
     # Check out book
     # param : user_id - id of user
     # param : book_id - id of book
+    def get_returning_time(self,returning_time,type_bd,doc_id,user_id):
+        user_status = self.DBmanager.get_label('status', 'patrons', user_id)
+        if returning_time == 0 and type_bd == 'book':
+            is_best_seller = self.DBmanager.get_label('best_seller', type_bd, doc_id) == 1
+            returning_time = 3 if user_status == 'Student' else 4
+            returning_time = 2 if is_best_seller else returning_time
+        elif type_bd != 'book':
+            returning_time = 2
+        returning_time = 1 if user_status == 'VP' else returning_time
+        return returning_time
+
     def check_out_doc(self, user_id, doc_id, type_bd='book', returning_time=0, date_when_took=datetime.now()):
 
         if self.DBmanager.select_label(type_bd, doc_id) == None:
             self.log('WARNING', 'Document with id {} not found.'.format(doc_id))
             return False, 'Document doesn`t exist'
-        user_status = self.DBmanager.get_label('status', 'patrons', user_id)
 
-        if returning_time == 0 and type_bd == 'book':
-            is_best_seller = self.DBmanager.get_label('best_seller', type_bd, doc_id) == 1
-
-
-            returning_time = 3 if user_status == 'Student' else 4
-            returning_time = 2 if is_best_seller  else returning_time
-
-
-        elif type_bd != 'book':
-            returning_time = 2
-        returning_time = 1 if user_status == 'VP' else returning_time
-
+        returning_time=self.get_returning_time(returning_time,type_bd,doc_id,user_id)
         free_count = int(self.DBmanager.get_label("free_count", type_bd, doc_id))
         if free_count > 0:
 
@@ -302,7 +317,7 @@ class Controller:
         if order is None:
             self.log('WARNING', 'Can`t find the order for giving id.')
             return None
-        return dict(zip(['id', 'time', 'table', 'doc_id', 'user_id', 'time_out', 'active'], order))
+        return dict(zip(['id', 'time', 'table', 'doc_id', 'user_id', 'time_out', 'active','renewed'], order))
 
     def get_all_orders(self, by_who_id=-1):
         by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)['name']
@@ -340,7 +355,8 @@ class Controller:
     # param: price - price of the book
 
     def add_document(self, doc, key, by_who_id=0):
-        doc['free_count'] = doc['count']
+        if (doc.keys().__contains__('free_count')):
+            doc['free_count'] = doc['count']
         if key == 'book':
             doc['best_seller'] = 0
             self.DBmanager.add_book(Packager(doc))
@@ -348,6 +364,11 @@ class Controller:
             self.DBmanager.add_article(Packager(doc))
         elif key == 'media':
             self.DBmanager.add_media(Packager(doc))
+        elif key == 'reference_book':
+            self.DBmanager.add_reference_book(Packager(doc))
+        elif key == 'reference_article':
+            self.DBmanager.add_reference_article(Packager(doc))
+
         by_who = 'UNKNOW' if by_who_id == 0 else self.get_user(by_who_id)['name']
         self.log('INFO', '{} \'{}\' is added to system by {}.'.format(key.capitalize(), doc['title'], by_who))
 
@@ -374,24 +395,45 @@ class Controller:
         if type == 'book':
             return dict(
                 zip(['id', 'title', 'authors', 'description', 'count', 'free_count', 'price', 'best_seller',
-                     'keywords','queue'],
+                     'keywords', 'queue'],
                     list(doc_tuple)))
         elif type == 'article':
             return dict(zip(
                 ['id', 'title', 'authors', 'journal', 'count', 'free_count', 'price', 'keywords', 'issue', 'editors',
-                 'date','queue'], list(doc_tuple)))
+                 'date', 'queue'], list(doc_tuple)))
         elif type == 'media':
             return dict(
-                zip(['id', 'title', 'authors', 'count', 'free_count', 'price', 'keywords','queue'], list(doc_tuple)))
+                zip(['id', 'title', 'authors', 'count', 'free_count', 'price', 'keywords', 'queue'], list(doc_tuple)))
+        elif type == 'reference_book':
+            return dict(
+                zip(['id', 'title', 'authors', 'keywords'], list(doc_tuple)))
+
+        elif type == 'reference_article':
+            return dict(zip(
+                ['id', 'title', 'authors', 'journal', 'keywords', 'issue', 'editors',
+                 'date'], list(doc_tuple)))
 
     def get_document(self, doc_id, type_bd):
         return self.doc_tuple_to_dict(type_bd, self.DBmanager.select_label(type_bd, doc_id))
+
+    def get_all_reference_book(self):
+        rows = self.DBmanager.select_all("reference_book")
+        return [dict(
+            zip(['id', 'title', 'authors', 'description', 'keywords'],
+                list(book))) for book in rows]
+
+    def get_all_reference_articles(self):
+        rows = self.DBmanager.select_all("reference_article")
+        return [dict(zip(
+            ['id', 'title', 'authors', 'journal' 'keywords', 'issue', 'editors',
+             'date'], list(article))) for article in rows]
 
     # Return all books from database
     def get_all_books(self):
         rows = self.DBmanager.select_all("book")
         return [dict(
-            zip(['id', 'title', 'authors', 'description', 'count', 'free_count', 'price', 'best_seller', 'keywords','queue'],
+            zip(['id', 'title', 'authors', 'description', 'count', 'free_count', 'price', 'best_seller', 'keywords',
+                 'queue'],
                 list(book))) for book in rows]
 
     # Return all articles from database
@@ -399,12 +441,12 @@ class Controller:
         rows = self.DBmanager.select_all("article")
         return [dict(zip(
             ['id', 'title', 'authors', 'journal', 'count', 'free_count', 'price', 'keywords', 'issue', 'editors',
-             'date','queue'], list(article))) for article in rows]
+             'date', 'queue'], list(article))) for article in rows]
 
     # Return all media from database
     def get_all_media(self):
         rows = self.DBmanager.select_all("media")
-        return [dict(zip(['id', 'title', 'authors', 'count', 'free_count', 'price', 'keywords','queue'], list(media)))
+        return [dict(zip(['id', 'title', 'authors', 'count', 'free_count', 'price', 'keywords', 'queue'], list(media)))
                 for media in rows]
 
     def get_all_doctype(self, doc_type, by_who_id=-1):
