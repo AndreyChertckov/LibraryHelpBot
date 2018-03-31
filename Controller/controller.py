@@ -379,7 +379,6 @@ class Controller:
         if (doc.keys().__contains__('free_count')):
             doc['free_count'] = doc['count']
         if key == 'book':
-            doc['best_seller'] = 0
             self.DBmanager.add_book(Packager(doc))
         elif key == 'article':
             self.DBmanager.add_article(Packager(doc))
