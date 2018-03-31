@@ -56,7 +56,7 @@ class Controller:
         by_who = 'UNKNOW' if librarian_id == -1 else self.get_user(librarian_id)['name']
         self.log('INFO', 'User status {} is confirmed by {}.'.format(user['name'], by_who))
         return True
-        
+
     # Move patron from table patrons to table librarians
     # param: user_id : id of user
     def upto_librarian(self, user_id):
@@ -135,7 +135,7 @@ class Controller:
         user_db = None
         if status == 2:
             user_db = self.DBmanager.select_label('patrons', user_id)
-            keys.extend(['address', 'phone', 'history', 'current_docs', 'status'])
+            keys.extend(['phone', 'address','history', 'current_docs', 'status'])
         elif status == 3:
             user_db = self.DBmanager.select_label('librarians', user_id)
             keys.extend(['phone', 'address'])
@@ -190,7 +190,7 @@ class Controller:
         by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)
         user = self.DBmanager.get_by('name', 'patrons', name)[0]
         self.log('INFO', 'Get user with name {} by {}'.format(name, by_who))
-        return dict(zip(['id', 'name', 'address', 'phone', 'history', 'current_docs', 'status'], user))
+        return dict(zip(['id', 'name', 'phone', 'address', 'history', 'current_docs', 'status'], user))
 
     # Check out book
     # param : user_id - id of user
@@ -287,6 +287,24 @@ class Controller:
         if not user:
             return []
         orders_id = eval(user['current_docs'])
+        output = []
+
+        for order_id in orders_id:
+            order = self.get_order(order_id)
+            if order is None:
+                continue
+            doc = self.DBmanager.select_label(order['table'], order['doc_id'])
+            if doc is None:
+                continue
+            order['doc'] = self.doc_tuple_to_dict(order['table'], doc)
+            output.append(order)
+        return output
+    
+    def get_user_history(self, user_id):
+        user = self.get_user(user_id)
+        if not user:
+            return []
+        orders_id = eval(user['history'])
         output = []
 
         for order_id in orders_id:

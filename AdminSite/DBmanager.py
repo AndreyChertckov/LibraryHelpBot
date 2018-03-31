@@ -43,3 +43,14 @@ class DBManager:
     def delete_session(self, session_id):
         cursor = self.db_connectionn.cursor()
         cursor.execute("DELETE FROM sessions WHERE id=%s;",(session_id,))
+    
+    def get_users(self):
+        cursor = self.db_connectionn.cursor()
+        cursor.execute("SELECT id,name,phone,address FROM librarians;")
+        return cursor.fetchall()
+    
+    def get_user_by_name(self,name):
+        cursor = self.db_connectionn.cursor()
+        cursor.execute("SELECT id,name,phone,address FROM librarians WHERE name=%s;",(name,))
+        return cursor.fetchall()
+    

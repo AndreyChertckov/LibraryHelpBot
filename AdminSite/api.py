@@ -20,11 +20,14 @@ class API:
         self.blueprint.add_url_rule('/api/modify_user','modify_user',self.modify_user_post,methods=['POST'])
         self.blueprint.add_url_rule('/api/delete_user','delete_user',self.delete_user_post,methods=['POST'])
         self.blueprint.add_url_rule('/api/get_all_patrons','get_all_patrons',self.get_all_patrons_post,methods=['POST'])
+        self.blueprint.add_url_rule('/api/get_all_librarians','get_all_librarians',self.get_all_librarians_post,methods=['POST'])
+        self.blueprint.add_url_rule('/api/get_librarian_by_name','get_librarian_by_name',self.get_librarian_by_name_post,methods=['POST'])
         self.blueprint.add_url_rule('/api/get_user','get_user',self.get_user_post,methods=['POST'])
         self.blueprint.add_url_rule('/api/get_user_by_name','get_user_by_name',self.get_user_by_name_post,methods=['POST'])
         self.blueprint.add_url_rule('/api/user_get_doc','user_get_doc',self.user_get_doc_post,methods=['POST'])
         self.blueprint.add_url_rule('/api/return_doc','return_doc',self.return_doc_post,methods=['POST'])
         self.blueprint.add_url_rule('/api/get_user_orders','get_user_orders',self.get_user_orders_post,methods=['POST'])
+        self.blueprint.add_url_rule('/api/get_user_history','get_user_history',self.get_user_history_post,methods=['POST'])
         self.blueprint.add_url_rule('/api/get_order','get_order',self.get_order_post,methods=['POST'])
         self.blueprint.add_url_rule('/api/get_all_orders','get_all_orders',self.get_all_orders_post,methods=['POST'])
         self.blueprint.add_url_rule('/api/get_all_active_orders','get_all_active_orders',self.get_all_active_orders_post,methods=['POST'])
@@ -84,14 +87,16 @@ class API:
             return 'Sign in before'
     
     def modify_user_post(self):
-        if 'session_id' in request.cookies and check_session(request.cookies.get('seesion_id'),self.dbmanager):
+        if 'session_id' in request.cookies and check_session(request.cookies.get('session_id'),self.dbmanager):
             keys = ['id','name','phone','address','status']
             user = {}
             for key in keys:
                 if key in request.values:
                     user[key] = request.values.get(key)
             if not 'id' in user:
+                print(user)
                 return 'Need id'
+            print(user)
             self.controller.modify_user(user)
             return 'OK'
         else:
@@ -113,6 +118,19 @@ class API:
         else:
             return 'Sign in before'
     
+    def get_all_librarians_post(self):
+        if 'session_id' in request.cookies and check_session(request.cookies.get('session_id'),self.dbmanager):
+            librarians_list = [dict(zip(['id','name','phone','address'],tup)) for tup in self.dbmanager.get_users()]
+            return jsonify(librarians_list)
+        else:
+            return 'Sign in before'
+    
+    def get_librarian_by_name_post(self):
+        if 'session_id' in request.cookies and check_session(request.cookies.get('session_id'),self.dbmanager):
+            librarians_list = dict(zip(('id','name','phone','address'),self.dbmanager.get_user_by_name(request.values.get('name'))))
+            return jsonify(librarians_list)
+        else:
+            return 'Sign in before'
     
     def get_user_post(self):
         if 'session_id' in request.cookies and check_session(request.cookies.get('session_id'),self.dbmanager):
@@ -156,6 +174,15 @@ class API:
         if 'session_id' in request.cookies and check_session(request.cookies.get('session_id'),self.dbmanager):
             if 'user_id' in request.values:
                 return jsonify(self.controller.get_user_orders(request.values.get('user_id')))
+            else:
+                return 'Need id of user'
+        else:
+            return 'Sign in before'
+    
+    def get_user_history_post(self):
+        if 'session_id' in request.cookies and check_session(request.cookies.get('session_id'),self.dbmanager):
+            if 'user_id' in request.values:
+                return jsonify(self.controller.get_user_history(request.values.get('user_id')))
             else:
                 return 'Need id of user'
         else:
