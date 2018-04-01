@@ -164,7 +164,7 @@ class Controller:
         else:
             return d['unauthorized']
 
-    def add_queue_order(self, user_id, type_of_media, doc_id):
+    def __get_priority(self,user_id):
         status = self.DBmanager.get_label('status', 'patrons', user_id)
         if (status == 'Student'):
             priority = 0
@@ -176,18 +176,35 @@ class Controller:
             priority = 3
         else:
             priority = 4
+        return priority
+
+    def add_queue_order(self, user_id, type_of_media, doc_id):
+
+        priority=self.__get_priority(user_id)
+
         mas = eval(self.DBmanager.get_label('queue', type_of_media, doc_id))
         if (mas[priority].__contains__(user_id)):
             return
         mas[priority] += [user_id]
         self.DBmanager.edit_label(type_of_media, ['queue'], [str(mas)], doc_id)
         queue = eval(self.DBmanager.get_label('queue', 'patrons', user_id))
-        queue += [doc_id]
+        queue += [(doc_id,type_of_media)]
         self.DBmanager.edit_label('patrons', ['queue'], [str(queue)], user_id)
 
     def get_user_queue(self, user_id):
         queue = eval(self.DBmanager.get_label('queue', 'patrons', user_id))
         return queue
+
+    def delete_user_queue(self,user_id, type_of_media, doc_id):
+        queue = eval(self.DBmanager.get_label('queue', 'patrons', user_id))
+        for i in queue:
+            if (i[0]==doc_id and i[1]==type_of_media):
+                queue.remove(i)
+        doc_queue=eval(self.DBmanager.get_label('queue',type_of_media,doc_id))
+        priority=self.__get_priority(user_id)
+        doc_queue[priority].remove(user_id)
+        self.DBmanager.edit_label(type_of_media, ['queue'], [str(doc_queue)], doc_id)
+        self.DBmanager.edit_label('patrons', ['queue'], [str(queue)], user_id)
 
     def renew_item(self, user_id, doc_type, doc_id):
         user = self.get_user(user_id)
@@ -197,10 +214,11 @@ class Controller:
             order=self.get_order(id)
             if (order['table'] == doc_type and
                    order['doc_id'] == doc_id
-                    and order['renewed'] == 0):
+                    and (order['renewed'] == 0 or self.DBmanager.get_label('status','patrons',user_id)=='VP')):
                 self.DBmanager.edit_label('orders', ['out_of_time','renewed'],
-                                          [str(datetime.now()+timedelta(weeks=returning_time)),1],id)
+                                          [str(datetime.now()+timedelta(weeks=returning_time)),order['renewed']+1],id)
 
+    #def delete_queue_order(self, user_id, type_of_media, doc_id):
 
     def get_user_by_name(self, name, by_who_id=-1):
         by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)
