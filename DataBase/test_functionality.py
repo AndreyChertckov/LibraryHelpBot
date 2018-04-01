@@ -54,7 +54,7 @@ def test_add_queue_order():
       book_id=m.get_max_id('book')
       c.add_queue_order(1,'book', book_id)
 
-      assert(len(c.get_user_queue(1))==1)
+      assert(len(c.get_user_queue(1))>1)
       assert(len(eval(m.get_label('queue','book', book_id))[0])==1)
 
 def test_renew_item():
@@ -62,11 +62,15 @@ def test_renew_item():
       book_id = m.get_max_id('book')
       c.check_out_doc(1,book_id,'book')
       c.renew_item(1,'book',book_id)
+      c.renew_item(1, 'book', book_id)
       assert (m.get_label('renewed','orders',m.get_max_id('orders'))==1)
 
-test_bd_add_ref_article()
-test_bd_add_ref_book()
-test_controller_add_ref_article()
-test_controller_add_ref_book()
-test_add_queue_order()
+def test_delete_user_queue():
+      c.delete_user_queue(1,'book',2)
+#test_bd_add_ref_article()
+#test_bd_add_ref_book()
+#test_controller_add_ref_article()
+#test_controller_add_ref_book()
+#test_add_queue_order()
 test_renew_item()
+#test_delete_user_queue()
