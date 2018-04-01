@@ -234,6 +234,7 @@ class API:
                 self.controller.add_document(document,doc_type)
                 return 'OK'
             else:
+                print([key for key in request.values.keys()])
                 return 'Not enough keys'
         else:
             return 'Sign in before'
