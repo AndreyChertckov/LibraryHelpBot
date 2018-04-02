@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from Bot.func_data import tuple_to_dict
 from DataBase.DBmanager import Manager
 from DataBase.DBPackager import Packager
@@ -277,9 +277,8 @@ class Controller:
         self.DBmanager.edit_label('orders', ['active'], [1], order_id)
 
     def calculate_fine(self, order):
-        time_out = datetime.strptime(order['time_out'], "%Y-%m-%d")
-        days = divmod(datetime.now() - time_out, 86400)
-        fine = days[0] * 100
+        time_out = datetime.strptime(order['time_out'], "%Y-%m-%d").date()
+        fine = (date.today() - time_out).days * 100
         return max(min(fine, order['doc']['price']), 0)
 
     def return_doc(self, order_id):
