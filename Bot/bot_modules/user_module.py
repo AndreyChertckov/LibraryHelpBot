@@ -64,12 +64,12 @@ class User_module:
 
             if int(active) == 0:
                 keyboard = [[IKB("Activate order", callback_data='activate {} {} {} users'.format(*args)),
-                            IKB("Decline order", callback_data='decline {} {} {} users'.format(*args)),
-                            IKB('Cancel️', callback_data='cancel {} {} users'.format(*args[:-1]))]]
+                             IKB("Decline order", callback_data='decline {} {} {} users'.format(*args)),
+                             IKB('Cancel️', callback_data='cancel {} {} users'.format(*args[:-1]))]]
             elif int(active) == 1:
                 keyboard = [[IKB("Book return", callback_data='return {} {} {} users'.format(*args)),
-                            IKB("Send notification", callback_data='notice {} {} {} users'.format(*args)),
-                            IKB('Cancel️', callback_data='cancel {} {} users'.format(*args[:-1]))]]
+                             IKB("Send notification", callback_data='notice {} {} {} users'.format(*args)),
+                             IKB('Cancel️', callback_data='cancel {} {} users'.format(*args[:-1]))]]
             bot.edit_message_text(text=text, chat_id=chat, message_id=message_id, reply_markup=IKM(keyboard))
         elif action == 'activate':
             order = self.controller.get_user_orders(user_id)[int(args[-1])]
@@ -91,9 +91,19 @@ class User_module:
             bot.edit_message_text(text=text, chat_id=chat, message_id=message_id, reply_markup=IKM(keyboard))
         elif action == 'return':
             order = self.controller.get_user_orders(user_id)[int(args[-1])]
-            self.controller.return_doc(order['id'])
+            result = self.controller.return_doc(order['id'])
+            if result[0]:
+                if result[1] != 0:
+                    bot.send_message(text="Please pay fine,because you returned it late : {}".format(result[1]),
+                                     chat_id=user_id)
+                    text = "User have fine: {}".format(result[1])
+
+                else:
+                    bot.send_message(text="Book was returned.Thank you, that you use our service", chat_id=user_id)
+                    text = "User have not fine"
+            text = 'Document was returned.' + text
             keyboard = [[IKB("Return to the list", callback_data='cancel {} {} users'.format(*args))]]
-            bot.edit_message_text(text='Document was returned', chat_id=chat, message_id=message_id,
+            bot.edit_message_text(text=text, chat_id=chat, message_id=message_id,
                                   reply_markup=IKM(keyboard))
 
     def modify_user(self, bot, update):
@@ -110,5 +120,3 @@ class User_module:
         self.location[chat] = 'users'
         bot.send_message(text=update.message.text, chat_id=user_id)
         bot.send_message(text='Message sent', chat_id=chat)
-
-
