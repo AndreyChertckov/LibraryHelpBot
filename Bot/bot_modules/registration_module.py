@@ -48,7 +48,7 @@ class Reg_module:
 
         if step < len(fields):
             text = update.message.text
-            user[fields[step]] = text if text != "Faculty (professor, instructor, TA)" else "Faculty"
+            user[fields[step]] = text
             step += 1
             self.user_data[chat][0] += 1
             if step < len(fields):

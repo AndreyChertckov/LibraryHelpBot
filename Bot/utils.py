@@ -32,7 +32,7 @@ def data_checker(user):
         return [True, 'Your address must be real and located in the Innopolis']
     elif re.findall('\+[^1234567890]', phone) or not re.findall(r'\+\d{11,11}', phone):
         return [True, 'You phone number must be correct']
-    elif status != 'Student' and status != 'Faculty':
+    elif not (status in ['Student', 'Professor', 'Visiting Professor', 'Instructor', 'TA']):
         return [True, 'You must be faculty or student']
     else:
         return [False]

@@ -8,7 +8,7 @@ keyboard_dict = {
     "reg_confirm": [["All is correct✅", "Something is incorrect❌"]],
     "lib_main": [['Books📖', 'Journal Articles📰', "Audio/Video materials📼", 'Cancel⤵️']],
     "cancel": [['Cancel⤵']],
-    "status": [['Student', 'Faculty (professor, instructor, TA)']]
+    "status": [['Student', 'Instructor', 'TA', 'Visiting Professor', 'Professor']]
 
 }
 

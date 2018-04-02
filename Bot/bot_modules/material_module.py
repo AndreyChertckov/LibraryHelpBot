@@ -86,6 +86,11 @@ class Material_module:
             status, report = self.controller.check_out_doc(chat, int(doc_id), type_bd=doc_type)
             message = "Your order was successful.\nYou may take the document during library working hours." if status else "You already have this document"
             bot.edit_message_text(text=message, chat_id=chat, message_id=message_id)
+        elif action == 'queue':
+            doc_id, doc_type = args
+            status, report = self.controller.add_queue_order(chat, doc_type, int(doc_id))
+            message = "You was added in queue.\nYou will be notified when the document be available" if status else report
+            bot.edit_message_text(text=message, chat_id=chat, message_id=message_id)
         elif action == 'del':
             message = "Are you sure want to delete this document?"
             markup = IKM([[IKB('Yes', callback_data='yes {} {} library'.format(*args[1:])),

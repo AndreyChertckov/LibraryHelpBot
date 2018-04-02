@@ -1,5 +1,6 @@
 import pymysql
 from configs import site_login_database,site_password_database, site_database
+import os.path as pt
 
 class DBManager:
 
@@ -9,6 +10,7 @@ class DBManager:
     
     def init_tables(self):
         cur = self.db_connectionn.cursor()
+        print()
         for sql in open('AdminSite/sql/tables-schema.sql').read().split('\n'):
             cur.execute(sql)
 

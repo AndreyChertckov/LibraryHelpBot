@@ -139,10 +139,10 @@ class LibraryBot:
                 text += """Journal: {journal}\nIssue: {issue}\nDate: {date}\nFree copy: {free_count}"""
             elif doc_type == "media":
                 text += """Free copy: {free_count}"""
-            if self.controller.user_type(chat) == 2 and item['free_count'] > 0:
-                keyboard = [
-                    [IKB("Order the document", callback_data='order {} {} {}'.format(item['id'], doc_type, loc)),
-                     IKB('Cancel', callback_data='cancel {} {} {}'.format(page, doc_type, loc))]]
+            if self.controller.user_type(chat) == 2:
+                cb = 'order {} {} {}' if item['free_count'] > 0 else 'queue {} {} {}'
+                keyboard = [[IKB("Order the document", callback_data=cb.format(item['id'], doc_type, loc)),
+                             IKB('Cancel', callback_data='cancel {} {} {}'.format(page, doc_type, loc))]]
             elif self.controller.user_type(chat) == 3:
                 print(item)
                 print(item['free_count'], item['count'])
@@ -158,9 +158,16 @@ class LibraryBot:
             message[0] = text.format(**item)
             message[1] = IKM(keyboard)
         if loc == 'my_orders':
-            doc, doc_type, time, time_out = item.values()
+            user, doc, doc_type, time, time_out = [item[i] for i in ['user_id', 'doc', 'table', 'time', 'time_out']]
             message[0] = "Title: {}\nAuthors: {}\nAvailable till: {}".format(doc['title'], doc['authors'], time_out)
-            message[1] = IKM([[IKB("Cancel⤵️", callback_data='cancel {} {}'.format(page, loc))]])
+            keyboard = []
+            # print([j for i in eval(doc['queue']) for j in i])
+            # print(doc)
+            if not [j for i in eval(doc['queue']) for j in i]:
+                keyboard.append(IKB("Renew️🔄", callback_data='renew {} {} {}'.format(user, doc['id'], doc_type)))
+            keyboard += [IKB("Cancel⤵️", callback_data='cancel {} {}'.format(page, loc))]
+            print(keyboard)
+            message[1] = IKM([keyboard])
         if loc == 'users':
             user = item
             user_id = user['id']

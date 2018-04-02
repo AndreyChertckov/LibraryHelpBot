@@ -96,7 +96,7 @@ class Controller:
     def get_patron(self, patron_id):
         patrons = self.get_all_patrons()
         for i in patrons:
-            if (i['id'] == patron_id):
+            if i['id'] == patron_id:
                 return i
 
     # Return all patrons from database
@@ -135,7 +135,7 @@ class Controller:
         user_db = None
         if status == 2:
             user_db = self.DBmanager.select_label('patrons', user_id)
-            keys.extend(['phone', 'address','history', 'current_docs', 'status'])
+            keys.extend(['phone', 'address', 'history', 'current_docs', 'status'])
         elif status == 3:
             user_db = self.DBmanager.select_label('librarians', user_id)
             keys.extend(['phone', 'address'])
@@ -164,27 +164,27 @@ class Controller:
         else:
             return d['unauthorized']
 
-    def add_queue_order(self, user_id, type_of_media, doc_id):
+    def add_queue_order(self, user_id, doc_type, doc_id):
         status = self.DBmanager.get_label('status', 'patrons', user_id)
-        if (status == 'Student'):
+        if status == 'Student':
             priority = 0
-        elif (status == 'Instructor'):
+        elif status == 'Instructor':
             priority = 1
-        elif (status == 'TA'):
+        elif status == 'TA':
             priority = 2
-        elif (status == 'VP'):
+        elif status == 'Visiting Professor':
             priority = 3
         else:
             priority = 4
-        mas = eval(self.DBmanager.get_label('queue', type_of_media, doc_id))
-        if (mas[priority].__contains__(user_id)):
+        mas = eval(self.DBmanager.get_label('queue', doc_type, doc_id))
+        if mas[priority].__contains__(user_id):
             return
         mas[priority] += [user_id]
-        self.DBmanager.edit_label(type_of_media, ['queue'], [str(mas)], doc_id)
+        self.DBmanager.edit_label(doc_type, ['queue'], [str(mas)], doc_id)
         queue = eval(self.DBmanager.get_label('queue', 'patrons', user_id))
         queue += [doc_id]
         self.DBmanager.edit_label('patrons', ['queue'], [str(queue)], user_id)
-
+        return True, "User was added in queue"
 
     def get_user_by_name(self, name, by_who_id=-1):
         by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)
@@ -196,8 +196,7 @@ class Controller:
     # param : user_id - id of user
     # param : book_id - id of book
     def check_out_doc(self, user_id, doc_id, type_bd='book', returning_time=0, date_when_took=datetime.now()):
-
-        if self.DBmanager.select_label(type_bd, doc_id) == None:
+        if self.DBmanager.select_label(type_bd, doc_id) is None:
             self.log('WARNING', 'Document with id {} not found.'.format(doc_id))
             return False, 'Document doesn`t exist'
         user_status = self.DBmanager.get_label('status', 'patrons', user_id)
@@ -205,9 +204,8 @@ class Controller:
         if returning_time == 0 and type_bd == 'book':
             is_best_seller = self.DBmanager.get_label('best_seller', type_bd, doc_id) == 1
 
-
             returning_time = 3 if user_status == 'Student' else 4
-            returning_time = 2 if is_best_seller  else returning_time
+            returning_time = 2 if is_best_seller else returning_time
 
 
         elif type_bd != 'book':
@@ -299,7 +297,7 @@ class Controller:
             order['doc'] = self.doc_tuple_to_dict(order['table'], doc)
             output.append(order)
         return output
-    
+
     def get_user_history(self, user_id):
         user = self.get_user(user_id)
         if not user:
@@ -395,15 +393,15 @@ class Controller:
         if type == 'book':
             return dict(
                 zip(['id', 'title', 'authors', 'description', 'count', 'free_count', 'price', 'best_seller',
-                     'keywords','queue'],
+                     'keywords', 'queue'],
                     list(doc_tuple)))
         elif type == 'article':
             return dict(zip(
                 ['id', 'title', 'authors', 'journal', 'count', 'free_count', 'price', 'keywords', 'issue', 'editors',
-                 'date','queue'], list(doc_tuple)))
+                 'date', 'queue'], list(doc_tuple)))
         elif type == 'media':
             return dict(
-                zip(['id', 'title', 'authors', 'count', 'free_count', 'price', 'keywords','queue'], list(doc_tuple)))
+                zip(['id', 'title', 'authors', 'count', 'free_count', 'price', 'keywords', 'queue'], list(doc_tuple)))
 
     def get_document(self, doc_id, type_bd):
         return self.doc_tuple_to_dict(type_bd, self.DBmanager.select_label(type_bd, doc_id))
@@ -412,7 +410,8 @@ class Controller:
     def get_all_books(self):
         rows = self.DBmanager.select_all("book")
         return [dict(
-            zip(['id', 'title', 'authors', 'description', 'count', 'free_count', 'price', 'best_seller', 'keywords','queue'],
+            zip(['id', 'title', 'authors', 'description', 'count', 'free_count', 'price', 'best_seller', 'keywords',
+                 'queue'],
                 list(book))) for book in rows]
 
     # Return all articles from database
@@ -420,12 +419,12 @@ class Controller:
         rows = self.DBmanager.select_all("article")
         return [dict(zip(
             ['id', 'title', 'authors', 'journal', 'count', 'free_count', 'price', 'keywords', 'issue', 'editors',
-             'date','queue'], list(article))) for article in rows]
+             'date', 'queue'], list(article))) for article in rows]
 
     # Return all media from database
     def get_all_media(self):
         rows = self.DBmanager.select_all("media")
-        return [dict(zip(['id', 'title', 'authors', 'count', 'free_count', 'price', 'keywords','queue'], list(media)))
+        return [dict(zip(['id', 'title', 'authors', 'count', 'free_count', 'price', 'keywords', 'queue'], list(media)))
                 for media in rows]
 
     def get_all_doctype(self, doc_type, by_who_id=-1):
