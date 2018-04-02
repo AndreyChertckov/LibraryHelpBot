@@ -332,16 +332,40 @@ function book_info(){
         }else{
             output_html_ += "<h5>Best seller: <span data-feather='check'></span></h5>";
         }
-        if(data['queue'] != "[]"){ // TODO: display queue
-
+        if(data['queue'] != "[]"){ 
+            $.post("/api/get_queue_on_document",{doc_id:$("#id").html(),type:'book'},function(data,status){
+                output_html_ += "<div class='table-responsive'>\
+                <table class='table table-striped table-sm'>\
+                    <thead>\
+                        <tr>\
+                            <th>Name</th>\
+                            <th>Status</th>\
+                        </tr>\
+                    </thead>\
+                    <tbody>";
+                data.forEach(elem => {
+                    output_html_ += "<tr id = '"+ elem['id']+"'>";
+                    output_html_ += "<td>" + elem['name'] + "</td>";
+                    output_html_ += "<td>" + elem['status'] + "</td>";
+                });
+                output_html_ += "</tbody></table>";
+                $(".content").html(output_html_);
+                $("#prev").click(books);
+                $(".settings").click(edit_book);
+                $(".delete").click(delete_book);
+                $("#add").click(add_copies_book);
+                $("#sub").click(add_copies_book);
+                feather.replace();
+            });
+        }else{
+            $(".content").html(output_html_);
+            $("#prev").click(books);
+            $(".settings").click(edit_book);
+            $(".delete").click(delete_book);
+            $("#add").click(add_copies_book);
+            $("#sub").click(add_copies_book);
+            feather.replace();
         }
-        $(".content").html(output_html_);
-        $("#prev").click(books);
-        $(".settings").click(edit_book);
-        $(".delete").click(delete_book);
-        $("#add").click(add_copies_book);
-        $("#sub").click(add_copies_book);
-        feather.replace();
     });
 }
 
@@ -497,16 +521,40 @@ function av_material_info(){
         <h5>Free count: </h5><p id='free_count'>" + data['free_count']+"</p>\
         <h5>Price: </h5><p id='price'>" + data['price']+"</p>\
         <h5>Keywords: </h5><p id='keywords'>" + data['keywords']+"</p>";
-        if(data['queue'] != "[]"){ // TODO: display queue
-
+        if(data['queue'] != "[]"){ 
+            $.post("/api/get_queue_on_document",{doc_id:$("#id").html(),type:'media'},function(data,status){
+                output_html_ += "<div class='table-responsive'>\
+                <table class='table table-striped table-sm'>\
+                    <thead>\
+                        <tr>\
+                            <th>Name</th>\
+                            <th>Status</th>\
+                        </tr>\
+                    </thead>\
+                    <tbody>";
+                data.forEach(elem => {
+                    output_html_ += "<tr id = '"+ elem['id']+"'>";
+                    output_html_ += "<td>" + elem['name'] + "</td>";
+                    output_html_ += "<td>" + elem['status'] + "</td>";
+                });
+                output_html_ += "</tbody></table>";
+                $(".content").html(output_html_);
+                $("#prev").click(av_materials);
+                $(".settings").click(edit_av_material);
+                $(".delete").click(delete_av_material);
+                $("#add").click(add_copies_av);
+                $("#sub").click(add_copies_av);
+                feather.replace();
+            });
+        }else{
+            $(".content").html(output_html_);
+            $("#prev").click(av_materials);
+            $(".settings").click(edit_av_material);
+            $(".delete").click(delete_av_material);
+            $("#add").click(add_copies_av);
+            $("#sub").click(add_copies_av);
+            feather.replace();
         }
-        $(".content").html(output_html_);
-        $("#prev").click(av_materials);
-        $(".settings").click(edit_av_material);
-        $(".delete").click(delete_av_material);
-        $("#add").click(add_copies_av);
-        $("#sub").click(add_copies_av);
-        feather.replace();
     });
 }
 
@@ -731,16 +779,40 @@ function article_info() {
         <h5>Issue: </h5><p id='issue'>" + data['issue']+"</p>\
         <h5>Editors: </h5><p id='editors'>" + data['editors']+"</p>\
         <h5>Date: </h5><p id='date'>" + data['date']+"</p>";
-        if(data['queue'] != "[]"){ // TODO: display queue
-
+        if(data['queue'] != "[]"){ 
+            $.post("/api/get_queue_on_document",{doc_id:$("#id").html(),type:'article'},function(data,status){
+                output_html_ += "<div class='table-responsive'>\
+                <table class='table table-striped table-sm'>\
+                    <thead>\
+                        <tr>\
+                            <th>Name</th>\
+                            <th>Status</th>\
+                        </tr>\
+                    </thead>\
+                    <tbody>";
+                data.forEach(elem => {
+                    output_html_ += "<tr id = '"+ elem['id']+"'>";
+                    output_html_ += "<td>" + elem['name'] + "</td>";
+                    output_html_ += "<td>" + elem['status'] + "</td>";
+                });
+                output_html_ += "</tbody></table>";
+                $(".content").html(output_html_);
+                $("#prev").click(articles);
+                $(".settings").click(edit_article);
+                $(".delete").click(delete_article);
+                $("#add").click(add_copies_article);
+                $("#sub").click(add_copies_article);
+                feather.replace();
+            });
+        }else{
+            $(".content").html(output_html_);
+            $("#prev").click(articles);
+            $(".settings").click(edit_article);
+            $(".delete").click(delete_article);
+            $("#add").click(add_copies_article);
+            $("#sub").click(add_copies_article);
+            feather.replace();
         }
-        $(".content").html(output_html_);
-        $("#prev").click(articles);
-        $(".settings").click(edit_article);
-        $(".delete").click(delete_article);
-        $("#add").click(add_copies_article);
-        $("#sub").click(add_copies_article);
-        feather.replace();
     });
 }
 
