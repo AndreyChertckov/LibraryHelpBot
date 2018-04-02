@@ -85,4 +85,4 @@ def test_delete_queue():
 #     test_delete_queue()
 #test_delete_queue()
 #c.check_out_doc(1,3,'book')
-print(c.add_queue_order(1,'book',3))
+#print(c.add_queue_order(1,'book',3))

@@ -151,10 +151,12 @@ class Controller:
         if mas[priority].__contains__(user_id):
             return False, "You are already in queue"
         current = eval(self.DBmanager.get_label('current_docs', 'patrons', user_id))
+
         for i in current:
             order = self.get_order(i)
             if (order['doc_id'] == doc_id):
                 return False, "You already have this document"
+
         mas[priority] += [user_id]
         self.DBmanager.edit_label(doc_type, ['queue'], [str(mas)], doc_id)
         queue = eval(self.DBmanager.get_label('queue', 'patrons', user_id))
