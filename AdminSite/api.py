@@ -35,12 +35,13 @@ class API:
         self.blueprint.add_url_rule('/api/get_all_returned_doc','get_all_returned_doc',self.get_all_returned_doc,methods=['POST'])
         self.blueprint.add_url_rule('/api/add_document','add_document',self.add_document_post,methods=['POST'])
         self.blueprint.add_url_rule('/api/modify_document','modify_document',self.modify_docment_post,methods=['POST'])
-        self.blueprint.add_url_rule('/api/add_copies_of_doc','add_copies_of_doc',self.add_copies_of_book_post,methods=['POST'])
+        self.blueprint.add_url_rule('/api/add_copies_of_doc','add_copies_of_doc',self.add_copies_of_doc_post,methods=['POST'])
         self.blueprint.add_url_rule('/api/delete_document','delete_document',self.delete_document_post,methods=['POST'])
         self.blueprint.add_url_rule('/api/get_document','get_document',self.get_document_post,methods=['POST'])
         self.blueprint.add_url_rule('/api/get_all_doctype','get_all_doctype',self.get_all_doctype_post,methods=['POST'])
         self.blueprint.add_url_rule('/api/get_documents_by_title','get_documents_by_title',self.get_documents_by_title_post,methods=['POST'])
         self.blueprint.add_url_rule('/api/get_documents_by_authors','get_documents_by_authors',self.get_documents_by_authors_post,methods=['POST'])
+        self.blueprint.add_url_rule('/api/get_queue_on_document','get_queue_on_document',self.get_queue_on_documnent_post,methods=['POST'])
 
     def signin_post(self):
         login = request.values.get('login')
@@ -163,8 +164,7 @@ class API:
     def return_doc_post(self):
         if 'session_id' in request.cookies and check_session(request.cookies.get('session_id'),self.dbmanager):
             if 'order_id' in request.values:
-                self.controller.return_doc(request.values.get('order_id'))
-                return 'OK'
+                return self.controller.return_doc(request.values.get('order_id'))
             else:
                 return 'Need id of order'
         else:
@@ -255,7 +255,7 @@ class API:
         else:
             return 'Sign in before'
     
-    def add_copies_of_book_post(self):
+    def add_copies_of_doc_post(self):
         if 'session_id' in request.cookies and check_session(request.cookies.get('session_id'),self.dbmanager):
             if not 'id' in request.values:
                 return 'Need id'
@@ -263,7 +263,7 @@ class API:
                 return 'Need delta count'
             if not 'type' in request.values:
                 return 'Need type'
-            self.controller.add_copies_of_book(request.values.get('type'),request.values.get('id'),request.values.get('delta_count'))
+            self.controller.add_copies_of_document(request.values.get('type'),request.values.get('id'),int(request.values.get('delta_count')))
             return 'OK'
         else:
             return 'Sign in before'
@@ -314,5 +314,15 @@ class API:
             if not 'type' in request.values:
                 return 'Need type'
             return jsonify(self.controller.get_documents_by_title(request.values.get('authors'),request.values.get('type')))
+        else:
+            return 'Sign in before'
+    
+    def get_queue_on_documnent_post(self):
+        if 'session_id' in request.cookies and check_session(request.cookies.get('session_id'),self.dbmanager):
+            if not 'doc_id' in request.values:
+                return 'Need authors'
+            if not 'type' in request.values:
+                return 'Need type'
+            return jsonify(self.controller.get_document_queue(request.values.get('type'),request.values.get('doc_id')))
         else:
             return 'Sign in before'

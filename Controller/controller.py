@@ -184,6 +184,15 @@ class Controller:
                                           [str(datetime.now() + timedelta(weeks=returning_time)), order['renewed'] + 1],
                                           order_id)
 
+    def get_document_queue(self, doc_type,doc_id):
+        output = []
+        queue = self.DBmanager.get_label('queue',doc_type,doc_id)
+        for i in range(1,5):
+            queue[0].extends(queue[i])
+        queue = queue[0]
+        for user_id in queue:
+            output.append(self.get_user(user_id))
+        return output
     # def delete_queue_order(self, user_id, type_of_media, doc_id):
 
     def get_user_by_name(self, name, by_who_id=-1):
@@ -263,8 +272,14 @@ class Controller:
     def user_get_doc(self, order_id):
         self.DBmanager.edit_label('orders', ['active'], [1], order_id)
 
+    def calculate_fine(self, order):
+        time_out = datetime.strptime(order['time_out'],"%Y-%m-%d")
+        days = divmod(datetime.now() - time_out,86400)
+        fine = days*100
+
     def return_doc(self, order_id):
         order = self.get_order(order_id)
+        fine = self.calculate_fine(order)
         user_id, doc_id, doc_type = order["user_id"], order["doc_id"], order["table"]
         curr_doc = eval(self.DBmanager.get_label('current_docs', 'patrons', user_id))
         curr_doc.remove(order['id'])
@@ -280,7 +295,7 @@ class Controller:
         self.log('INFO', 'User {} is returned document {}.'.format(
             self.get_user(user_id)['name'],
             self.get_document(doc_id, order['table'])['title']))
-        return True, 'OK'
+        return True, fine
 
     def get_user_orders(self, user_id):
         user = self.get_user(user_id)
