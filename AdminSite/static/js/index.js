@@ -1,6 +1,8 @@
 $(function(){
     $("#users").click(user_event);
     $("#documents").click(documents_event);
+    $("#orders").click(orders_event);
+    $("#history").click(history_event);
 });
 
 function user_event(event) {
@@ -45,13 +47,13 @@ function unconfirmed_table(){
             user_id_ = $(this).parent().parent().attr("id");
             $.post("/api/confirm_user",{user_id:user_id_},function(data,status){});
             $(this).parent().parent().remove();
-            return;
+    
         });
         $(".reject").click(function(){
             user_id_ = $(this).parent().parent().attr("id");
             $.post("/api/delete_user",{user_id:user_id_},function(data,status){});
             $(this).parent().parent().remove();
-            return;
+    
         });
         $("#search").on("keyup", function() {
             var value = $(this).val().toLowerCase();
@@ -61,7 +63,6 @@ function unconfirmed_table(){
           });
         feather.replace();   
     });
-    return;
 }
 
 function patrons_table(){
@@ -99,9 +100,8 @@ function patrons_table(){
         });
         $(".info").click(user_info);
         feather.replace();
-        return;
+
     });
-    return;
 }
 
 function librarians_table(){
@@ -136,9 +136,8 @@ function librarians_table(){
           });
         
         feather.replace();
-        return;
+
     });
-    return;
 }
 
 function user_info() {
@@ -214,12 +213,26 @@ function user_info() {
 function modify_user() {
     user = {id:$("#id").html(),name:$("#name").html(),phone:$("#phone").html(),address:$("#address").html(),status:$("#status").html()};
     output_html = "<div class='row'><div class='col-md-1'><button id='prev' class='btn btn-sm'><span data-feather='arrow-left'></span></button></div><div class='col-md-10'><h3>"+user['name']+"</h3></div></div>\
-    Name: <input id='name' name='name' value='"+user['name']+"' type='text'></br>\
-    Phone: <input id='phone' name='phone' value='"+user['phone']+"' type='text'></br>\
-    Address: <input id='address' name='address' value='"+user['address']+"' type='text'></br>\
-    Status: <input id='status' name='status' value='"+user['status']+"' type='text'></br>\
+    <form>\
+    <div class='form-group'>\
+    <label for='name'>Name</lable></br>\
+    <input type='form-control'id='name' name='name' value='"+user['name']+"' type='text'>\
+    </div>\
+    <div class='form-group'>\
+    <label for='phone'>Phone</lable></br>\
+    <input type='form-control'id='phone' name='phone' value='"+user['phone']+"' type='text'>\
+    </div>\
+    <div class='form-group'>\
+    <label for='address'>Address</lable></br>\
+    <input type='form-control'id='address' name='address' value='"+user['address']+"' type='text'>\
+    </div>\
+    <div class='form-group'>\
+    <label for='status'>Status</lable></br>\
+    <input type='form-control'id='status' name='status' value='"+user['status']+"' type='text'>\
+    </div>\
     <button id='save' class='btn'>Save</button>\
-    <p hidden "+data['best_seller']+"</p>id='id'>"+user['id']+"</p>";
+    <p id='id' hidden>"+user['id']+"</p>\
+    </form>";
     $(".content").html(output_html);
     $("#save").click(function(event){
         event.stopImmediatePropagation();
@@ -291,9 +304,8 @@ function books(){
           });
         
         feather.replace();
-        return;
+
     });
-    return;
 }
 
 function book_info(){
@@ -378,7 +390,11 @@ function edit_book(){
     $(".content").html(output_html);
     $("#save").click(function(event){
         event.preventDefault();
-        send_data = book = {id:$("#id").html(),title:$("#title").val(),authors:$("#authors").val(),description:$("#description").val(),count:$("#count").val(),free_count:$("#free_count").val(),price:$("#price").val(),best_seller:$("#best_seller").val(),keywords:$("#keywords").val(),type:'book'};
+        best_seller = 0;
+        if($("#best_seller").is(":checked")){
+            best_seller = 1;
+        }
+        send_data = book = {id:$("#id").html(),title:$("#title").val(),authors:$("#authors").val(),description:$("#description").val(),count:$("#count").val(),free_count:$("#free_count").val(),price:$("#price").val(),best_seller:best_seller,keywords:$("#keywords").val(),type:'book'};
         console.log(send_data);
         if(new_book){
             $.post("/api/add_document",send_data,function(data,status){
@@ -448,9 +464,8 @@ function av_materials(){
           });
         
         feather.replace();
-        return;
+
     });
-    return;
 }
 
 function av_material_info(){
@@ -590,9 +605,8 @@ function articles() {
           });
         
         feather.replace();
-        return;
+
     });
-    return;
 }
 
 function edit_article() {
@@ -706,5 +720,169 @@ function delete_article(){
     article_id_ = $("#id").html();
     $.post("/api/delete_document",{id:article_id_,type:'article'},function(data,status){
         articles();
+    });
+}
+
+function orders_event(event) {
+    event.preventDefault();
+    bar_user = "<div class='row'><div class ='col-10 content'></div><div class='col-2 sidebar-wrapper'><ul class='sidebar-nav'><li><button class='btn btn-sm ' id ='awaiting'>Awaiting orders</button></li>\
+    <li><button class='btn btn-sm' id ='active'>Active Orders</button></li>\
+    </ul></div></div>";
+    $(".main").html(bar_user);
+    awaiting_orders();
+    $("#awaiting").click(awaiting_orders);
+    $("#active").click(active_orders);
+}
+
+function awaiting_orders() {
+    $.post("/api/get_all_waiting_doc",{},function(data,status){
+        output_html = "<div class='row'>\
+        <div class = 'col-3'><h3>Awaiting orders</h3></div>\
+        </div>\
+        <div class='row'><div class='col-md-12'><input id='search' class='form-control w-100' placeholder='Search' aria-label='Search' type='text'></div></div>\
+        <div class='table-responsive'>\
+            <table class='table table-striped table-sm'>\
+                <thead>\
+                    <tr>\
+                        <th>User</th>\
+                        <th>Title</th>\
+                        <th>Authors</th>\
+                        <th>Type</th>\
+                        <th>Ordering time</th>\
+                        <th>Return time</th>\
+                        <th>User Get Document</th>\
+                    </tr>\
+                </thead>\
+                <tbody class='tbody'>";
+        console.log(data);
+        data.forEach(elem => {
+            output_html += "<tr id = '"+ elem['id']+"'>";
+            output_html += "<td>" + elem['user']['name'] + "</td>";
+            output_html += "<td>" + elem['doc']['title'] + "</td>";
+            output_html += "<td>" + elem['doc']['authors'] + "</td>";
+            output_html += "<td>" + elem['table'] + "</td>";
+            output_html += "<td>" + elem['time'] + "</td>";
+            output_html += "<td>" + elem['time_out'] + "</td>";
+            output_html += "<td><button class='btn btn-sm get'><span data-feather='check'></span></button> \0 <button class='btn btn-sm delete'><span data-feather='trash-2'></span></button></td></tr>";
+        });
+        output_html += "</tbody></table></div>";
+        $(".content").html(output_html);
+        $(".get").click(user_get_doc);
+        $(".delete").click(delete_order);
+        $("#search").on("keyup", function() {
+            var value = $(this).val().toLowerCase();
+            $("#tbody tr").filter(function() {
+              $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+            });
+          });
+        
+        feather.replace();
+    });
+}
+
+function user_get_doc(){
+    order_id_ = $(this).parent().parent().attr("id");
+    $.post("/api/user_get_doc",{order_id:order_id_},function(data,status){});
+    $(this).parent().parent().remove();
+}
+
+function delete_order(){
+
+}
+
+function active_orders() {
+    $.post("/api/get_all_active_orders",{},function(data,status){
+        output_html = "<div class='row'>\
+        <div class = 'col-3'><h3>Active orders</h3></div>\
+        </div>\
+        <div class='row'><div class='col-md-12'><input id='search' class='form-control w-100' placeholder='Search' aria-label='Search' type='text'></div></div>\
+        <div class='table-responsive'>\
+            <table class='table table-striped table-sm'>\
+                <thead>\
+                    <tr>\
+                        <th>User</th>\
+                        <th>Title</th>\
+                        <th>Authors</th>\
+                        <th>Type</th>\
+                        <th>Ordering time</th>\
+                        <th>Return time</th>\
+                        <th>User Return Document</th>\
+                    </tr>\
+                </thead>\
+                <tbody class='tbody'>";
+        console.log(data);
+        data.forEach(elem => {
+            output_html += "<tr id = '"+ elem['id']+"'>";
+            output_html += "<td>" + elem['user']['name'] + "</td>";
+            output_html += "<td>" + elem['doc']['title'] + "</td>";
+            output_html += "<td>" + elem['doc']['authors'] + "</td>";
+            output_html += "<td>" + elem['table'] + "</td>";
+            output_html += "<td>" + elem['time'] + "</td>";
+            output_html += "<td>" + elem['time_out'] + "</td>";
+            output_html += "<td><button class='btn btn-sm return'><span data-feather='check'></span></button></td></tr>";
+        });
+        output_html += "</tbody></table></div>";
+        $(".content").html(output_html);
+        $(".return").click(user_return_doc);
+        $("#search").on("keyup", function() {
+            var value = $(this).val().toLowerCase();
+            $("#tbody tr").filter(function() {
+              $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+            });
+          });
+        
+        feather.replace();
+    });
+}
+
+function user_return_doc() {
+    order_id_ = $(this).parent().parent().attr("id");
+    $.post("/api/return_doc",{order_id:order_id_},function(data,status){});
+    $(this).parent().parent().remove();
+}
+
+function history_event(event) {
+    event.preventDefault();
+    bar_user = "<div class='row'><div class ='col-12 content'></div></div>";
+    $(".main").html(bar_user);
+    $.post("/api/get_all_returned_doc",{},function(data,status){
+        output_html = "<div class='row'>\
+        <div class = 'col-4'><h3>History of orders</h3></div>\
+        </div>\
+        <div class='row'><div class='col-md-12'><input id='search' class='form-control w-100' placeholder='Search' aria-label='Search' type='text'></div></div>\
+        <div class='table-responsive'>\
+            <table class='table table-striped table-sm'>\
+                <thead>\
+                    <tr>\
+                        <th>User</th>\
+                        <th>Title</th>\
+                        <th>Authors</th>\
+                        <th>Type</th>\
+                        <th>Ordering time</th>\
+                        <th>Return time</th>\
+                    </tr>\
+                </thead>\
+                <tbody class='tbody'>";
+        console.log(data);
+        data.forEach(elem => {
+            output_html += "<tr id = '"+ elem['id']+"'>";
+            output_html += "<td>" + elem['user']['name'] + "</td>";
+            output_html += "<td>" + elem['doc']['title'] + "</td>";
+            output_html += "<td>" + elem['doc']['authors'] + "</td>";
+            output_html += "<td>" + elem['table'] + "</td>";
+            output_html += "<td>" + elem['time'] + "</td>";
+            output_html += "<td>" + elem['time_out'] + "</td>";
+            output_html += "</tr>";
+        });
+        output_html += "</tbody></table></div>";
+        $(".content").html(output_html);
+        $("#search").on("keyup", function() {
+            var value = $(this).val().toLowerCase();
+            $("#tbody tr").filter(function() {
+              $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+            });
+          });
+        
+        feather.replace();
     });
 }

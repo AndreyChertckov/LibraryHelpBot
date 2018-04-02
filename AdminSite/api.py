@@ -31,7 +31,7 @@ class API:
         self.blueprint.add_url_rule('/api/get_order','get_order',self.get_order_post,methods=['POST'])
         self.blueprint.add_url_rule('/api/get_all_orders','get_all_orders',self.get_all_orders_post,methods=['POST'])
         self.blueprint.add_url_rule('/api/get_all_active_orders','get_all_active_orders',self.get_all_active_orders_post,methods=['POST'])
-        self.blueprint.add_url_rule('/api/get_all_whaiting_doc','get_all_whaiting_doc',self.get_all_whaiting_doc_post,methods=['POST'])
+        self.blueprint.add_url_rule('/api/get_all_waiting_doc','get_all_waiting_doc',self.get_all_waiting_doc_post,methods=['POST'])
         self.blueprint.add_url_rule('/api/get_all_returned_doc','get_all_returned_doc',self.get_all_returned_doc,methods=['POST'])
         self.blueprint.add_url_rule('/api/add_document','add_document',self.add_document_post,methods=['POST'])
         self.blueprint.add_url_rule('/api/modify_document','modify_document',self.modify_docment_post,methods=['POST'])
@@ -153,7 +153,7 @@ class API:
     def user_get_doc_post(self):
         if 'session_id' in request.cookies and check_session(request.cookies.get('session_id'),self.dbmanager):
             if 'order_id' in request.values:
-                self.controller.user_get_doc(request.cookies.get('session_id'))
+                self.controller.user_get_doc(request.values.get('order_id'))
                 return 'OK'
             else:
                 return 'Need id of order'
@@ -163,7 +163,7 @@ class API:
     def return_doc_post(self):
         if 'session_id' in request.cookies and check_session(request.cookies.get('session_id'),self.dbmanager):
             if 'order_id' in request.values:
-                self.controller.return_doc(request.cookies.get('order_id'))
+                self.controller.return_doc(request.values.get('order_id'))
                 return 'OK'
             else:
                 return 'Need id of order'
@@ -205,19 +205,19 @@ class API:
     
     def get_all_active_orders_post(self):
         if 'session_id' in request.cookies and check_session(request.cookies.get('session_id'),self.dbmanager):
-            return jsonify(self.controller.get_all_activate_orders())
+            return jsonify(self.controller.get_all_active_orders())
         else:
             return 'Sign in before'
     
-    def get_all_whaiting_doc_post(self):
+    def get_all_waiting_doc_post(self):
         if 'session_id' in request.cookies and check_session(request.cookies.get('session_id'),self.dbmanager):
-            return jsonify(self.controller.get_all_whaiting_doc())
+            return jsonify(self.controller.get_all_waiting_doc())
         else:
             return 'Sign in before'
     
     def get_all_returned_doc(self):
         if 'session_id' in request.cookies and check_session(request.cookies.get('session_id'),self.dbmanager):
-            return jsonify(self.controller.get_all_returned_doc())
+            return jsonify(self.controller.get_all_returned_orders())
         else:
             return 'Sign in before'
     

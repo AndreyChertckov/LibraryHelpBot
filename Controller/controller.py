@@ -41,7 +41,7 @@ class Controller:
     # param: user_info: dictionary {id,name,address,status,phone}
     def registration(self, user_info):
         self.DBmanager.add_unconfirmed(Packager(user_info))
-        self.log('INFO', 'User {} signed up. Whaiting for librarians confirmation.'.format(user_info['name']))
+        self.log('INFO', 'User {} signed up. Waiting for librarians confirmation.'.format(user_info['name']))
 
     # Accept user to the library
     # param: user_id - id of user
@@ -306,10 +306,12 @@ class Controller:
 
         free_count = int(self.DBmanager.get_label("free_count", order['table'], doc_id))
         free_count += 1
+        
+        returned_time = str(datetime.now()).split(' ')[0]
 
         self.DBmanager.edit_label(order['table'], ['free_count'], [free_count], doc_id)
         self.DBmanager.edit_label('patrons', ['current_docs'], [str(curr_doc)], user_id)
-        self.DBmanager.edit_label('orders', ['active'], [2], order['id'])
+        self.DBmanager.edit_label('orders', ['active','out_of_time'], [2,returned_time], order['id'])
         self.log('INFO', 'User {} is returned document {}.'.format(
             self.get_user(user_id)['name'],
             self.get_document(doc_id, order['table'])['title']))
@@ -362,29 +364,49 @@ class Controller:
         by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)['name']
         orders = self.DBmanager.select_all('orders')
         self.log('INFO', 'Librarian {} whant to see all orders'.format(by_who))
-        return [dict(zip(['id', 'time', 'table', 'doc_id', 'user_id', 'time_out', 'active'], order)) for order in
+        output = [dict(zip(['id', 'time', 'table', 'doc_id', 'user_id', 'time_out', 'active','renewed'], order)) for order in
                 orders]
+        for order in output:
+            doc = self.DBmanager.select_label(order['table'], order['doc_id'])
+            order['doc'] = self.doc_tuple_to_dict(order['table'],doc)
+            order['user'] = self.get_user(order['user_id'])
+        return output
 
     def get_all_active_orders(self, by_who_id=-1):
         by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)['name']
         orders = self.DBmanager.get_by('active', 'orders', 1)
         self.log('INFO', 'Librarian {} whant to see all active orders'.format(by_who))
-        return [dict(zip(['id', 'time', 'table', 'doc_id', 'user_id', 'time_out', 'active'], order)) for order in
+        output = [dict(zip(['id', 'time', 'table', 'doc_id', 'user_id', 'time_out', 'active','renewed'], order)) for order in
                 orders]
+        for order in output:
+            doc = self.DBmanager.select_label(order['table'], order['doc_id'])
+            order['doc'] = self.doc_tuple_to_dict(order['table'],doc)
+            order['user'] = self.get_user(order['user_id'])
+        return output
 
-    def get_all_whaiting_doc(self, by_who_id=-1):
+    def get_all_waiting_doc(self, by_who_id=-1):
         by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)['name']
         orders = self.DBmanager.get_by('active', 'orders', 0)
-        self.log('INFO', 'Librarian {} whant to see all whaiting orders'.format(by_who))
-        return [dict(zip(['id', 'time', 'table', 'user_id', 'doc_id', 'active', 'time_out'], order)) for order in
+        self.log('INFO', 'Librarian {} whant to see all waiting orders'.format(by_who))
+        output = [dict(zip(['id', 'time', 'table', 'doc_id', 'user_id', 'time_out', 'active','renewed'], order)) for order in
                 orders]
+        for order in output:
+            doc = self.DBmanager.select_label(order['table'], order['doc_id'])
+            order['doc'] = self.doc_tuple_to_dict(order['table'],doc)
+            order['user'] = self.get_user(order['user_id'])
+        return output
 
     def get_all_returned_orders(self, by_who_id=-1):
         by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)['name']
         orders = self.DBmanager.get_by('active', 'orders', 2)
         self.log('INFO', 'Librarian {} wants to see all returned orders'.format(by_who))
-        return [dict(zip(['id', 'time', 'table', 'user_id', 'doc_id', 'active', 'time_out'], order)) for order in
+        output = [dict(zip(['id', 'time', 'table', 'doc_id', 'user_id', 'time_out', 'active','renewed'], order)) for order in
                 orders]
+        for order in output:
+            doc = self.DBmanager.select_label(order['table'], order['doc_id'])
+            order['doc'] = self.doc_tuple_to_dict(order['table'],doc)
+            order['user'] = self.get_user(order['user_id'])
+        return output
 
     # Method for adding the document in database
     # param: name - Name of the document

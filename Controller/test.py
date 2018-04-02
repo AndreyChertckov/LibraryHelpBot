@@ -494,7 +494,7 @@ def test_get_orders():
         clear_tables()
         assert success
 
-    orders = cntrl.get_all_whaiting_doc(-1)
+    orders = cntrl.get_all_waiting_doc(-1)
     if len(orders) != 1:
         clear_tables()
         assert False
