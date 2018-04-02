@@ -322,7 +322,7 @@ function book_info(){
         output_html_ = "<p id='id' hidden>"+book_id_+"</p><div class='row'><div class='col-md-1'><button id='prev' class='btn btn-sm'><span data-feather='arrow-left'></span></button></div><div class='col-md-9'><h3 id='title'>"+data['title']+"</h3></div><div class='col-md-1'><button class='btn btn-sm delete'><span data-feather='trash-2'></span></button></div><div class='col-md-1'><button id = '"+book_id_+"' class='btn btn-sm settings'><span data-feather='settings'></span></div></div>\
         <h5>Authors: </h5><p id='authors'>" + data['authors']+"</p>\
         <h5>Description: </h5><p id='description'>" + data['description'] + "</p>\
-        <h5>Count: </h5><p id='count'>"+data['count']+"</p>\
+        <div class='row'><div class='col-1'><h5>Count: </h5></div> <div class='col-1'><button id='add' class='btn btn-sm'><span data-feather='plus'></span></button> </div><div class='col-1'><button id='sub' class='btn btn-sm'><span data-feather='minus'></span></button></div></div><p id='count'>"+data['count']+"</p>\
         <h5>Free count: </h5><p id='free_count'>" + data['free_count']+"</p>\
         <h5>Price: </h5><p id='price'>" + data['price']+"</p>\
         <h5>Keywords: </h5><p id='keywords'>" + data['keywords']+"</p>\
@@ -332,17 +332,54 @@ function book_info(){
         }else{
             output_html_ += "<h5>Best seller: <span data-feather='check'></span></h5>";
         }
-        if(data['queue'] != "[]"){ // TODO: display queue
-
+        if(data['queue'] != "[]"){ 
+            $.post("/api/get_queue_on_document",{doc_id:$("#id").html(),type:'book'},function(data,status){
+                output_html_ += "<div class='table-responsive'>\
+                <table class='table table-striped table-sm'>\
+                    <thead>\
+                        <tr>\
+                            <th>Name</th>\
+                            <th>Status</th>\
+                        </tr>\
+                    </thead>\
+                    <tbody>";
+                data.forEach(elem => {
+                    output_html_ += "<tr id = '"+ elem['id']+"'>";
+                    output_html_ += "<td>" + elem['name'] + "</td>";
+                    output_html_ += "<td>" + elem['status'] + "</td>";
+                });
+                output_html_ += "</tbody></table>";
+                $(".content").html(output_html_);
+                $("#prev").click(books);
+                $(".settings").click(edit_book);
+                $(".delete").click(delete_book);
+                $("#add").click(add_copies_book);
+                $("#sub").click(add_copies_book);
+                feather.replace();
+            });
+        }else{
+            $(".content").html(output_html_);
+            $("#prev").click(books);
+            $(".settings").click(edit_book);
+            $(".delete").click(delete_book);
+            $("#add").click(add_copies_book);
+            $("#sub").click(add_copies_book);
+            feather.replace();
         }
-        $(".content").html(output_html_);
-        $("#prev").click(books);
-        $(".settings").click(edit_book);
-        $(".delete").click(delete_book);
-        feather.replace();
     });
 }
 
+function add_copies_book() {
+    if($(this).attr("id") == "add") {
+        $.post("/api/add_copies_of_doc",{id:$("#id").html(), delta_count:1,type:'book'},function (data,status){
+            book_info();
+        });
+    }else {
+        $.post("/api/add_copies_of_doc",{id:$("#id").html(), delta_count:-1,type:'book'},function (data,status){
+            book_info();
+        });
+    }
+}
 
 function edit_book(){
     if($(this).attr('id')){
@@ -480,21 +517,58 @@ function av_material_info(){
         console.log(data);
         output_html_ = "<p id='id' hidden>"+media_id_+"</p><div class='row'><div class='col-md-1'><button id='prev' class='btn btn-sm'><span data-feather='arrow-left'></span></button></div><div class='col-md-9'><h3 id='title'>"+data['title']+"</h3></div><div class='col-md-1'><button class='btn btn-sm delete'><span data-feather='trash-2'></span></button></div><div class='col-md-1'><button id = '"+media_id_+"' class='btn btn-sm settings'><span data-feather='settings'></span></div></div>\
         <h5>Authors: </h5><p id='authors'>" + data['authors']+"</p>\
-        <h5>Count: </h5><p id='count'>"+data['count']+"</p>\
+        <div class='row'><div class='col-1'><h5>Count: </h5></div> <div class='col-1'><button id='add' class='btn btn-sm'><span data-feather='plus'></span></button> </div><div class='col-1'><button id='sub' class='btn btn-sm'><span data-feather='minus'></span></button></div></div><p id='count'>"+data['count']+"</p>\
         <h5>Free count: </h5><p id='free_count'>" + data['free_count']+"</p>\
         <h5>Price: </h5><p id='price'>" + data['price']+"</p>\
         <h5>Keywords: </h5><p id='keywords'>" + data['keywords']+"</p>";
-        if(data['queue'] != "[]"){ // TODO: display queue
-
+        if(data['queue'] != "[]"){ 
+            $.post("/api/get_queue_on_document",{doc_id:$("#id").html(),type:'media'},function(data,status){
+                output_html_ += "<div class='table-responsive'>\
+                <table class='table table-striped table-sm'>\
+                    <thead>\
+                        <tr>\
+                            <th>Name</th>\
+                            <th>Status</th>\
+                        </tr>\
+                    </thead>\
+                    <tbody>";
+                data.forEach(elem => {
+                    output_html_ += "<tr id = '"+ elem['id']+"'>";
+                    output_html_ += "<td>" + elem['name'] + "</td>";
+                    output_html_ += "<td>" + elem['status'] + "</td>";
+                });
+                output_html_ += "</tbody></table>";
+                $(".content").html(output_html_);
+                $("#prev").click(av_materials);
+                $(".settings").click(edit_av_material);
+                $(".delete").click(delete_av_material);
+                $("#add").click(add_copies_av);
+                $("#sub").click(add_copies_av);
+                feather.replace();
+            });
+        }else{
+            $(".content").html(output_html_);
+            $("#prev").click(av_materials);
+            $(".settings").click(edit_av_material);
+            $(".delete").click(delete_av_material);
+            $("#add").click(add_copies_av);
+            $("#sub").click(add_copies_av);
+            feather.replace();
         }
-        $(".content").html(output_html_);
-        $("#prev").click(av_materials);
-        $(".settings").click(edit_av_material);
-        $(".delete").click(delete_av_material);
-        feather.replace();
     });
 }
 
+function add_copies_av() {
+    if($(this).attr("id") == "add") {
+        $.post("/api/add_copies_of_doc",{id:$("#id").html(), delta_count:1,type:'media'},function (data,status){
+            av_material_info();
+        });
+    }else {
+        $.post("/api/add_copies_of_doc",{id:$("#id").html(), delta_count:-1,type:'media'},function (data,status){
+            av_material_info();
+        });
+    }
+}
 
 function edit_av_material(){
     if($(this).attr('id')){
@@ -534,7 +608,7 @@ function edit_av_material(){
     $(".content").html(output_html);
     $("#save").click(function(event){
         event.preventDefault();
-        send_data = {id:$("#id").html(),title:$("#title").val(),authors:$("#authors").val(),description:$("#description").val(),count:$("#count").val(),free_count:$("#free_count").val(),price:$("#price").val(),keywords:$("#keywords").val(),best_seller:0,type:'media'};
+        send_data = {id:$("#id").html(),title:$("#title").val(),authors:$("#authors").val(),description:0,count:$("#count").val(),free_count:$("#free_count").val(),price:$("#price").val(),keywords:$("#keywords").val(),best_seller:0,type:'media'};
         console.log(send_data);
         if(new_media){
             $.post("/api/add_document",send_data,function(data,status){
@@ -698,22 +772,60 @@ function article_info() {
         output_html_ = "<p id='id' hidden>"+article_id_+"</p><div class='row'><div class='col-md-1'><button id='prev' class='btn btn-sm'><span data-feather='arrow-left'></span></button></div><div class='col-md-9'><h3 id='title'>"+data['title']+"</h3></div><div class='col-md-1'><button class='btn btn-sm delete'><span data-feather='trash-2'></span></button></div><div class='col-md-1'><button id = '"+article_id_+"' class='btn btn-sm settings'><span data-feather='settings'></span></div></div>\
         <h5>Authors: </h5><p id='authors'>" + data['authors']+"</p>\
         <h5>Journal: </h5><p id='journal'>" + data['journal']+"</p>\
-        <h5>Count: </h5><p id='count'>"+data['count']+"</p>\
+        <div class='row'><div class='col-1'><h5>Count: </h5></div> <div class='col-1'><button id='add' class='btn btn-sm'><span data-feather='plus'></span></button> </div><div class='col-1'><button id='sub' class='btn btn-sm'><span data-feather='minus'></span></button></div></div><p id='count'>"+data['count']+"</p>\
         <h5>Free count: </h5><p id='free_count'>" + data['free_count']+"</p>\
         <h5>Price: </h5><p id='price'>" + data['price']+"</p>\
         <h5>Keywords: </h5><p id='keywords'>" + data['keywords']+"</p>\
         <h5>Issue: </h5><p id='issue'>" + data['issue']+"</p>\
         <h5>Editors: </h5><p id='editors'>" + data['editors']+"</p>\
         <h5>Date: </h5><p id='date'>" + data['date']+"</p>";
-        if(data['queue'] != "[]"){ // TODO: display queue
-
+        if(data['queue'] != "[]"){ 
+            $.post("/api/get_queue_on_document",{doc_id:$("#id").html(),type:'article'},function(data,status){
+                output_html_ += "<div class='table-responsive'>\
+                <table class='table table-striped table-sm'>\
+                    <thead>\
+                        <tr>\
+                            <th>Name</th>\
+                            <th>Status</th>\
+                        </tr>\
+                    </thead>\
+                    <tbody>";
+                data.forEach(elem => {
+                    output_html_ += "<tr id = '"+ elem['id']+"'>";
+                    output_html_ += "<td>" + elem['name'] + "</td>";
+                    output_html_ += "<td>" + elem['status'] + "</td>";
+                });
+                output_html_ += "</tbody></table>";
+                $(".content").html(output_html_);
+                $("#prev").click(articles);
+                $(".settings").click(edit_article);
+                $(".delete").click(delete_article);
+                $("#add").click(add_copies_article);
+                $("#sub").click(add_copies_article);
+                feather.replace();
+            });
+        }else{
+            $(".content").html(output_html_);
+            $("#prev").click(articles);
+            $(".settings").click(edit_article);
+            $(".delete").click(delete_article);
+            $("#add").click(add_copies_article);
+            $("#sub").click(add_copies_article);
+            feather.replace();
         }
-        $(".content").html(output_html_);
-        $("#prev").click(articles);
-        $(".settings").click(edit_article);
-        $(".delete").click(delete_article);
-        feather.replace();
     });
+}
+
+function add_copies_article() {
+    if($(this).attr("id") == "add") {
+        $.post("/api/add_copies_of_doc",{id:$("#id").html(), delta_count:1,type:'article'},function (data,status){
+            article_info();
+        });
+    }else {
+        $.post("/api/add_copies_of_doc",{id:$("#id").html(), delta_count:-1,type:'article'},function (data,status){
+            article_info();
+        });
+    }
 }
 
 function delete_article(){
@@ -837,7 +949,9 @@ function active_orders() {
 
 function user_return_doc() {
     order_id_ = $(this).parent().parent().attr("id");
-    $.post("/api/return_doc",{order_id:order_id_},function(data,status){});
+    $.post("/api/return_doc",{order_id:order_id_},function(data,status){
+        alert(data);
+    });
     $(this).parent().parent().remove();
 }
 

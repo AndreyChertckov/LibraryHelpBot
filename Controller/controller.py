@@ -164,7 +164,7 @@ class Controller:
         priority_dict = {'Student': 0, 'Instructor': 1, 'TA': 2, 'Visiting Professor': 3, 'Professor': 4}
         queue = eval(self.DBmanager.get_label('queue', 'patrons', user_id))
         for i in queue:
-            if i[:2] == [doc_id, type_of_media]:
+            if (i == (doc_id, type_of_media)):
                 queue.remove(i)
         doc_queue = eval(self.DBmanager.get_label('queue', type_of_media, doc_id))
         priority = priority_dict[self.get_user(user_id)['status']]
@@ -184,11 +184,40 @@ class Controller:
             return True
         return False
 
+    def delete_doc_queue(self,doc_id,doc_type):
+        queue=eval(self.DBmanager.get_label('queue',doc_type,doc_id))
+        for i in queue:
+            for id in i:
+                self.delete_user_queue(id,doc_type,doc_id)
+
+    def get_document_queue(self, doc_type, doc_id):
+        output = []
+        queue = self.DBmanager.get_label('queue', doc_type, doc_id)
+        for i in range(1, 5):
+            queue[0].extends(queue[i])
+        queue = queue[0]
+        for user_id in queue:
+            output.append(self.get_user(user_id))
+        return output
+
+    # def delete_queue_order(self, user_id, type_of_media, doc_id):
+
     def get_user_by_name(self, name, by_who_id=-1):
         by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)
         user = self.DBmanager.get_by('name', 'patrons', name)[0]
         self.log('INFO', 'Get user with name {} by {}'.format(name, by_who))
         return tuple_to_dict('patrons', user)
+
+    def get_returning_time(self, returning_time, type_bd, doc_id, user_id):
+        user_status = self.DBmanager.get_label('status', 'patrons', user_id)
+        if returning_time == 0 and type_bd == 'book':
+            is_best_seller = self.DBmanager.get_label('best_seller', type_bd, doc_id) == 1
+            returning_time = 3 if user_status == 'Student' else 4
+            returning_time = 2 if is_best_seller else returning_time
+        elif type_bd != 'book':
+            returning_time = 2
+        returning_time = 1 if user_status == 'Visiting Professor' else returning_time
+        return returning_time
 
     def check_out_doc(self, user_id, doc_id, type_bd='book', returning_time=0, date_when_took=datetime.now()):
         if self.DBmanager.select_label(type_bd, doc_id) is None:
@@ -247,8 +276,15 @@ class Controller:
     def user_get_doc(self, order_id):
         self.DBmanager.edit_label('orders', ['active'], [1], order_id)
 
+    def calculate_fine(self, order):
+        time_out = datetime.strptime(order['time_out'], "%Y-%m-%d")
+        days = divmod(datetime.now() - time_out, 86400)
+        fine = days[0] * 100
+        return max(min(fine, order['doc']['price']), 0)
+
     def return_doc(self, order_id):
         order = self.get_order(order_id)
+        fine = self.calculate_fine(order)
         user_id, doc_id, doc_type = order["user_id"], order["doc_id"], order["table"]
         curr_doc = eval(self.DBmanager.get_label('current_docs', 'patrons', user_id))
         curr_doc.remove(order['id'])
@@ -264,7 +300,7 @@ class Controller:
         self.log('INFO', 'User {} is returned document {}.'.format(
             self.get_user(user_id)['name'],
             self.get_document(doc_id, order['table'])['title']))
-        return True, 'OK'
+        return True, fine
 
     def get_user_orders(self, user_id):
         user = self.get_user(user_id)
