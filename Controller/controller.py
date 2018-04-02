@@ -172,39 +172,23 @@ class Controller:
         self.DBmanager.edit_label(type_of_media, ['queue'], [str(doc_queue)], doc_id)
         self.DBmanager.edit_label('patrons', ['queue'], [str(queue)], user_id)
 
-    def renew_item(self, user_id, doc_type, doc_id):
-        user = self.get_user(user_id, status=2)
-        orders_id = eval(user['current_docs'])
-        returning_time = self.get_returning_time(0, doc_type, doc_id, user_id)
-        for order_id in orders_id:
-            order = self.get_order(order_id)
-            if ((order['table'], order['doc_id']) == (doc_type, doc_id)
-                and (order['renewed'] == 0 or user['status'] == 'Visiting Professor')):
-                self.DBmanager.edit_label('orders', ['out_of_time', 'renewed'],
-                                          [str(datetime.now() + timedelta(weeks=returning_time)), order['renewed'] + 1],
-                                          order_id)
-
-    # def delete_queue_order(self, user_id, type_of_media, doc_id):
+    def renew_item(self, order_id):
+        order = self.get_order(order_id)
+        user = self.get_user(order['user_id'])
+        new_date = (datetime.strptime(order['time_out'], '%Y-%m-%d') + timedelta(weeks=1)).date().isoformat()
+        if order['renewed'] == 0:
+            self.DBmanager.edit_label('orders', ['out_of_time', 'renewed'], [new_date, 1], order_id)
+            return True
+        elif user['status'] == 'Visiting Professor':
+            self.DBmanager.edit_label('orders', ['out_of_time'], [new_date], order_id)
+            return True
+        return False
 
     def get_user_by_name(self, name, by_who_id=-1):
         by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)
         user = self.DBmanager.get_by('name', 'patrons', name)[0]
         self.log('INFO', 'Get user with name {} by {}'.format(name, by_who))
         return tuple_to_dict('patrons', user)
-
-    # Check out book
-    # param : user_id - id of user
-    # param : book_id - id of book
-    def get_returning_time(self, returning_time, type_bd, doc_id, user_id):
-        user_status = self.DBmanager.get_label('status', 'patrons', user_id)
-        if returning_time == 0 and type_bd == 'book':
-            is_best_seller = self.DBmanager.get_label('best_seller', type_bd, doc_id) == 1
-            returning_time = 3 if user_status == 'Student' else 4
-            returning_time = 2 if is_best_seller else returning_time
-        elif type_bd != 'book':
-            returning_time = 2
-        returning_time = 1 if user_status == 'VP' else returning_time
-        return returning_time
 
     def check_out_doc(self, user_id, doc_id, type_bd='book', returning_time=0, date_when_took=datetime.now()):
         if self.DBmanager.select_label(type_bd, doc_id) is None:
@@ -286,7 +270,6 @@ class Controller:
         user = self.get_user(user_id)
         if not user:
             return []
-        # print()
         orders_id = eval(user['current_docs'])
         output = []
 

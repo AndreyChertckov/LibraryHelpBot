@@ -143,3 +143,14 @@ class Material_module:
     def user_orders(self, bot, update):
         self.location[update.message.chat_id] = 'my_orders'
         self.online_init(bot, update)
+
+    def manage_orders(self, bot, ids, action, args):
+        order_id = args[0]
+        chat, message_id = ids
+        if action == 'renew':
+            result = self.controller.renew_item(order_id)
+            if result:
+                message = "Your order was renewed"
+            else:
+                message = 'You cannot renew anymore'
+            bot.edit_message_text(text=message, chat_id=chat, message_id=message_id)

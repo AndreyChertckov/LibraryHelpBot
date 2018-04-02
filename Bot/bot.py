@@ -158,18 +158,17 @@ class LibraryBot:
             message[0] = text.format(**item)
             message[1] = IKM(keyboard)
         if loc == 'my_orders':
-            keys = ['user_id', 'doc', 'table', 'time', 'time_out', 'active']
-            user, doc, doc_type, time, time_out, active = [item[i] for i in keys]
+            keys = ['user_id', 'doc', 'table', 'time', 'time_out', 'active', 'id']
+            user, doc, doc_type, time, time_out, active, order_id = [item[i] for i in keys]
             message[0] = "Title: {}\nAuthors: {}\nAvailable till: {}".format(doc['title'], doc['authors'], time_out)
             keyboard = []
             # print([j for i in eval(doc['queue']) for j in i])
             # print(doc)
             if active and not [j for i in eval(doc['queue']) for j in i]:
-                keyboard.append(IKB("Renew🔄", callback_data='renew {} {} {}'.format(user, doc['id'], doc_type)))
+                keyboard += [IKB("Renew🔄", callback_data='renew {} {}'.format(order_id, loc))]
             elif not active:
-                keyboard.append(IKB("Repeal🔄", callback_data='repeal {} {} {}'.format(user, doc['id'], doc_type)))
+                keyboard += [IKB("Repeal❌", callback_data='repeal {} {}'.format(order_id, loc))]
             keyboard += [IKB("Cancel⤵️", callback_data='cancel {} {}'.format(page, loc))]
-            print(keyboard)
             message[1] = IKM([keyboard])
         if loc == 'users':
             user = item
@@ -248,6 +247,10 @@ class LibraryBot:
         elif loc == 'users':
             ids = [chat, message_id]
             self.user_flip(bot, ids, action, args)
+        elif loc == 'my_orders':
+            ids = [chat, message_id]
+            self.manage_orders(bot, ids, action, args)
+
 
     def error(self, bot, update, error):
         """Log Errors caused by Updates."""
