@@ -79,6 +79,17 @@ lists = {
     "book_bd": ['title', 'authors', 'description', 'keywords', 'price', 'count'],
     "article_bd": ['title', 'authors', 'journal', 'issue', 'editors', 'date', 'keywords', 'price', 'count'],
     "media_bd": ['title', 'authors', 'keywords', 'price', 'count'],
+    'order_db': ['id', 'time', 'table', 'doc_id', 'user_id', 'time_out', 'active', 'renewed'],
+    'book_db': ['id', 'title', 'authors', 'description', 'count', 'free_count', 'price', 'best_seller', 'keywords', 'queue'],
+    'article_db': ['id', 'title', 'authors', 'journal', 'count', 'free_count', 'price', 'keywords', 'issue', 'editors',
+                'date', 'queue'],
+    'media_db': ['id', 'title', 'authors', 'count', 'free_count', 'price', 'keywords', 'queue'],
+    'reference_book_db': ['id', 'title', 'authors', 'keywords'],
+    'reference_article_db': ['id', 'title', 'authors', 'journal', 'keywords', 'issue', 'editors', 'date'],
+    'user_db': ['id', 'name', 'phone', 'address', 'history', 'current_docs', 'status'],
+    'unconfirmed_db': ['id', 'name', 'phone', 'address', 'status']
+
+
 }
 
 analog = {
@@ -86,6 +97,10 @@ analog = {
     'Journal Articles📰': 'article',
     "Audio/Video materials📼": 'media'
 }
+
+
+def tuple_to_dict(key, data):
+    return dict(zip(lists[key + "_db"], list(data)))
 
 
 def text_gen(data, location, page=0):
