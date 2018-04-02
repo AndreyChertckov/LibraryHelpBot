@@ -164,13 +164,19 @@ class Controller:
         priority_dict = {'Student': 0, 'Instructor': 1, 'TA': 2, 'Visiting Professor': 3, 'Professor': 4}
         queue = eval(self.DBmanager.get_label('queue', 'patrons', user_id))
         for i in queue:
-            if i[:2] == [doc_id, type_of_media]:
+            if (i == (doc_id, type_of_media)):
                 queue.remove(i)
         doc_queue = eval(self.DBmanager.get_label('queue', type_of_media, doc_id))
         priority = priority_dict[self.get_user(user_id)['status']]
         doc_queue[priority].remove(user_id)
         self.DBmanager.edit_label(type_of_media, ['queue'], [str(doc_queue)], doc_id)
         self.DBmanager.edit_label('patrons', ['queue'], [str(queue)], user_id)
+
+    def delete_doc_queue(self,doc_id,doc_type):
+        queue=eval(self.DBmanager.get_label('queue',doc_type,doc_id))
+        for i in queue:
+            for id in i:
+                self.delete_user_queue(id,doc_type,doc_id)
 
     def renew_item(self, user_id, doc_type, doc_id):
         user = self.get_user(user_id, status=2)
