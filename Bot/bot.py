@@ -158,13 +158,16 @@ class LibraryBot:
             message[0] = text.format(**item)
             message[1] = IKM(keyboard)
         if loc == 'my_orders':
-            user, doc, doc_type, time, time_out = [item[i] for i in ['user_id', 'doc', 'table', 'time', 'time_out']]
+            keys = ['user_id', 'doc', 'table', 'time', 'time_out', 'active']
+            user, doc, doc_type, time, time_out, active = [item[i] for i in keys]
             message[0] = "Title: {}\nAuthors: {}\nAvailable till: {}".format(doc['title'], doc['authors'], time_out)
             keyboard = []
             # print([j for i in eval(doc['queue']) for j in i])
             # print(doc)
-            if not [j for i in eval(doc['queue']) for j in i]:
-                keyboard.append(IKB("Renew️🔄", callback_data='renew {} {} {}'.format(user, doc['id'], doc_type)))
+            if active and not [j for i in eval(doc['queue']) for j in i]:
+                keyboard.append(IKB("Renew🔄", callback_data='renew {} {} {}'.format(user, doc['id'], doc_type)))
+            elif not active:
+                keyboard.append(IKB("Repeal🔄", callback_data='repeal {} {} {}'.format(user, doc['id'], doc_type)))
             keyboard += [IKB("Cancel⤵️", callback_data='cancel {} {}'.format(page, loc))]
             print(keyboard)
             message[1] = IKM([keyboard])

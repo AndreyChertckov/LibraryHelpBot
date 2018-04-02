@@ -86,8 +86,9 @@ lists = {
     'media_db': ['id', 'title', 'authors', 'count', 'free_count', 'price', 'keywords', 'queue'],
     'reference_book_db': ['id', 'title', 'authors', 'keywords'],
     'reference_article_db': ['id', 'title', 'authors', 'journal', 'keywords', 'issue', 'editors', 'date'],
-    'user_db': ['id', 'name', 'phone', 'address', 'history', 'current_docs', 'status'],
-    'unconfirmed_db': ['id', 'name', 'phone', 'address', 'status']
+    'patrons_db': ['id', 'name', 'phone', 'address', 'history', 'current_docs', 'status'],
+    'unconfirmed_db': ['id', 'name', 'phone', 'address', 'status'],
+    'librarians_db': ['id', 'name', 'phone', 'address']
 
 
 }

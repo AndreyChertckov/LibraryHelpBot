@@ -89,60 +89,41 @@ class Controller:
     def get_all_unconfirmed(self):
         return [tuple_to_dict('unconfirmed', user) for user in self.DBmanager.select_all("unconfirmed")]
 
-    # По-другому чет не работает
-    # ToDo: исправить костыль
-    def get_patron(self, patron_id):
-        patron = self.DBmanager.select_label('patrons', patron_id)
-        return tuple_to_dict('user', patron)
-        # patrons = self.get_all_patrons()
-        # for i in patrons:
-        #     if i['id'] == patron_id:
-        #         return i
-
     # Return all patrons from database
     def get_all_patrons(self, by_who_id=-1):
         rows = self.DBmanager.select_all("patrons")
         by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)['name']
         self.log('INFO', 'Get all patrons by {}'.format(by_who))
-        return [tuple_to_dict('user', user) for user in rows]
+        return [tuple_to_dict('patrons', user) for user in rows]
 
     # Return all librarians from database
     def get_all_librarians(self, by_who_id=-1):
         by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)['name']
         self.log('INFO', 'Get all librarians by {}'.format(by_who))
         rows = self.DBmanager.select_all("librarians")
-        return [{'id': user[0], 'name': user[1], 'phone': user[2], 'address': user[3]} for user in rows]
+        return [tuple_to_dict('librarians', user) for user in rows]
 
     # Return true if chat with user exist, false if not
     # param : user_id - id of user
     # return : bool value
     def chat_exists(self, user_id):
-        return any(
-            [self.DBmanager.select_label('librarians', user_id), self.DBmanager.select_label('patrons', user_id)])
+        return any([self.DBmanager.select_label('librarians', user_id), self.DBmanager.select_label('patrons', user_id)])
 
     # Return user by id
     # param : user_id - id of user
     # return : dictionary user {id,name,address,phone,status} if user librarian or unconfirmed,
     # or {id,name,address,phone,history,current_docs,status},
-    # or false if user doesn`t existе
-    def get_user(self, user_id):
-        keys = ['id', 'name']
-        status = self.user_type(user_id)
-        # user = {}
-        # user_db = None
-        if status == 2:
-            user_db = self.DBmanager.select_label('patrons', user_id)
-            keys.extend(['phone', 'address', 'history', 'current_docs', 'status'])
-        elif status == 3:
-            user_db = self.DBmanager.select_label('librarians', user_id)
-            keys.extend(['phone', 'address'])
-        elif status == 1:
-            user_db = self.DBmanager.select_label('unconfirmed', user_id)
-            keys.extend(['phone', 'address', 'status'])
+    # or false if user does not exist
+    def get_user(self, user_id, status=None):
+        types = {0: "unauthorized", 1: 'unconfirmed', 2: 'patrons', 3: 'librarians'}
+        if not status:
+            status = self.user_type(user_id)
+        user_type = types[status]
+        if status:
+            return tuple_to_dict(user_type, self.DBmanager.select_label(user_type, user_id))
         else:
             self.log('WARNING', 'User with id {} not found.'.format(user_id))
             return False
-        return dict(zip(keys, user_db))
 
     # Returns in which table the user is located
     # param : user_id - id of user
@@ -151,15 +132,15 @@ class Controller:
     #          if 2 then user is patron
     #          if 3 then user is admin
     def user_type(self, user_id):
-        d = {"unauthorized": 0, 'unconfirmed': 1, 'patron': 2, 'admin': 3}
+        types = {"unauthorized": 0, 'unconfirmed': 1, 'patron': 2, 'admin': 3}
         if self.DBmanager.select_label('librarians', user_id):
-            return d['admin']
+            return types['admin']
         elif self.DBmanager.select_label('patrons', user_id):
-            return d['patron']
+            return types['patron']
         elif self.DBmanager.select_label('unconfirmed', user_id):
-            return d['unconfirmed']
+            return types['unconfirmed']
         else:
-            return d['unauthorized']
+            return types['unauthorized']
 
     def add_queue_order(self, user_id, doc_type, doc_id):
         priority_dict = {'Student': 0, 'Instructor': 1, 'TA': 2, 'Visiting Professor': 3, 'Professor': 4}
@@ -192,7 +173,7 @@ class Controller:
         self.DBmanager.edit_label('patrons', ['queue'], [str(queue)], user_id)
 
     def renew_item(self, user_id, doc_type, doc_id):
-        user = self.get_user(user_id)
+        user = self.get_user(user_id, status=2)
         orders_id = eval(user['current_docs'])
         returning_time = self.get_returning_time(0, doc_type, doc_id, user_id)
         for order_id in orders_id:
@@ -209,7 +190,7 @@ class Controller:
         by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)
         user = self.DBmanager.get_by('name', 'patrons', name)[0]
         self.log('INFO', 'Get user with name {} by {}'.format(name, by_who))
-        return tuple_to_dict('user', user)
+        return tuple_to_dict('patrons', user)
 
     # Check out book
     # param : user_id - id of user
@@ -255,7 +236,7 @@ class Controller:
             out_of_time = out_of_time[:out_of_time.index(' ')]
 
             order = {'date': time, 'table': type_bd, "user_id": user_id, "doc_id": doc_id, "active": 0,
-                     'out_of_time': out_of_time}
+                     'out_of_time': out_of_time, 'renewed': 0}
 
             self.DBmanager.add_order(Packager(order))
             order_id = self.DBmanager.get_max_id('orders')
@@ -305,6 +286,7 @@ class Controller:
         user = self.get_user(user_id)
         if not user:
             return []
+        # print()
         orders_id = eval(user['current_docs'])
         output = []
 
