@@ -94,17 +94,15 @@ class User_module:
             result = self.controller.return_doc(order['id'])
             if result[0]:
                 if result[1] != 0:
-                    bot.send_message(text="Please pay fine,because you returned it late : {}".format(result[1]),
+                    bot.send_message(text="Please pay fine, because you returned it late : {}".format(result[1]),
                                      chat_id=user_id)
                     text = "User have fine: {}".format(result[1])
-
                 else:
                     bot.send_message(text="Book was returned.Thank you, that you use our service", chat_id=user_id)
                     text = "User have not fine"
             text = 'Document was returned.' + text
             keyboard = [[IKB("Return to the list", callback_data='cancel {} {} users'.format(*args))]]
-            bot.edit_message_text(text=text, chat_id=chat, message_id=message_id,
-                                  reply_markup=IKM(keyboard))
+            bot.edit_message_text(text=text, chat_id=chat, message_id=message_id, reply_markup=IKM(keyboard))
 
     def modify_user(self, bot, update):
         chat = update.message.chat_id
