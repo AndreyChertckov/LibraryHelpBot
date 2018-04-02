@@ -100,6 +100,9 @@ class User_module:
                 else:
                     bot.send_message(text="Book was returned.Thank you, that you use our service", chat_id=user_id)
                     text = "User have not fine"
+            if result[3]:
+                bot.send_message(text='You can take "{}"'.format(order['doc_id']['title']),
+                                 chat_id=result[4])
             text = 'Document was returned.' + text
             keyboard = [[IKB("Return to the list", callback_data='cancel {} {} users'.format(*args))]]
             bot.edit_message_text(text=text, chat_id=chat, message_id=message_id, reply_markup=IKM(keyboard))

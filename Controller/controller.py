@@ -107,7 +107,8 @@ class Controller:
     # param : user_id - id of user
     # return : bool value
     def chat_exists(self, user_id):
-        return any([self.DBmanager.select_label('librarians', user_id), self.DBmanager.select_label('patrons', user_id)])
+        return any(
+            [self.DBmanager.select_label('librarians', user_id), self.DBmanager.select_label('patrons', user_id)])
 
     # Return user by id
     # param : user_id - id of user
@@ -184,11 +185,11 @@ class Controller:
             return True
         return False
 
-    def delete_doc_queue(self,doc_id,doc_type):
-        queue=eval(self.DBmanager.get_label('queue',doc_type,doc_id))
+    def delete_doc_queue(self, doc_id, doc_type):
+        queue = eval(self.DBmanager.get_label('queue', doc_type, doc_id))
         for i in queue:
             for id in i:
-                self.delete_user_queue(id,doc_type,doc_id)
+                self.delete_user_queue(id, doc_type, doc_id)
 
     def get_document_queue(self, doc_type, doc_id):
         output = []
@@ -300,7 +301,14 @@ class Controller:
         self.log('INFO', 'User {} is returned document {}.'.format(
             self.get_user(user_id)['name'],
             self.get_document(doc_id, order['table'])['title']))
-        return True, fine
+        queue = self.get_document_queue(order["table"], doc_id)
+        queue_was_used = [False]
+        if len(queue) != 0:
+            next_owner = queue[0]
+            self.delete_user_queue(next_owner, order["table"], doc_id)
+            self.check_out_doc(next_owner, doc_id, order["table"])
+            queue_was_used = [True, next_owner]
+        return True, fine, queue_was_used
 
     def get_user_orders(self, user_id):
         user = self.get_user(user_id)
