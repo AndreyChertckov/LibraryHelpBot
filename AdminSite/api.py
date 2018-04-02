@@ -31,7 +31,7 @@ class API:
         self.blueprint.add_url_rule('/api/get_order','get_order',self.get_order_post,methods=['POST'])
         self.blueprint.add_url_rule('/api/get_all_orders','get_all_orders',self.get_all_orders_post,methods=['POST'])
         self.blueprint.add_url_rule('/api/get_all_active_orders','get_all_active_orders',self.get_all_active_orders_post,methods=['POST'])
-        self.blueprint.add_url_rule('/api/get_all_whaiting_doc','get_all_whaiting_doc',self.get_all_whaiting_doc_post,methods=['POST'])
+        self.blueprint.add_url_rule('/api/get_all_waiting_doc','get_all_waiting_doc',self.get_all_waiting_doc_post,methods=['POST'])
         self.blueprint.add_url_rule('/api/get_all_returned_doc','get_all_returned_doc',self.get_all_returned_doc,methods=['POST'])
         self.blueprint.add_url_rule('/api/add_document','add_document',self.add_document_post,methods=['POST'])
         self.blueprint.add_url_rule('/api/modify_document','modify_document',self.modify_docment_post,methods=['POST'])
@@ -153,7 +153,7 @@ class API:
     def user_get_doc_post(self):
         if 'session_id' in request.cookies and check_session(request.cookies.get('session_id'),self.dbmanager):
             if 'order_id' in request.values:
-                self.controller.user_get_doc(request.cookies.get('session_id'))
+                self.controller.user_get_doc(request.values.get('order_id'))
                 return 'OK'
             else:
                 return 'Need id of order'
@@ -163,7 +163,7 @@ class API:
     def return_doc_post(self):
         if 'session_id' in request.cookies and check_session(request.cookies.get('session_id'),self.dbmanager):
             if 'order_id' in request.values:
-                self.controller.return_doc(request.cookies.get('order_id'))
+                self.controller.return_doc(request.values.get('order_id'))
                 return 'OK'
             else:
                 return 'Need id of order'
@@ -205,40 +205,42 @@ class API:
     
     def get_all_active_orders_post(self):
         if 'session_id' in request.cookies and check_session(request.cookies.get('session_id'),self.dbmanager):
-            return jsonify(self.controller.get_all_activate_orders())
+            return jsonify(self.controller.get_all_active_orders())
         else:
             return 'Sign in before'
     
-    def get_all_whaiting_doc_post(self):
+    def get_all_waiting_doc_post(self):
         if 'session_id' in request.cookies and check_session(request.cookies.get('session_id'),self.dbmanager):
-            return jsonify(self.controller.get_all_whaiting_doc())
+            return jsonify(self.controller.get_all_waiting_doc())
         else:
             return 'Sign in before'
     
     def get_all_returned_doc(self):
         if 'session_id' in request.cookies and check_session(request.cookies.get('session_id'),self.dbmanager):
-            return jsonify(self.controller.get_all_returned_doc())
+            return jsonify(self.controller.get_all_returned_orders())
         else:
             return 'Sign in before'
     
     def add_document_post(self):
         if 'session_id' in request.cookies and check_session(request.cookies.get('session_id'),self.dbmanager):
             document = []
-            keys = ['title','description','authors','count','price','keywords','best_seller']
-            doc_type = request.values.get('doc_type')
+            keys = ['title','description','authors','count','price','keywords','best_seller','free_count']
+            doc_type = request.values.get('type')
             if doc_type == 'article':
                 keys.extend(['journal','issue','editors','date'])
             if all([key in request.values for key in keys]):
-                document = dict(zip(keys,[request.values.get(key) for key in keys]))
+                document = dict(zip(keys,[request.values.get(key) if key != "best_seller" else int(request.values.get(key)) for key in keys]))
+                print(document)
                 self.controller.add_document(document,doc_type)
                 return 'OK'
             else:
+                print([key for key in request.values.keys()])
                 return 'Not enough keys'
         else:
             return 'Sign in before'
     
     def modify_docment_post(self):
-        if 'session_id' in request.cookies and check_session(request.cookies.get('seesion_id'),self.dbmanager):
+        if 'session_id' in request.cookies and check_session(request.cookies.get('session_id'),self.dbmanager):
             keys = ['id','title','authors','description','price','best_seller','keywords','journal','issue','editors','date']
             doc = {}
             for key in keys:
@@ -254,7 +256,7 @@ class API:
             return 'Sign in before'
     
     def add_copies_of_book_post(self):
-        if 'session_id' in request.cookies and check_session(request.cookies.get('seesion_id'),self.dbmanager):
+        if 'session_id' in request.cookies and check_session(request.cookies.get('session_id'),self.dbmanager):
             if not 'id' in request.values:
                 return 'Need id'
             if not 'delta_count' in request.values:
@@ -267,7 +269,7 @@ class API:
             return 'Sign in before'
     
     def delete_document_post(self):
-        if 'session_id' in request.cookies and check_session(request.cookies.get('seesion_id'),self.dbmanager):
+        if 'session_id' in request.cookies and check_session(request.cookies.get('session_id'),self.dbmanager):
             if not 'id' in request.values:
                 return 'Need id'
             if not 'type' in request.values:
@@ -278,8 +280,8 @@ class API:
             return 'Sign in before'
     
     def get_document_post(self):
-        if 'session_id' in request.cookies and check_session(request.cookies.get('seesion_id'),self.dbmanager):
-            if not 'id' in doc:
+        if 'session_id' in request.cookies and check_session(request.cookies.get('session_id'),self.dbmanager):
+            if not 'id' in request.values:
                 return 'Need id'
             if not 'type' in request.values:
                 return 'Need type'
@@ -288,7 +290,7 @@ class API:
             return 'Sign in before'
 
     def get_all_doctype_post(self):
-        if 'session_id' in request.cookies and check_session(request.cookies.get('seesion_id'),self.dbmanager):
+        if 'session_id' in request.cookies and check_session(request.cookies.get('session_id'),self.dbmanager):
             if not 'type' in request.values:
                 return 'Need type'
             return jsonify(self.controller.get_all_doctype(request.values.get('type')))
@@ -296,7 +298,7 @@ class API:
             return 'Sign in before'
     
     def get_documents_by_title_post(self):
-        if 'session_id' in request.cookies and check_session(request.cookies.get('seesion_id'),self.dbmanager):
+        if 'session_id' in request.cookies and check_session(request.cookies.get('session_id'),self.dbmanager):
             if not 'title' in request.values:
                 return 'Need title'
             if not 'type' in request.values:
@@ -306,7 +308,7 @@ class API:
             return 'Sign in before'
     
     def get_documents_by_authors_post(self):
-        if 'session_id' in request.cookies and check_session(request.cookies.get('seesion_id'),self.dbmanager):
+        if 'session_id' in request.cookies and check_session(request.cookies.get('session_id'),self.dbmanager):
             if not 'authors' in request.values:
                 return 'Need authors'
             if not 'type' in request.values:

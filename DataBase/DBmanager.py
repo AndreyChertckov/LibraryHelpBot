@@ -47,11 +47,21 @@ class Manager:
     # params:
     #  ---newOrder -  'Order' Object
 
+    def add_reference_book(self,new_ref_book):
+        sql="""INSERT INTO reference_book(title,authors,description,keywords) VALUES (%s,%s,%s,%s)"""
+        self.add_new(sql,(new_ref_book.title,new_ref_book.authors,new_ref_book.description,new_ref_book.keywords))
+
+    def add_reference_article(self,newArticle):
+        sql = """INSERT INTO reference_article(title,authors,journal,keywords,issue,editors,date)
+              VALUES(%s,%s,%s,%s,%s,%s,%s)"""
+        self.add_new(sql, (newArticle.title, newArticle.authors, newArticle.journal, newArticle.keywords,
+                           newArticle.issue, newArticle.editors, newArticle.date))
+
     def add_order(self, newOrder):
-        sql = """INSERT INTO orders(date,storing_table,doc_id,user_id,out_of_time,active) 
-        VALUES(%s,%s,%s,%s,%s,%s)"""
+        sql = """INSERT INTO orders(date,storing_table,doc_id,user_id,out_of_time,active,renewed) 
+        VALUES(%s,%s,%s,%s,%s,%s,%s)"""
         self.add_new(sql, (newOrder.date, newOrder.table, newOrder.doc_id,
-                           newOrder.user_id, newOrder.out_of_time, newOrder.active))
+                           newOrder.user_id, newOrder.out_of_time, newOrder.active,0))
 
     # Add new Librarian to DB
     # params:
@@ -111,7 +121,7 @@ class Manager:
 
     def add_article(self, newArticle):
         sql = """INSERT INTO article(title,authors,journal,count,free_count,price,keywords,issue,editors,date,queue)
-        VALUES(%s,%s,%s,%i,%i,%i,%s,%s,%s,%s,%s)"""
+        VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
         self.add_new(sql, (newArticle.title, newArticle.authors, newArticle.journal,
                            newArticle.count, newArticle.free_count, newArticle.price, newArticle.keywords,
                            newArticle.issue, newArticle.editors, newArticle.date,'[[],[],[],[],[]]'))
@@ -199,6 +209,16 @@ class Manager:
                  queue TEXT
                   ); """)
 
+        self.__create_table("""CREATE TABLE IF NOT EXISTS reference_book(
+                    id INTEGER AUTO_INCREMENT,
+                    title TEXT NOT NULL,
+                    authors TEXT NOT NULL,
+                    description TEXT NOT NULL,
+                    keywords TEXT,
+                    PRIMARY KEY(id)
+                    );
+              """)
+
         self.__create_table("""CREATE TABLE IF NOT EXISTS book(
               id INTEGER AUTO_INCREMENT,
               title TEXT NOT NULL,
@@ -213,6 +233,7 @@ class Manager:
               PRIMARY KEY(id)
               );
         """)
+
         self.__create_table("""CREATE TABLE IF NOT EXISTS article(
             id INTEGER  PRIMARY KEY AUTO_INCREMENT,
             title TEXT NOT NULL,
@@ -227,6 +248,7 @@ class Manager:
             date TEXT,
             queue TEXT);
         """)
+
         self.__create_table("""CREATE TABLE IF NOT EXISTS media(
                 id INTEGER PRIMARY KEY AUTO_INCREMENT,
                 title TEXT NOT NULL,
@@ -237,6 +259,18 @@ class Manager:
                 keywords TEXT,
                 queue TEXT);
                 """)
+
+        self.__create_table("""CREATE TABLE IF NOT EXISTS reference_article(
+                id INTEGER  PRIMARY KEY AUTO_INCREMENT,
+                title TEXT NOT NULL,
+                authors TEXT,
+                journal TEXT,
+                keywords TEXT,
+                issue TEXT,
+                editors TEXT,
+                date TEXT);
+            """)
+
         self.__create_table("""
              CREATE TABLE  IF NOT EXISTS orders (
              id INTEGER PRIMARY KEY AUTO_INCREMENT,
@@ -246,6 +280,7 @@ class Manager:
              user_id INTEGER,
              out_of_time TEXT,
              active INTEGER,
+             renewed INTEGER,
              FOREIGN KEY (user_id) REFERENCES patrons(id)
              );
         """)

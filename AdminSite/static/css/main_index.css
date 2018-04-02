@@ -26,8 +26,8 @@ body {
     position: -webkit-sticky;
     position: sticky;
     top: 48px; /* Height of navbar */
+    padding-top:4em;
     height: calc(100vh - 48px);
-    padding-top: .5rem;
     overflow-x: hidden;
     overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
   }
@@ -91,4 +91,32 @@ body {
   
   .border-top { border-top: 1px solid #e5e5e5; }
   .border-bottom { border-bottom: 1px solid #e5e5e5; }
-  
+
+  /*right side bar*/
+.sidebar-wrapper {
+  padding-top: 1em;
+  background-color:rgb(248, 249, 250);
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 0px 1px inset;
+  border-left-color: #000;
+  height:100%;
+  position:fixed;
+  right:0;
+  padding-left: 0%;
+}
+.sidebar-nav {
+  padding-left : 0px;
+}
+.sidebar-nav li {
+  text-indent: 20px;
+  line-height: 40px;
+  list-style-type: none;
+}
+.main {
+  height: 100%;
+   margin-left:0;
+   margin-right:0;
+}
+.content {
+  padding-top: 1em;
+  padding-right: 2em;
+}
