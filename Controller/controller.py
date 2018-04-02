@@ -193,9 +193,9 @@ class Controller:
 
     def get_document_queue(self, doc_type, doc_id):
         output = []
-        queue = self.DBmanager.get_label('queue', doc_type, doc_id)
-        for i in range(1, 5):
-            queue[0].extends(queue[i])
+        queue = eval(self.DBmanager.get_label('queue',doc_type,doc_id))
+        for i in range(1,5):
+            queue[0].extend(queue[i])
         queue = queue[0]
         for user_id in queue:
             output.append(self.get_user(user_id))

@@ -333,8 +333,8 @@ function book_info(){
             output_html_ += "<h5>Best seller: <span data-feather='check'></span></h5>";
         }
         if(data['queue'] != "[]"){ 
-            $.post("/api/get_queue_on_document",{doc_id:$("#id").html(),type:'book'},function(data,status){
-                output_html_ += "<div class='table-responsive'>\
+            $.post("/api/get_queue_on_document",{doc_id:book_id_,type:'book'},function(data,status){
+                output_html_ += "<h5>Queue: </h5><div class='table-responsive'>\
                 <table class='table table-striped table-sm'>\
                     <thead>\
                         <tr>\
@@ -343,18 +343,21 @@ function book_info(){
                         </tr>\
                     </thead>\
                     <tbody>";
+                console.log(data)
                 data.forEach(elem => {
                     output_html_ += "<tr id = '"+ elem['id']+"'>";
                     output_html_ += "<td>" + elem['name'] + "</td>";
                     output_html_ += "<td>" + elem['status'] + "</td>";
                 });
                 output_html_ += "</tbody></table>";
+                output_html_ += "<button class='btn' id='outstanding'>Clear queue<button>";
                 $(".content").html(output_html_);
                 $("#prev").click(books);
                 $(".settings").click(edit_book);
                 $(".delete").click(delete_book);
                 $("#add").click(add_copies_book);
                 $("#sub").click(add_copies_book);
+                $("#outstanding").click(outstanding_book);
                 feather.replace();
             });
         }else{
@@ -366,6 +369,13 @@ function book_info(){
             $("#sub").click(add_copies_book);
             feather.replace();
         }
+    });
+}
+
+function outstanding_book(){
+    book_id = $("#id").html();
+    $.post("/api/outstanding", {doc_id:book_id,type:"book"},function (data,status){
+        book_info();
     });
 }
 
@@ -522,8 +532,8 @@ function av_material_info(){
         <h5>Price: </h5><p id='price'>" + data['price']+"</p>\
         <h5>Keywords: </h5><p id='keywords'>" + data['keywords']+"</p>";
         if(data['queue'] != "[]"){ 
-            $.post("/api/get_queue_on_document",{doc_id:$("#id").html(),type:'media'},function(data,status){
-                output_html_ += "<div class='table-responsive'>\
+            $.post("/api/get_queue_on_document",{doc_id:media_id_,type:'media'},function(data,status){
+                output_html_ += "<h5>Queue: </h5><div class='table-responsive'>\
                 <table class='table table-striped table-sm'>\
                     <thead>\
                         <tr>\
@@ -532,18 +542,21 @@ function av_material_info(){
                         </tr>\
                     </thead>\
                     <tbody>";
+                console.log(data)
                 data.forEach(elem => {
                     output_html_ += "<tr id = '"+ elem['id']+"'>";
                     output_html_ += "<td>" + elem['name'] + "</td>";
                     output_html_ += "<td>" + elem['status'] + "</td>";
                 });
                 output_html_ += "</tbody></table>";
+                output_html_ += "<button class='btn' id='outstanding'>Clear queue<button>";
                 $(".content").html(output_html_);
                 $("#prev").click(av_materials);
                 $(".settings").click(edit_av_material);
                 $(".delete").click(delete_av_material);
                 $("#add").click(add_copies_av);
                 $("#sub").click(add_copies_av);
+                $("#outstanding").click(outstanding_av);
                 feather.replace();
             });
         }else{
@@ -555,6 +568,13 @@ function av_material_info(){
             $("#sub").click(add_copies_av);
             feather.replace();
         }
+    });
+}
+
+function outstanding_av() {
+    av_id = $("#id").html();
+    $.post("/api/outstanding", {doc_id:av_id,type:"media"},function (data,status){
+        av_material_info();
     });
 }
 
@@ -781,7 +801,7 @@ function article_info() {
         <h5>Date: </h5><p id='date'>" + data['date']+"</p>";
         if(data['queue'] != "[]"){ 
             $.post("/api/get_queue_on_document",{doc_id:$("#id").html(),type:'article'},function(data,status){
-                output_html_ += "<div class='table-responsive'>\
+                output_html_ += "<h5>Queue: </h5><div class='table-responsive'>\
                 <table class='table table-striped table-sm'>\
                     <thead>\
                         <tr>\
@@ -790,18 +810,21 @@ function article_info() {
                         </tr>\
                     </thead>\
                     <tbody>";
+                console.log(data)
                 data.forEach(elem => {
                     output_html_ += "<tr id = '"+ elem['id']+"'>";
                     output_html_ += "<td>" + elem['name'] + "</td>";
                     output_html_ += "<td>" + elem['status'] + "</td>";
                 });
                 output_html_ += "</tbody></table>";
+                output_html_ += "<button class='btn' id='outstanding'>Clear queue<button>";
                 $(".content").html(output_html_);
                 $("#prev").click(articles);
                 $(".settings").click(edit_article);
                 $(".delete").click(delete_article);
                 $("#add").click(add_copies_article);
                 $("#sub").click(add_copies_article);
+                $("#outstanding").click(outstanding_article);
                 feather.replace();
             });
         }else{
@@ -813,6 +836,13 @@ function article_info() {
             $("#sub").click(add_copies_article);
             feather.replace();
         }
+    });
+}
+
+function outstanding_article(){
+    article_id = $("#id").html();
+    $.post("/api/outstanding", {doc_id:article_id,type:"article"},function (data,status){
+        article_info();
     });
 }
 

@@ -320,9 +320,20 @@ class API:
     def get_queue_on_documnent_post(self):
         if 'session_id' in request.cookies and check_session(request.cookies.get('session_id'),self.dbmanager):
             if not 'doc_id' in request.values:
-                return 'Need authors'
+                return 'Need id'
             if not 'type' in request.values:
                 return 'Need type'
             return jsonify(self.controller.get_document_queue(request.values.get('type'),request.values.get('doc_id')))
+        else:
+            return 'Sign in before'
+    
+    def outstanding_post(self):
+        if 'session_id' in request.cookies and check_session(request.cookies.get('session_id'),self.dbmanager):
+            if not 'doc_id' in request.values:
+                return 'Need id'
+            if not 'type' in request.values:
+                return 'Need type'
+            self.controller.outstanding_request(request.values.get('type'),request.values.get('doc_id'))
+            return "OK"
         else:
             return 'Sign in before'
