@@ -107,7 +107,8 @@ class Controller:
     # param : user_id - id of user
     # return : bool value
     def chat_exists(self, user_id):
-        return any([self.DBmanager.select_label('librarians', user_id), self.DBmanager.select_label('patrons', user_id)])
+        return any(
+            [self.DBmanager.select_label('librarians', user_id), self.DBmanager.select_label('patrons', user_id)])
 
     # Return user by id
     # param : user_id - id of user
@@ -179,20 +180,21 @@ class Controller:
         for order_id in orders_id:
             order = self.get_order(order_id)
             if ((order['table'], order['doc_id']) == (doc_type, doc_id)
-                and (order['renewed'] == 0 or user['status'] == 'Visiting Professor')):
+                    and (order['renewed'] == 0 or user['status'] == 'Visiting Professor')):
                 self.DBmanager.edit_label('orders', ['out_of_time', 'renewed'],
                                           [str(datetime.now() + timedelta(weeks=returning_time)), order['renewed'] + 1],
                                           order_id)
 
-    def get_document_queue(self, doc_type,doc_id):
+    def get_document_queue(self, doc_type, doc_id):
         output = []
-        queue = self.DBmanager.get_label('queue',doc_type,doc_id)
-        for i in range(1,5):
+        queue = self.DBmanager.get_label('queue', doc_type, doc_id)
+        for i in range(1, 5):
             queue[0].extends(queue[i])
         queue = queue[0]
         for user_id in queue:
             output.append(self.get_user(user_id))
         return output
+
     # def delete_queue_order(self, user_id, type_of_media, doc_id):
 
     def get_user_by_name(self, name, by_who_id=-1):
@@ -273,9 +275,10 @@ class Controller:
         self.DBmanager.edit_label('orders', ['active'], [1], order_id)
 
     def calculate_fine(self, order):
-        time_out = datetime.strptime(order['time_out'],"%Y-%m-%d")
-        days = divmod(datetime.now() - time_out,86400)
-        fine = days*100
+        time_out = datetime.strptime(order['time_out'], "%Y-%m-%d")
+        days = divmod(datetime.now() - time_out, 86400)
+        fine = days[0] * 100
+        return max(min(fine, order['doc']['price']), 0)
 
     def return_doc(self, order_id):
         order = self.get_order(order_id)
