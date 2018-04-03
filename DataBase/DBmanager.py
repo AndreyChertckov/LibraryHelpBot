@@ -182,13 +182,6 @@ class Manager:
     # Create all tables
     def __create_tables(self):
         self.__create_table("""
-                CREATE TABLE IF NOT EXISTS librarians (
-                id INTEGER PRIMARY KEY ,
-                name TEXT NOT NULL,
-                phone TEXT,
-                address TEXT
-              ); """)
-        self.__create_table("""
                         CREATE TABLE IF NOT EXISTS unconfirmed (
                         id INTEGER PRIMARY KEY,
                         name TEXT NOT NULL,

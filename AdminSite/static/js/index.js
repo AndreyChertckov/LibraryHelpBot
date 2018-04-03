@@ -1,9 +1,45 @@
 $(function(){
+    $("#dashboard").click(dashboard);
     $("#users").click(user_event);
     $("#documents").click(documents_event);
     $("#orders").click(orders_event);
     $("#history").click(history_event);
 });
+
+function dashboard(event){
+    event.preventDefault();
+    bar_user = "<div class='row'><div class ='col-10 content'></div><div class='col-2 sidebar-wrapper'><ul class='sidebar-nav'><li><button class='btn btn-sm ' id ='invite_links'>Invite links</button></li>\
+    <li><button class='btn btn-sm' id ='telegram'>Telegram</button></li></ul></div></div>";
+    $(".main").html(bar_user);
+    invite_links();
+    $("#invite_links").click(invite_links);
+    $("#telegram").click(telegram);
+}
+
+function invite_links(){
+    $.post("/api/get_verification_links",{},function(data,status){
+        output_html = "<div class='row'><div class='col-3'><h3>Invite links</h3></div><div class='col-1'><button class= 'btn btn-sm' id='add'><span data-feather='plus'></span></button></div></div>";
+        output_html += "<h6>Send one of this links to librarian</h6>";
+        data.forEach(elem => {
+            output_html += elem + "</br>";
+        });
+        $(".content").html(output_html);
+        feather.replace();
+        $("#add").click(generate_link);
+    });
+}
+
+function generate_link(){
+    $.post("/api/generate_invite_link",{},function (data,status){
+        invite_links();
+    });
+}
+
+function telegram() {
+    $.post("/api/get_telegram_verification_message",{},function(data,status){
+        $(".content").html(data);
+    });
+}
 
 function user_event(event) {
     event.preventDefault();

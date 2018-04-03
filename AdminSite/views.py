@@ -30,4 +30,7 @@ class Views:
         return response
     
     def signup_get(self):
-        return render_template('signup.html')
+        if 'verification_string' in request.args and self.dbmanager.if_verification_string_exist(request.args.get('verification_string'),1):
+            return render_template('signup.html')
+        else:
+            return 'Please write to another librarian to get signup link.'

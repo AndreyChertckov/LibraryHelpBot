@@ -1,11 +1,11 @@
 import pymysql
-from configs import site_login_database,site_password_database, site_database
+from configs import library_database, library_login_database, library_password_database
 import os.path as pt
 
 class DBManager:
 
     def __init__(self):
-        self.db_connectionn = pymysql.connect('localhost',site_login_database,site_password_database,site_database,autocommit = True)
+        self.db_connectionn = pymysql.connect('localhost',library_login_database,library_password_database,library_database,autocommit = True)
         self.init_tables()
     
     def init_tables(self):
@@ -39,7 +39,7 @@ class DBManager:
     
     def get_user_id_by_session(self, session_id):
         cursor = self.db_connectionn.cursor()
-        cursor.execute("SELECT * FROM sessions WHERE id=%s;",(session_id,))
+        cursor.execute("SELECT user_id FROM sessions WHERE id=%s;",(session_id,))
         return cursor.fetchone()
     
     def delete_session(self, session_id):
@@ -56,3 +56,25 @@ class DBManager:
         cursor.execute("SELECT id,name,phone,address FROM librarians WHERE name=%s;",(name,))
         return cursor.fetchall()
     
+    def insert_verification_string(self,string):
+        cursor = self.db_connectionn.cursor()
+        cursor.execute("INSERT INTO verification_string VALUES(%s,0,1);",(string,))
+
+    def if_verification_string_exist(self, string,status):
+        cursor = self.db_connectionn.cursor()
+        cursor.execute("SELECT * FROM verification_string WHERE string=%s AND is_authentication=%s;",(string,status,))
+        return cursor.fetchone()
+    
+    def activate_verification_string(self, string,user_id):
+        cursor = self.db_connectionn.cursor()
+        cursor.execute("UPDATE verification_string SET is_authentication=%s, user_id=%s WHERE string=%s;",(0,user_id[0],string,))
+    
+    def all_verification_strings(self,status):
+        cursor = self.db_connectionn.cursor()
+        cursor.execute("SELECT * FROM verification_string WHERE is_authentication=%s;",(status,))
+        return cursor.fetchall()
+    
+    def get_verification_string(self, user_id):
+        cursor = self.db_connectionn.cursor()
+        cursor.execute("SELECT string FROM verification_string WHERE is_authentication=0 AND user_id=%s",(user_id,))
+        return cursor.fetchone()
