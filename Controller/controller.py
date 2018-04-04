@@ -187,11 +187,10 @@ class Controller:
     def renew_item(self, order_id, cur_date=datetime.now()):
 
         order = self.get_order(order_id)
-        if ((order['doc_id'], order['table']) in self.outstanding):
+        if (order['doc_id'], order['table']) in self.outstanding:
             return False
 
         user = self.get_user(order['user_id'])
-        #new_date = (cur_date + timedelta(weeks=1)).date().isoformat()
         new_date = (datetime.strptime(order['time_out'], '%Y-%m-%d') + timedelta(weeks=1)).date().isoformat()
         if order['renewed'] == 0:
             self.DBmanager.edit_label('orders', ['out_of_time', 'renewed'], [new_date, 1], order_id)
@@ -345,7 +344,7 @@ class Controller:
         user_id, doc_id, doc_type = order["user_id"], order["doc_id"], order["table"]
         curr_doc = eval(self.DBmanager.get_label('current_docs', 'patrons', user_id))
         curr_doc.remove(order['id'])
-        if ((doc_id,doc_type) in self.outstanding):
+        if (doc_id, doc_type) in self.outstanding:
             self.outstanding.remove((doc_id,doc_type))
 
         free_count = int(self.DBmanager.get_label("free_count", order['table'], doc_id))
