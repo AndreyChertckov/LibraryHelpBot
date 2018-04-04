@@ -21,7 +21,7 @@ class Manager:
 
         self.db_connectionn = pymysql.connect('localhost', library_login_database, library_password_database,
                                               library_database, autocommit=True)
-        self.drop_tables()
+        # self.drop_tables()
         self.__create_tables()
 
     # Get all data from some table
@@ -308,7 +308,8 @@ class Manager:
 
     def get_label(self, what_to_select, from_table, id):
         cur = self.__create_connection().cursor()
-        cur.execute("SELECT " + what_to_select + " from " + from_table + " WHERE id=" + str(id))
+        sql="SELECT " + what_to_select + " from " + from_table + " WHERE id=" + str(id)
+        cur.execute(sql)
         a = cur.fetchone()[0]
         return a
 

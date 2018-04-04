@@ -43,9 +43,10 @@ def main():
     if cleanup_database:
         site.api.dbmanager.cleanup_database()
         site.api.dbmanager.init_tables()
+
     thread_site = threading.Thread(target=site.run)
     thread_site.start()
-    start_bot(c)
+    LibraryBot = start_bot(c)
 
 
 if __name__ == '__main__':

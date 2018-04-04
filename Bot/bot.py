@@ -23,6 +23,7 @@ class LibraryBot:
         self.controller = controller
         self.updater = Updater(token=token)
         self.dispatcher = self.updater.dispatcher
+        self.bot = self.updater.bot
         logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
         self.logger = logging.getLogger(__name__)
         self.keyboard_dict = func_data.keyboard_dict
@@ -51,7 +52,7 @@ class LibraryBot:
 
         self.dispatcher.add_handler(MHandler(WordFilter('Registration📝') & UserFilter(0), self.registration))
         self.dispatcher.add_handler(MHandler(LocationFilter(self.location, 'reg') & Filters.text, self.reg_steps))
-        self.dispatcher.add_handler(CommandHandler('get_admin', self.upto_admin, filters=UserFilter(2), pass_args=True))
+        self.dispatcher.add_handler(CommandHandler('get_admin', self.verification, pass_args=True))
 
         self.dispatcher.add_handler(MHandler(WordFilter('Cancel⤵️'), self.main_menu))
 
@@ -251,6 +252,8 @@ class LibraryBot:
             ids = [chat, message_id]
             self.manage_orders(bot, ids, action, args)
 
+    def get_bot(self):
+        return self.bot
 
     def error(self, bot, update, error):
         """Log Errors caused by Updates."""
@@ -262,4 +265,4 @@ class LibraryBot:
 #  Controller -- Bot's data base
 def start_bot(controller):
     construct(LibraryBot)
-    LibraryBot(configs.token, controller)
+    return LibraryBot(configs.token, controller)

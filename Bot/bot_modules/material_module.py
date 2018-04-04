@@ -154,3 +154,8 @@ class Material_module:
             else:
                 message = 'You cannot renew anymore'
             bot.edit_message_text(text=message, chat_id=chat, message_id=message_id)
+        elif action == 'repeal':
+            order = self.controller.get_order(order_id)
+            queue = self.controller.get_document_queue(order["table"], order["doc_id"])
+            print(queue)
+
