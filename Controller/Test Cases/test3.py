@@ -201,5 +201,9 @@ def run_test(i):
     tests=[test_one,test_two,test_three,test_four,test_five,
            test_six,test_seven,test_eight,test_nine,test_ten]
     tests[i]()
+while (True):
+    print('Enter test number:')
+    test=int(input())
+    run_test(test)
 
-# test_all()
+    #test_all()
