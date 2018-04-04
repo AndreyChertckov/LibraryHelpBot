@@ -185,7 +185,7 @@ function user_info() {
         user_id_ = $(this).parent().parent().attr('id');
     }
     $.post("/api/get_user",{user_id:user_id_},function(data,status){
-        output_html_ = "<div class='row'><div class='col-md-1'><button id='prev' class='btn btn-sm'><span data-feather='arrow-left'></span></button></div><div class='col-md-10'><h3 id='name'>"+data['name']+"</h3></div><div class='col-md-1'><button id = '"+user_id_+"' class='btn btn-sm settings'><span data-feather='settings'></span></div></div>\
+        output_html_ = "<div class='row'><div class='col-md-1'><button id='prev' class='btn btn-sm'><span data-feather='arrow-left'></span></button></div><div class='col-md-9'><h3 id='name'>"+data['name']+"</h3></div><div class='col-md-1'><button class='btn btn-sm delete "+user_id_+"'><span data-feather='trash-2'></span></div><div class='col-md-1'><button id = '"+user_id_+"' class='btn btn-sm settings'><span data-feather='settings'></span></div></div>\
         <h5>Id: </h5><p id='id'>" + data['id']+"</p>\
         <h5>Phone: </h5><p id='phone'>" + data['phone'] + "</p>\
         <h5>Address: </h5><p id='address'>"+data['address']+"</p>\
@@ -239,10 +239,21 @@ function user_info() {
                 output_html_ += "</tbody></table>";
                 $(".content").html(output_html_);
                 $(".settings").click(modify_user);
+                $(".delete").click(delete_user);
                 $("#prev").click(patrons_table);
                 feather.replace();
             });
         });
+    });
+}
+
+function delete_user(){
+    user_id = $(this).attr("class").split(' ');
+    user_id = user_id[user_id.length-1];
+    console.log(user_id);
+    $.post("/api/delete_user", {user_id:user_id},function (data,status){
+        console.log(data);
+        patrons_table();
     });
 }
 

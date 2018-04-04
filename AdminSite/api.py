@@ -147,8 +147,7 @@ class API:
     def delete_user_post(self):
         if 'session_id' in request.cookies and check_session(request.cookies.get('session_id'),self.dbmanager):
             if 'user_id' in request.values:
-                self.controller.delete_user(request.values.get('user_id'))
-                return 'OK'
+                return str(self.controller.delete_user(request.values.get('user_id')))
             else:
                 return 'Need id of user'
         else:
