@@ -5,13 +5,14 @@ from configs import host, telegram_alias
 
 class API:
 
-    def __init__(self, app, controller,dbmanager):
+    def __init__(self, app, controller,dbmanager,notification):
         self.blueprint = Blueprint('api',__name__)
         self.init_handlers()
         self.app = app
         self.dbmanager = dbmanager
         self.app.register_blueprint(self.blueprint)
         self.controller = controller
+        self.notifictation = notification
 
     def init_handlers(self):
         self.blueprint.add_url_rule('/signin','signin',self.signin_post,methods=['POST'])
@@ -122,6 +123,7 @@ class API:
             if 'user_id' in request.values:
                 user_id = request.values.get('user_id')
                 success = self.controller.confirm_user(user_id)
+                self.notifictation.send_message(user_id,"Your application was confirmed.")
                 return 'OK' if success else "Somthing went wrong"
             else:
                 return 'Need id of user'
@@ -147,6 +149,7 @@ class API:
     def delete_user_post(self):
         if 'session_id' in request.cookies and check_session(request.cookies.get('session_id'),self.dbmanager):
             if 'user_id' in request.values:
+                self.notifictation.send_message(request.values.get('user_id'),"Your account was deleted.")
                 return str(self.controller.delete_user(request.values.get('user_id')))
             else:
                 return 'Need id of user'
