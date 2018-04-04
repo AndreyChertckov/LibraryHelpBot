@@ -208,7 +208,19 @@ class API:
     def return_doc_post(self):
         if 'session_id' in request.cookies and check_session(request.cookies.get('session_id'),self.dbmanager):
             if 'order_id' in request.values:
-                return self.controller.return_doc(request.values.get('order_id'))
+                title_doc = self.controller.get_order(request.values.get('order_id'))['doc']['title']
+                _,_,_,user_for_notify = self.controller.return_doc(request.values.get('order_id'))
+                if user_for_notify != -1:
+                    self.notifictation.send_message(user_for_notify,"You can get document "+title_doc)
+            else:
+                return 'Need id of order'
+        else:
+            return 'Sign in before'
+    
+    def get_user_orders_post(self):
+        if 'session_id' in request.cookies and check_session(request.co']
+                _,_,_,user_for_notify = self.controller.return_doc(request.values.get('order_id'))
+                self.notifictation.send_message(user_for_notify,"You can get document "+title_doc)
             else:
                 return 'Need id of order'
         else:

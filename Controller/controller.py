@@ -360,7 +360,7 @@ class Controller:
             self.get_user(user_id)['name'],
             self.get_document(doc_id, order['table'])['title']))
         queue = self.get_document_queue(order["table"], doc_id)
-
+        next_owner = 0
         queue_was_used = [False]
         if len(queue) != 0:
 
@@ -369,7 +369,7 @@ class Controller:
                  self.delete_user_queue(next_owner['id'], order["table"], doc_id)
                  self.check_out_doc(next_owner['id'], doc_id, order["table"])
             queue_was_used = [True, next_owner]
-        return True, fine, queue_was_used
+        return True, fine, queue_was_used, next_owner['id']
 
     def get_user_orders(self, user_id):
         user = self.get_user(user_id)
