@@ -329,11 +329,13 @@ class Controller:
         deleted_from_waiting_list = [i['id'] for i in self.get_document_queue(doc_type,doc_id)]
         self.delete_doc_queue(doc_id,doc_type)
         notified_patrons=[]
+        b=''
         for order in orders:
             if (order['table']==doc_type and order['doc_id']==doc_id):
                 self.DBmanager.edit_label('orders',['out_of_time'],[str(date)],order['id'])
                 notified_patrons.append(order['user_id'])
         return [deleted_from_waiting_list,notified_patrons]
+
 
     def return_doc(self, order_id,testing=False):
         order = self.get_order(order_id)
