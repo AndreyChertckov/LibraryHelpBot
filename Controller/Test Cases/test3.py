@@ -202,4 +202,4 @@ def run_test(i):
            test_six,test_seven,test_eight,test_nine,test_ten]
     tests[i]()
 
-test_all()
+# test_all()
