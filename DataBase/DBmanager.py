@@ -21,7 +21,7 @@ class Manager:
 
         self.db_connectionn = pymysql.connect('localhost', library_login_database, library_password_database,
                                               library_database, autocommit=True)
-        # self.drop_tables()
+        self.drop_tables()
         self.__create_tables()
 
     # Get all data from some table
@@ -36,6 +36,8 @@ class Manager:
         self.drop_table('article')
         self.drop_table('media')
         self.drop_table('unconfirmed')
+        self.drop_table('orders')
+        self.__create_tables()
 
     def select_all(self, table_to_select):
         cur = self.__create_connection().cursor()

@@ -7,7 +7,7 @@ class DBManager:
     def __init__(self):
         self.db_connectionn = pymysql.connect('localhost',site_login_database,site_password_database,site_database,autocommit = True)
         self.init_tables()
-    
+
     def init_tables(self):
         cur = self.db_connectionn.cursor()
         print()
