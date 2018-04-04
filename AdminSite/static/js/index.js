@@ -397,7 +397,7 @@ function book_info(){
                     output_html_ += "<td>" + elem['status'] + "</td>";
                 });
                 output_html_ += "</tbody></table>";
-                output_html_ += "<button class='btn' id='outstanding'>Clear queue<button>";
+                output_html_ += "<button class='btn' id='outstanding'>Outstanding request<button>";
                 $(".content").html(output_html_);
                 $("#prev").click(books);
                 $(".settings").click(edit_book);
@@ -421,6 +421,7 @@ function book_info(){
 
 function outstanding_book(){
     book_id = $("#id").html();
+    console.log(book_id)
     $.post("/api/outstanding", {doc_id:book_id,type:"book"},function (data,status){
         book_info();
     });

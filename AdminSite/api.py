@@ -48,6 +48,7 @@ class API:
         self.blueprint.add_url_rule('/api/get_documents_by_title','get_documents_by_title',self.get_documents_by_title_post,methods=['POST'])
         self.blueprint.add_url_rule('/api/get_documents_by_authors','get_documents_by_authors',self.get_documents_by_authors_post,methods=['POST'])
         self.blueprint.add_url_rule('/api/get_queue_on_document','get_queue_on_document',self.get_queue_on_documnent_post,methods=['POST'])
+        self.blueprint.add_url_rule('/api/outstanding','outstanding',self.outstanding_post,methods=['POST'])
 
     def signin_post(self):
         login = request.values.get('login')
@@ -376,7 +377,11 @@ class API:
                 return 'Need id'
             if not 'type' in request.values:
                 return 'Need type'
-            self.controller.outstanding_request(request.values.get('type'),request.values.get('doc_id'))
+            title_book = self.controller.get_document(request.values.get('doc_id'),request.values.get('type'))['title']
+            f,notify_users = self.controller.outstanding_request(request.values.get('doc_id'),request.values.get('type'))
+            print(f,notify_users)
+            for user in notify_users:
+                self.notifictation.send_message(user,"Please return document " + title_book)
             return "OK"
         else:
             return 'Sign in before'

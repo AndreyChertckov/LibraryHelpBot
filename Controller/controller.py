@@ -327,14 +327,14 @@ class Controller:
                         order['time_out']))
         return doc
 
-    def place_outstanding(self, doc_id, doc_type, date=date.today()):
+    def outstanding_request(self, doc_id, doc_type, date=date.today()):
         orders = self.get_all_orders()
         self.outstanding.append((doc_id, doc_type))
         deleted_from_waiting_list = [i['id'] for i in self.get_document_queue(doc_type, doc_id)]
         self.delete_doc_queue(doc_id, doc_type)
         notified_patrons = []
         for order in orders:
-            if order['table'] == doc_type and order['doc_id'] == doc_id:
+            if order['table'] == doc_type and str(order['doc_id']) == str(doc_id) and order['active'] == 1:
                 self.DBmanager.edit_label('orders', ['out_of_time'], [str(date)], order['id'])
                 notified_patrons.append(order['user_id'])
         return [deleted_from_waiting_list, notified_patrons]
