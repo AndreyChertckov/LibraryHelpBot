@@ -77,14 +77,17 @@ class Controller:
             ['new ' + str(key) + ' is ' + str(new_user_info[key]) for key in new_user_info.keys()])
         self.log('INFO', log)
 
-    # Delete user by user_info
-    # param: user_info: dictionary {id,name,address,status,phone}
+    # Delete user by user_id
+    # param: user_id: id of user
     def delete_user(self, user_id):
         table = ['unauthorized', 'unconfirmed', 'patrons', 'librarians'][self.user_type(user_id)]
         if table != 'unauthorized':
-            u_name = self.get_user(user_id)['name']
+            user = self.get_user(user_id)
+            if table == 'patrons' and user['current_docs'] != '[]':
+                return False
             self.DBmanager.delete_label(table, user_id)
-            self.log('INFO', 'User {} is deleted from table {}.'.format(u_name, table))
+            self.log('INFO', 'User {} is deleted from table {}.'.format(user['name'], table))
+            return True
 
     # Return all users who don`t confirmed
     def get_all_unconfirmed(self):
