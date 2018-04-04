@@ -1,6 +1,8 @@
 from flask import Blueprint, request, redirect,jsonify
 from AdminSite.utils import *
 
+from configs import host, telegram_alias
+
 class API:
 
     def __init__(self, app, controller,dbmanager):
@@ -15,6 +17,9 @@ class API:
         self.blueprint.add_url_rule('/signin','signin',self.signin_post,methods=['POST'])
         self.blueprint.add_url_rule('/signup','signup',self.signup_post,methods=['POST'])
         self.blueprint.add_url_rule('/signout','signout',self.signout_get,methods=['GET'])
+        self.blueprint.add_url_rule('/api/get_verification_links','get_verification_links',self.get_verification_links,methods=['POST'])
+        self.blueprint.add_url_rule('/api/generate_invite_link','generate_invite_link',self.generate_verification_string,methods=['POST'])
+        self.blueprint.add_url_rule('/api/get_telegram_verification_message','get_telegram_verification_message',self.get_telegram_verification_message_post,methods=['POST'])
         self.blueprint.add_url_rule('/api/get_all_unconfirmed','get_all_unconfirmed',self.get_all_unconfirmed_post,methods=['POST'])
         self.blueprint.add_url_rule('/api/confirm_user','confirm_user',self.confirm_user_post,methods=['POST'])
         self.blueprint.add_url_rule('/api/modify_user','modify_user',self.modify_user_post,methods=['POST'])
@@ -54,14 +59,50 @@ class API:
         response.set_cookie('session_id',create_session(login,passwd,self.dbmanager))
         return response
 
+    def generate_verification_string(self):
+        if 'session_id' in request.cookies and check_session(request.cookies.get('session_id'),self.dbmanager):
+            string = md5_hash(generate_sault())
+            self.dbmanager.insert_verification_string(string)
+            return string
+        else:
+            return 'Sign in before'
+    
+    def get_verification_links(self):
+        if 'session_id' in request.cookies and check_session(request.cookies.get('session_id'),self.dbmanager):
+            link = "http://"+host + '/signup?verification_string='
+            ver_strings = self.dbmanager.all_verification_strings(1)
+            if ver_strings:
+                output = [link+string[0] for string in ver_strings]
+                return jsonify(output)
+            else:
+                return jsonify([])
+        else:
+            return 'Sign in before'
+
+    def get_telegram_verification_message_post(self):
+        if 'session_id' in request.cookies and check_session(request.cookies.get('session_id'),self.dbmanager):
+            session_id = request.cookies.get('session_id')
+            user_id = self.dbmanager.get_user_id_by_session(session_id)
+            ver_val = self.dbmanager.get_verification_string(user_id)
+            return 'Write to telegram bot(<a href="https://t.me/{}">https://t.me/{}</a>) this line</br> /verification {}'.format(telegram_alias,telegram_alias,ver_val[0])
+        else:
+            return 'Sign in before'
+
     def signup_post(self):
-        keys = ['login','name','phone','address']
-        user = dict(zip(keys,[request.values.get(key) for key in keys]))
-        user['passwd'] = md5_hash(request.values.get('password').encode('utf-8'))
-        self.dbmanager.create_user(user)
-        response = self.app.make_response(redirect('/'))
-        response.set_cookie('session_id',create_session(user['login'],user['passwd'],self.dbmanager))
-        return response
+        print(request.values)
+        if 'verification_string' in request.values and self.dbmanager.if_verification_string_exist(request.values.get('verification_string'),1):
+            keys = ['login','name','phone','address']
+            user = dict(zip(keys,[request.values.get(key) for key in keys]))
+            user['passwd'] = md5_hash(request.values.get('password').encode('utf-8'))
+            self.dbmanager.create_user(user)
+            response = self.app.make_response(redirect('/'))
+            session_id = create_session(user['login'],user['passwd'],self.dbmanager)
+            response.set_cookie('session_id',session_id)
+            user_id = self.dbmanager.get_user_id_by_session(session_id)
+            self.dbmanager.activate_verification_string(request.values.get('verification_string'),user_id)
+            return response
+        else:
+            return 'Please write to another librarian to get signup link.'
 
     def signout_get(self):
         session_id = request.cookies['session_id']
