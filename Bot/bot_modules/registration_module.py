@@ -18,7 +18,7 @@ class Reg_module:
     #  bot -- This object represents a Bot's commands
     #  update -- This object represents an incoming update
     #  args -- Arguments
-    def upto_admin(self, bot, update, args):
+    def verification(self, bot, update, args):
         if args and args[0] == open('Bot/key.txt').read():
             self.controller.upto_librarian(update.message.chat_id)
             bot.send_message(chat_id=update.message.chat_id, text="You have been update to Librarian",
