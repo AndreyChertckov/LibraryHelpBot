@@ -36,6 +36,7 @@ class LibraryBot:
 
         self.dispatcher.add_error_handler(self.error)
 
+    def run(self):
         self.updater.start_polling()
         self.updater.idle()
 

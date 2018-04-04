@@ -2,16 +2,18 @@ from flask import Flask
 from AdminSite.api import API
 from AdminSite.views import Views
 from AdminSite.DBmanager import DBManager
+from AdminSite.notification import Notification
 
 from configs import admin_user_login,admin_user_pass
 from AdminSite.utils import md5_hash
 
 class Main:
 
-    def __init__(self, controller):
+    def __init__(self, controller,bot):
         self.app = Flask(__name__)
         self.dbmanager = DBManager()
-        self.api = API(self.app,controller,self.dbmanager)
+        self.notification = Notification(bot)
+        self.api = API(self.app,controller,self.dbmanager,self.notification)
         self.views = Views(self.app,self.api,self.dbmanager)
         self.create_admin_user()
 

@@ -39,14 +39,15 @@ def main():
         elif opt == '--cleanup_database':
             cleanup_database = True
     c = Controller(file_db, lc, lf, file_log)
-    site = Main(c)
+    LibraryBot = start_bot(c)
+    site = Main(c,LibraryBot.get_bot())
     if cleanup_database:
         site.api.dbmanager.cleanup_database()
         site.api.dbmanager.init_tables()
-
     thread_site = threading.Thread(target=site.run)
     thread_site.start()
-    LibraryBot = start_bot(c)
+    LibraryBot.run()
+    
 
 
 if __name__ == '__main__':
