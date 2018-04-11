@@ -26,7 +26,7 @@ class DBManager:
     
     def create_user(self, user):
         cursor = self.db_connectionn.cursor()
-        cursor.execute("INSERT INTO librarians(login,password,name,phone,address) VALUES (%s,%s,%s,%s,%s);",(user['login'],user['passwd'],user['name'],user['phone'],user['address'],))
+        cursor.execute("INSERT INTO librarians(login,password,name,phone,address,privileges) VALUES (%s,%s,%s,%s,%s,%s);",(user['login'],user['passwd'],user['name'],user['phone'],user['address'],user['privileges'],))
     
     def get_user_id(self,login,hash_passwd):
         cursor = self.db_connectionn.cursor()
@@ -56,9 +56,9 @@ class DBManager:
         cursor.execute("SELECT id,name,phone,address FROM librarians WHERE name=%s;",(name,))
         return cursor.fetchall()
     
-    def insert_verification_string(self,string):
+    def insert_verification_string(self,string,privileges):
         cursor = self.db_connectionn.cursor()
-        cursor.execute("INSERT INTO verification_string VALUES(%s,0,1);",(string,))
+        cursor.execute("INSERT INTO verification_string VALUES(%s,0,1,%d);",(string,privileges,))
 
     def if_verification_string_exist(self, string,status):
         cursor = self.db_connectionn.cursor()
@@ -77,4 +77,9 @@ class DBManager:
     def get_verification_string(self, user_id):
         cursor = self.db_connectionn.cursor()
         cursor.execute("SELECT string FROM verification_string WHERE is_authentication=0 AND user_id=%s",(user_id,))
+        return cursor.fetchone()
+
+    def get_privileges_via_verification_string(self, verification_string):
+        cursor = self.db_connectionn.cursor()
+        cursor.execute("SELECT privileges FROM verification_string WHERE string=%s;",(verification_string,))
         return cursor.fetchone()
