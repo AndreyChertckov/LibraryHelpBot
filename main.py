@@ -2,6 +2,7 @@ import getopt
 import os
 import sys
 import threading
+import logging
 
 from Bot.bot import start_bot
 from Controller.controller import Controller
@@ -54,4 +55,4 @@ if __name__ == '__main__':
     try:
         main()
     except Exception as e:
-        print(e)
+        logging.critical('Cannot run application. Exception : {}'.format(str(e)))

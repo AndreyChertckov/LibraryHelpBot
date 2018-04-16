@@ -27,6 +27,7 @@ def md5_hash(bytes_):
     return hasher.hexdigest()
 
 
-def check_privileges(session_id,privileges_val, dbmanager):
-    user_id = dbmanager.get_user_id_by_session(session_id)
-    return privileges_val >= dbmanager.get_privileges_by_user_id(user_id)
+def check_privilege(session_id,privilege_val, dbmanager):
+    user_id = dbmanager.get_user_id_by_session(session_id)[0]
+    print(privilege_val,dbmanager.get_privilege_by_user_id(user_id)[0])
+    return privilege_val <= dbmanager.get_privilege_by_user_id(user_id)[0]

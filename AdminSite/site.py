@@ -18,7 +18,7 @@ class Main:
         self.create_admin_user()
 
     def create_admin_user(self):
-        user = {'login': admin_user_login,'name':'','phone':'','address':''}
+        user = {'login': admin_user_login,'name':'','phone':'','address':'','privilege':'4'}
         user['passwd'] = md5_hash(admin_user_pass.encode('utf-8'))
         if not self.dbmanager.get_user_id(admin_user_login,user['passwd']):
             self.dbmanager.create_user(user)

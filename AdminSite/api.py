@@ -1,7 +1,25 @@
 from flask import Blueprint, request, redirect, jsonify
-from AdminSite.utils import generate_sault, md5_hash, create_session, check_session, check_privileges
+
+import logging
+
+from AdminSite.utils import generate_sault, md5_hash, create_session, check_session, check_privilege
 
 from configs import host, telegram_alias
+
+logger = logging.getLogger('api-site')
+
+def security_decorator_maker(privilege_val):
+    def security_decorator(api_method):
+        def decorator(self):
+            if 'session_id' in request.cookies and check_session(request.cookies.get('session_id'), self.dbmanager):
+                if check_privilege(request.cookies.get('session_id'), privilege_val, self.dbmanager):
+                    return api_method(self)
+                else:
+                    return 'Access forbidden.'
+            else:
+                return 'Sign in before.'
+        return decorator
+    return security_decorator
 
 
 class API:
@@ -98,18 +116,20 @@ class API:
         return response
 
     @security_decorator_maker(3)
-    def generate_verification_string(self, privileges=0):
-        string = md5_hash(generate_sault())
-        self.dbmanager.insert_verification_string(
-            string, request.values.get('privileges'))
-        return string
-
+    def generate_verification_string(self):
+        if 'privilege' in request.values:
+            string = md5_hash(generate_sault())
+            self.dbmanager.insert_verification_string(
+                string, request.values.get('privilege'))
+            return string
+        else:
+            return 'Need privilege value'
     @security_decorator_maker(3)
     def get_verification_links(self):
-        link = "http://"+host + '/signup?verification_string='
+        link = "http://" + host + '/signup?verification_string='
         ver_strings = self.dbmanager.all_verification_strings(1)
         if ver_strings:
-            output = [link+string[0] for string in ver_strings]
+            output = [link+string[0] + '; Privilege level: ' + str(self.dbmanager.get_privilege_by_verification_string(string[0])[0] + 1) for string in ver_strings]
             return jsonify(output)
         else:
             return jsonify([])
@@ -128,7 +148,7 @@ class API:
             user = dict(zip(keys, [request.values.get(key) for key in keys]))
             user['passwd'] = md5_hash(
                 request.values.get('password').encode('utf-8'))
-            user['privileges'] = self.dbmanager.get_privileges_via_verification_string(
+            user['privilege'] = self.dbmanager.get_privilege_by_verification_string(
                 request.values.get('verification_string'))
             self.dbmanager.create_user(user)
             response = self.app.make_response(redirect('/'))
@@ -149,11 +169,11 @@ class API:
         response.set_cookie('session_id', '', expires=0)
         return response
 
-    @security_decorator_maker(3)
+    @security_decorator_maker(0)
     def get_all_unconfirmed_post(self):
         return jsonify(self.controller.get_all_unconfirmed())
 
-    @security_decorator_maker(3)
+    @security_decorator_maker(1)
     def confirm_user_post(self):
         if 'user_id' in request.values:
             user_id = request.values.get('user_id')
@@ -164,7 +184,7 @@ class API:
         else:
             return 'Need id of user'
 
-    @security_decorator_maker(3)
+    @security_decorator_maker(0)
     def modify_user_post(self):
         keys = ['id', 'name', 'phone', 'address', 'status']
         user = {}
@@ -178,7 +198,7 @@ class API:
         self.controller.modify_user(user)
         return 'OK'
 
-    @security_decorator_maker(3)
+    @security_decorator_maker(2)
     def delete_user_post(self):
         if 'user_id' in request.values:
             self.notifictation.send_message(request.values.get(
@@ -187,37 +207,37 @@ class API:
         else:
             return 'Need id of user'
 
-    @security_decorator_maker(3)
+    @security_decorator_maker(0)
     def get_all_patrons_post(self):
         return jsonify(self.controller.get_all_patrons())
 
-    @security_decorator_maker(3)
+    @security_decorator_maker(0)
     def get_all_librarians_post(self):
         librarians_list = [dict(zip(['id', 'name', 'phone', 'address'], tup))
                            for tup in self.dbmanager.get_users()]
         return jsonify(librarians_list)
 
-    @security_decorator_maker(3)
+    @security_decorator_maker(0)
     def get_librarian_by_name_post(self):
         librarians_list = dict(zip(('id', 'name', 'phone', 'address'),
                                    self.dbmanager.get_user_by_name(request.values.get('name'))))
         return jsonify(librarians_list)
 
-    @security_decorator_maker(3)
+    @security_decorator_maker(0)
     def get_user_post(self):
         if 'user_id' in request.values:
             return jsonify(self.controller.get_user(request.values.get('user_id')))
         else:
             return 'Need id of user'
 
-    @security_decorator_maker(3)
+    @security_decorator_maker(0)
     def get_user_by_name_post(self):
         if 'name' in request.values:
             return jsonify(self.controller.get_user_by_name(request.values.get('name')))
         else:
             return 'Need id of user'
 
-    @security_decorator_maker(3)
+    @security_decorator_maker(0)
     def user_get_doc_post(self):
         if 'order_id' in request.values:
             self.controller.user_get_doc(request.values.get('order_id'))
@@ -225,7 +245,7 @@ class API:
         else:
             return 'Need id of order'
 
-    @security_decorator_maker(3)
+    @security_decorator_maker(0)
     def return_doc_post(self):
         if 'order_id' in request.values:
             title_doc = self.controller.get_order(
@@ -238,44 +258,44 @@ class API:
         else:
             return 'Need id of order'
 
-    @security_decorator_maker(3)
+    @security_decorator_maker(0)
     def get_user_orders_post(self):
         if 'user_id' in request.values:
             return jsonify(self.controller.get_user_orders(request.values.get('user_id')))
         else:
             return 'Need id of user'
 
-    @security_decorator_maker(3)
+    @security_decorator_maker(0)
     def get_user_history_post(self):
         if 'user_id' in request.values:
             return jsonify(self.controller.get_user_history(request.values.get('user_id')))
         else:
             return 'Need id of user'
 
-    @security_decorator_maker(3)
+    @security_decorator_maker(0)
     def get_order_post(self):
         if 'order_id' in request.values:
             return jsonify(self.controller.get_order(request.values.get('order_id')))
         else:
             return 'Need id of order'
 
-    @security_decorator_maker(3)
+    @security_decorator_maker(0)
     def get_all_orders_post(self):
         return jsonify(self.controller.get_all_orders())
 
-    @security_decorator_maker(3)
+    @security_decorator_maker(0)
     def get_all_active_orders_post(self):
         return jsonify(self.controller.get_all_active_orders())
 
-    @security_decorator_maker(3)
+    @security_decorator_maker(0)
     def get_all_waiting_doc_post(self):
         return jsonify(self.controller.get_all_waiting_doc())
 
-    @security_decorator_maker(3)
+    @security_decorator_maker(0)
     def get_all_returned_doc(self):
         return jsonify(self.controller.get_all_returned_orders())
 
-    @security_decorator_maker(3)
+    @security_decorator_maker(1)
     def add_document_post(self):
         document = []
         keys = ['title', 'description', 'authors', 'count',
@@ -293,7 +313,7 @@ class API:
             print([key for key in request.values.keys()])
             return 'Not enough keys'
 
-    @security_decorator_maker(3)
+    @security_decorator_maker(0)
     def modify_docment_post(self):
         keys = ['id', 'title', 'authors', 'description', 'price',
                 'best_seller', 'keywords', 'journal', 'issue', 'editors', 'date']
@@ -308,7 +328,7 @@ class API:
         self.controller.modify_document(doc, request.values.get('type'))
         return 'OK'
 
-    @security_decorator_maker(3)
+    @security_decorator_maker(0)
     def add_copies_of_doc_post(self):
         if not 'id' in request.values:
             return 'Need id'
@@ -320,7 +340,7 @@ class API:
             'type'), request.values.get('id'), int(request.values.get('delta_count')))
         return 'OK'
 
-    @security_decorator_maker(3)
+    @security_decorator_maker(2)
     def delete_document_post(self):
         if not 'id' in request.values:
             return 'Need id'
@@ -330,7 +350,7 @@ class API:
             request.values.get('id'), request.values.get('type'))
         return 'OK'
 
-    @security_decorator_maker(3)
+    @security_decorator_maker(0)
     def get_document_post(self):
         if not 'id' in request.values:
             return 'Need id'
@@ -338,13 +358,13 @@ class API:
             return 'Need type'
         return jsonify(self.controller.get_document(request.values.get('id'), request.values.get('type')))
 
-    @security_decorator_maker(3)
+    @security_decorator_maker(0)
     def get_all_doctype_post(self):
         if not 'type' in request.values:
             return 'Need type'
         return jsonify(self.controller.get_all_doctype(request.values.get('type')))
 
-    @security_decorator_maker(3)
+    @security_decorator_maker(0)
     def get_documents_by_title_post(self):
         if not 'title' in request.values:
             return 'Need title'
@@ -352,7 +372,7 @@ class API:
             return 'Need type'
         return jsonify(self.controller.get_documents_by_title(request.values.get('title'), request.values.get('type')))
 
-    @security_decorator_maker(3)
+    @security_decorator_maker(0)
     def get_documents_by_authors_post(self):
         if not 'authors' in request.values:
             return 'Need authors'
@@ -360,7 +380,7 @@ class API:
             return 'Need type'
         return jsonify(self.controller.get_documents_by_title(request.values.get('authors'), request.values.get('type')))
 
-    @security_decorator_maker(3)
+    @security_decorator_maker(0)
     def get_queue_on_documnent_post(self):
         if not 'doc_id' in request.values:
             return 'Need id'
@@ -368,7 +388,7 @@ class API:
             return 'Need type'
         return jsonify(self.controller.get_document_queue(request.values.get('type'), request.values.get('doc_id')))
 
-    @security_decorator_maker(3)
+    @security_decorator_maker(1)
     def outstanding_post(self):
         if not 'doc_id' in request.values:
             return 'Need id'
@@ -383,16 +403,3 @@ class API:
             self.notifictation.send_message(
                 user, "Please return document " + title_book)
         return "OK"
-
-    def security_decorator_maker(privileges_val):
-        def security_decorator(api_method):
-            def decorator(self):
-                if 'session_id' in request.cookies and check_session(request.cookies.get('session_id'), self.dbmanager):
-                    if check_privileges(request.cookies.get('session_id'), privileges_val,self.dbmanager):
-                        api_method(self)
-                    else:
-                        return 'Access forbidden.'
-                else:
-                    return 'Sign in before.'
-            return decorator
-        return security_decorator
