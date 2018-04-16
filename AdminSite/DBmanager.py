@@ -79,7 +79,12 @@ class DBManager:
         cursor.execute("SELECT string FROM verification_string WHERE is_authentication=0 AND user_id=%s",(user_id,))
         return cursor.fetchone()
 
-    def get_privileges_via_verification_string(self, verification_string):
+    def get_privileges_by_verification_string(self, verification_string):
         cursor = self.db_connectionn.cursor()
         cursor.execute("SELECT privileges FROM verification_string WHERE string=%s;",(verification_string,))
+        return cursor.fetchone()
+    
+    def get_privileges_by_user_id(self,user_id):
+        cursor = self.db_connectionn.cursor()
+        cursor.execute("SELECT privileges FROM librarians WHERE id=%d",(user_id,))
         return cursor.fetchone()
