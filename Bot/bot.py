@@ -27,14 +27,11 @@ class LibraryBot:
         logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
         self.logger = logging.getLogger(__name__)
         self.keyboard_dict = func_data.keyboard_dict
-        self.types = func_data.lists["user_types"]
+        self.types = func_data.lists['user_types']
         self.location = {}
         self.user_data = {}
 
-        self.dispatcher.add_handler(CommandHandler('start', self.main_menu))
         self.add_handlers()
-
-        self.dispatcher.add_error_handler(self.error)
 
     def run(self):
         self.updater.start_polling()
@@ -42,6 +39,7 @@ class LibraryBot:
 
     def add_handlers(self):
 
+        self.dispatcher.add_handler(CommandHandler('start', self.main_menu))
         # User handlers
         self.dispatcher.add_handler(MHandler(WordFilter('Library🏤'), self.library))
         self.dispatcher.add_handler(MHandler(WordFilter('Search🔎'), self.main_menu))
@@ -59,26 +57,28 @@ class LibraryBot:
 
         # Admin handlers
         self.dispatcher.add_handler(CommandHandler('get_key', utils.get_key, filters=UserFilter(3)))
-        self.dispatcher.add_handler(MHandler(WordFilter("User management 👥") & UserFilter(3), self.user_manage))
+        self.dispatcher.add_handler(MHandler(WordFilter('User management 👥') & UserFilter(3), self.user_manage))
 
-        self.dispatcher.add_handler(MHandler(WordFilter("Confirm application📝") & UserFilter(3), self.confirm))
-        self.dispatcher.add_handler(MHandler(WordFilter("Check overdue📋") & UserFilter(3), self.main_menu))
-        self.dispatcher.add_handler(MHandler(WordFilter("Show users👥") & UserFilter(3), self.show_users))
+        self.dispatcher.add_handler(MHandler(WordFilter('Confirm application📝') & UserFilter(3), self.confirm))
+        self.dispatcher.add_handler(MHandler(WordFilter('Check overdue📋') & UserFilter(3), self.main_menu))
+        self.dispatcher.add_handler(MHandler(WordFilter('Show users👥') & UserFilter(3), self.show_users))
         self.dispatcher.add_handler(
-            MHandler(LocationFilter(self.location, "user_modify") & UserFilter(3), self.modify_user))
+            MHandler(LocationFilter(self.location, 'user_modify') & UserFilter(3), self.modify_user))
         self.dispatcher.add_handler(
-            MHandler(LocationFilter(self.location, "doc_modify") & UserFilter(3), self.update_doc_param))
-        self.dispatcher.add_handler(MHandler(LocationFilter(self.location, "notice") & UserFilter(3), self.notice_user))
+            MHandler(LocationFilter(self.location, 'doc_modify') & UserFilter(3), self.update_doc_param))
+        self.dispatcher.add_handler(MHandler(LocationFilter(self.location, 'notice') & UserFilter(3), self.notice_user))
 
         self.dispatcher.add_handler(
-            MHandler(WordFilter("Material management 📚") & UserFilter(3), self.mat_manage))
+            MHandler(WordFilter('Material management 📚') & UserFilter(3), self.mat_manage))
         self.dispatcher.add_handler(CallbackQueryHandler(self.online_button_checker))
 
-        self.dispatcher.add_handler(MHandler(WordFilter("Add material🗄") & UserFilter(3), self.add_doc))
+        self.dispatcher.add_handler(MHandler(WordFilter('Add material🗄') & UserFilter(3), self.add_doc))
         self.dispatcher.add_handler(
             MHandler(f1 & UserFilter(3) & LocationFilter(self.location, 'add_doc'), self.start_adding))
         self.dispatcher.add_handler(
             MHandler(LocationFilter(self.location, 'add_doc') & Filters.text, self.adding_steps))
+
+        self.dispatcher.add_error_handler(self.error)
 
     # Main menu
     # params:
@@ -90,7 +90,7 @@ class LibraryBot:
         keyboard = self.keyboard_dict[self.types[user_type]]
         self.location[chat] = 'main'
         self.user_data[chat] = []
-        bot.send_message(chat_id=chat, text="Main menu", reply_markup=RKM(keyboard, True))
+        bot.send_message(chat_id=chat, text='Main menu', reply_markup=RKM(keyboard, True))
 
     def check_overdue(self, bot, update):
         pass
@@ -101,53 +101,50 @@ class LibraryBot:
         if location == 'confirm':
             data_list = self.controller.get_all_unconfirmed()
             if len(data_list) == 0:
-                bot.send_message(chat_id=chat, text="There are no application to confirm")
+                bot.send_message(chat_id=chat, text='There are no application to confirm')
                 return [], 0
         elif location == 'library':
             doc_type = func_data.analog.get(text, text)
             data_list = self.controller.get_all_doctype(doc_type)
             if len(data_list) == 0:
-                bot.send_message(chat_id=chat, text="There are no materials in the library")
+                bot.send_message(chat_id=chat, text='There are no materials in the library')
                 return [], 0
-        elif location == "my_orders":
+        elif location == 'my_orders':
             data_list = self.controller.get_user_orders(chat)
             if len(data_list) == 0:
-                bot.send_message(chat_id=chat, text="You do not have active orders")
+                bot.send_message(chat_id=chat, text='You do not have active orders')
                 return [], 0
         elif location == 'users':
             data_list = self.controller.get_all_patrons()
             if len(data_list) == 0:
-                bot.send_message(chat_id=chat, text="There are no patrons")
+                bot.send_message(chat_id=chat, text='There are no patrons')
                 return [], 0
 
-        data_list = [data_list[i * n:(i + 1) * n] for i in range(len(data_list) // n + 1) if i * n < len(data_list)]
+        data_list = [data_list[i: i + n] for i in range(0, len(data_list), n)]
         max_page = len(data_list) - 1
         return data_list, max_page
 
     def get_message(self, loc, page, item, doc_type=None, chat=None):
         message = [0, 0]
         if loc == 'confirm':
-            message[0] = """
-            Check whether all data is correct:\nName: {name}\nAddress: {address}\nPhone: {phone}\nStatus: {status}
-            """.format(**item)
-            message[1] = IKM([[IKB("Accept✅", callback_data='accept {} {}'.format(item['id'], loc)),
-                               IKB("Reject️❌", callback_data='reject {} {}'.format(item['id'], loc)),
-                               IKB("Cancel⤵️", callback_data='cancel {} {}'.format(page, loc))]])
+            message[0] = 'Check whether all data is correct:\nName: {name}' \
+                         '\nAddress: {address}\nPhone: {phone}\nStatus: {status}'.format(**item)
+            message[1] = IKM([[IKB('Accept✅', callback_data='accept {} {}'.format(item['id'], loc)),
+                               IKB('Reject️❌', callback_data='reject {} {}'.format(item['id'], loc)),
+                               IKB('Cancel⤵️', callback_data='cancel {} {}'.format(page, loc))]])
         elif loc == 'library':
-            text = """Title: {title}\nAuthors: {authors}\n"""
-            if doc_type == "book":
-                text += """Description: {description}\nFree copy: {free_count}"""
-            elif doc_type == "article":
-                text += """Journal: {journal}\nIssue: {issue}\nDate: {date}\nFree copy: {free_count}"""
-            elif doc_type == "media":
-                text += """Free copy: {free_count}"""
+            text = 'Title: {title}\nAuthors: {authors}\n'
+            if doc_type == 'book':
+                text += 'Description: {description}\nFree copy: {free_count}'
+            elif doc_type == 'article':
+                text += 'Journal: {journal}\nIssue: {issue}\nDate: {date}\nFree copy: {free_count}'
+            elif doc_type == 'media':
+                text += 'Free copy: {free_count}'
             if self.controller.user_type(chat) == 2:
                 cb = 'order {} {} {}' if item['free_count'] > 0 else 'queue {} {} {}'
-                keyboard = [[IKB("Order the document", callback_data=cb.format(item['id'], doc_type, loc)),
+                keyboard = [[IKB('Order the document', callback_data=cb.format(item['id'], doc_type, loc)),
                              IKB('Cancel', callback_data='cancel {} {} {}'.format(page, doc_type, loc))]]
             elif self.controller.user_type(chat) == 3:
-                print(item)
-                print(item['free_count'], item['count'])
                 if item['free_count'] == item['count']:
                     keyboard = [[IKB('Edit', callback_data='edit {} {} {} {}'.format(page, item['id'], doc_type, loc)),
                                  IKB('Delete', callback_data='del {} {} {} {}'.format(page, item['id'], doc_type, loc)),
@@ -162,30 +159,28 @@ class LibraryBot:
         if loc == 'my_orders':
             keys = ['user_id', 'doc', 'table', 'time', 'time_out', 'active', 'id']
             user, doc, doc_type, time, time_out, active, order_id = [item[i] for i in keys]
-            message[0] = "Title: {}\nAuthors: {}\nAvailable till: {}".format(doc['title'], doc['authors'], time_out)
+            message[0] = 'Title: {}\nAuthors: {}\nAvailable till: {}'.format(doc['title'], doc['authors'], time_out)
             keyboard = []
-            # print([j for i in eval(doc['queue']) for j in i])
-            # print(doc)
-            if active and not [j for i in eval(doc['queue']) for j in i]:
-                keyboard += [IKB("Renew🔄", callback_data='renew {} {}'.format(order_id, loc))]
+            if active and not [j for i in utils.to_list(doc['queue']) for j in i]:
+                keyboard += [IKB('Renew🔄', callback_data='renew {} {}'.format(order_id, loc))]
             elif not active:
-                keyboard += [IKB("Repeal❌", callback_data='repeal {} {}'.format(order_id, loc))]
-            keyboard += [IKB("Cancel⤵️", callback_data='cancel {} {}'.format(page, loc))]
+                keyboard += [IKB('Repeal❌', callback_data='repeal {} {}'.format(order_id, loc))]
+            keyboard += [IKB('Cancel⤵️', callback_data='cancel {} {}'.format(page, loc))]
             message[1] = IKM([keyboard])
         if loc == 'users':
             user = item
             user_id = user['id']
             orders = self.controller.get_user_orders(user_id)
-            text = """
-                Name: {name}\nAddress: {address}\nPhone: {phone}\nStatus: {status}\nTaken documents: """.format(**user)
-            text += "{}\nOverdue documents: ".format(len(orders))
-            text += str(len([i for i in orders if datetime.strptime(i['time_out'], "%Y-%m-%d") < datetime.today()]))
-            keyboard = [[IKB("Edit", callback_data='edit {} {} {}'.format(page, user_id, loc)),
+            text = 'Name: {name}\nAddress: {address}\nPhone: {phone}\nStatus: {status}\nTaken documents: '.format(**user)
+            text += '{}\nOverdue documents: '.format(len(orders))
+            overdued = filter(lambda i: datetime.strptime(i['time_out'], '%Y-%m-%d') < datetime.today(), orders)
+            text += str(len(list(overdued)))
+            keyboard = [[IKB('Edit', callback_data='edit {} {} {}'.format(page, user_id, loc)),
                          IKB('Cancel️', callback_data='cancel {} {} {}'.format(page, doc_type, loc))]]
             if orders:
-                keyboard[0].insert(1, IKB("Orders", callback_data='orders {} {} {}'.format(page, user_id, loc)))
+                keyboard[0].insert(1, IKB('Orders', callback_data='orders {} {} {}'.format(page, user_id, loc)))
             else:
-                keyboard[0].insert(1, IKB("Delete", callback_data='delete {} {} {}'.format(page, user_id, loc)))
+                keyboard[0].insert(1, IKB('Delete', callback_data='delete {} {} {}'.format(page, user_id, loc)))
             message[0] = text.format(**user)
             message[1] = IKM(keyboard)
 
@@ -200,37 +195,37 @@ class LibraryBot:
             return
         text_message = func_data.text_gen(data_list, loc)
         if loc == 'library':
-            loc = func_data.analog[text] + " " + loc
+            loc = func_data.analog[text] + ' ' + loc
 
         keyboard = [
-            [IKB(str(i + 1), callback_data="item {} {} {}".format(i, 0, loc)) for i in range(len(data_list[0]))]]
-        keyboard += [[IKB("⬅", callback_data='prev 0 {} ' + loc), IKB("➡️", callback_data='next 0 ' + loc)]]
-        update.message.reply_text(text=text_message + "\n\nCurrent page: 1/" + str(max_page + 1),
+            [IKB(str(i + 1), callback_data='item {} {} {}'.format(i, 0, loc)) for i in range(len(data_list[0]))]]
+        keyboard += [[IKB('⬅', callback_data='prev 0 {} ' + loc), IKB('➡️', callback_data='next 0 ' + loc)]]
+        update.message.reply_text(text=text_message + '\n\nCurrent page: 1/' + str(max_page + 1),
                                   reply_markup=IKM(keyboard))
 
     def online_button_checker(self, bot, update):
         query = update.callback_query
         chat = query.message.chat.id
         message_id = query.message.message_id
-        action, *args, loc = query.data.split(" ")
+        action, *args, loc = query.data.split(' ')
         data_list, max_page = self.get_data(bot, chat, loc, args[-1])
         if not data_list:
             return
 
         if action in ['prev', 'next'] and max_page or action == 'cancel':
             page = int(args[0])
-            if action == "next":
+            if action == 'next':
                 page = 0 if page == max_page else page + 1
-            if action == "prev":
+            if action == 'prev':
                 page = max_page if page == 0 else page - 1
             text_message = func_data.text_gen(data_list, loc, page)
             if loc == 'library':
-                loc = args[-1] + " " + loc
-            keyboard = [[IKB(str(i + 1), callback_data="item {} {} {}".format(i, page, loc)) for i in
+                loc = args[-1] + ' ' + loc
+            keyboard = [[IKB(str(i + 1), callback_data='item {} {} {}'.format(i, page, loc)) for i in
                          range(len(data_list[page]))]]
-            keyboard += [[IKB("⬅", callback_data='prev {} {}'.format(page, loc)),
-                          IKB("➡️", callback_data='next {} {}'.format(page, loc))]]
-            bot.edit_message_text(text=text_message + "\n\nCurrent page: {}/{}".format(page + 1, max_page + 1),
+            keyboard += [[IKB('⬅', callback_data='prev {} {}'.format(page, loc)),
+                          IKB('➡️', callback_data='next {} {}'.format(page, loc))]]
+            bot.edit_message_text(text=text_message + '\n\nCurrent page: {}/{}'.format(page + 1, max_page + 1),
                                   chat_id=chat,
                                   message_id=message_id, reply_markup=IKM(keyboard))
         elif action == 'item':
