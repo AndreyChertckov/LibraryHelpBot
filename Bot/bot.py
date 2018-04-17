@@ -38,8 +38,8 @@ class LibraryBot:
         self.updater.idle()
 
     def add_handlers(self):
-        self.dispatcher.add_handler(CommandHandler('start', self.main_menu))
 
+        self.dispatcher.add_handler(CommandHandler('start', self.main_menu))
         # User handlers
         self.dispatcher.add_handler(MHandler(WordFilter('Library🏤'), self.library))
         self.dispatcher.add_handler(MHandler(WordFilter('Search🔎'), self.main_menu))
@@ -77,6 +77,7 @@ class LibraryBot:
             MHandler(f1 & UserFilter(3) & LocationFilter(self.location, 'add_doc'), self.start_adding))
         self.dispatcher.add_handler(
             MHandler(LocationFilter(self.location, 'add_doc') & Filters.text, self.adding_steps))
+
         self.dispatcher.add_error_handler(self.error)
 
     # Main menu
@@ -126,8 +127,8 @@ class LibraryBot:
     def get_message(self, loc, page, item, doc_type=None, chat=None):
         message = [0, 0]
         if loc == 'confirm':
-            message[0] = 'Check whether all data is correct:\nName: {name}\n' \
-                         'Address: {address}\nPhone: {phone}\nStatus: {status}'.format(**item)
+            message[0] = 'Check whether all data is correct:\nName: {name}' \
+                         '\nAddress: {address}\nPhone: {phone}\nStatus: {status}'.format(**item)
             message[1] = IKM([[IKB('Accept✅', callback_data='accept {} {}'.format(item['id'], loc)),
                                IKB('Reject️❌', callback_data='reject {} {}'.format(item['id'], loc)),
                                IKB('Cancel⤵️', callback_data='cancel {} {}'.format(page, loc))]])
@@ -170,8 +171,7 @@ class LibraryBot:
             user = item
             user_id = user['id']
             orders = self.controller.get_user_orders(user_id)
-            text = """
-                Name: {name}\nAddress: {address}\nPhone: {phone}\nStatus: {status}\nTaken documents: """.format(**user)
+            text = 'Name: {name}\nAddress: {address}\nPhone: {phone}\nStatus: {status}\nTaken documents: '.format(**user)
             text += '{}\nOverdue documents: '.format(len(orders))
             overdue = filter(lambda i: datetime.strptime(i['time_out'], '%Y-%m-%d') < datetime.today(), orders)
             text += str(len(list(overdue)))
