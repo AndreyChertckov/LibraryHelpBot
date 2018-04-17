@@ -9,19 +9,33 @@ $(function () {
 function dashboard(event) {
     event.preventDefault();
     bar_user = "<div class='row'><div class ='col-10 content'></div><div class='col-2 sidebar-wrapper'><ul class='sidebar-nav'>\
+    <li><button class='btn btn-sm' id='account_info'>Account info</button></li>\
     <li><button class='btn btn-sm' id ='telegram'>Telegram</button></li>\
     <li><button class='btn btn-sm ' id ='invite_links'>Invite links</button></li>\
     </ul></div></div>";
     $(".main").html(bar_user);
-    telegram();
+    account_info();
+    $("#account_info").click(account_info);
     $("#invite_links").click(invite_links);
     $("#telegram").click(telegram);
+}
+
+function account_info() {
+    $.post("/api/get_account_info",{},function(data,status){
+        output_html = "<div class='row'><div class='col-md-11'><h3 id='name'>" + data['name'] + "</h3></div><div class='col-md-1'><button id = '0' class='btn btn-sm settings'><span data-feather='settings'></span></div></div>\
+            <h5>Id: </h5><p id='id'>" + data['id'] + "</p>\
+            <h5>Phone: </h5><p id='phone'>" + data['phone'] + "</p>\
+            <h5>Address: </h5><p id='address'>"+ data['address'] + "</p>\
+            <h5>Privilege: </h5><p id='status'>" + (data['privilege']+1) + "</p>";
+        $(".content").html(output_html);
+        feather.replace();
+    });
 }
 
 function invite_links() {
     $.post("/api/get_verification_links", {}, function (data, status) {
         if (data == 'Access forbidden.') {
-            alert('Access forbidden.')
+            alert('Access forbidden.');
         } else {
             output_html = "<div class='row'><div class='col-3'><h3>Invite links</h3></div><div class='col-1'><button class= 'btn btn-sm' id='add'><span data-feather='plus'></span></button></div></div>";
             output_html += "<h6>Send one of this links to librarian</h6>";
@@ -36,10 +50,14 @@ function invite_links() {
 }
 
 function generate_link() {
-    privi = prompt('Enter user privilege') - 1
+    privi = -1;
+    while(privi >= 3 || privi <0) {
+        privi = prompt('Enter user privilege') - 1;
+    }
+    
     $.post("/api/generate_invite_link", {privilege:privi}, function (data, status) {
         if (data == 'Access forbidden.') {
-            alert('Access forbidden.')
+            alert('Access forbidden.');
         } else {
             invite_links();
         }
@@ -49,7 +67,7 @@ function generate_link() {
 function telegram() {
     $.post("/api/get_telegram_verification_message", {}, function (data, status) {
         if (data == 'Access forbidden.') {
-            alert('Access forbidden.')
+            alert('Access forbidden.');
         } else {
             $(".content").html(data);
         }
@@ -71,7 +89,7 @@ function user_event(event) {
 function unconfirmed_table() {
     $.post("/api/get_all_unconfirmed", {}, function (data, status) {
         if (data == 'Access forbidden.') {
-            alert('Access forbidden.')
+            alert('Access forbidden.');
         } else {
             output_html = "<h3>Unconfirmed</h3><div class='row'><div class='col-12'><input id='search' class='form-control w-100' placeholder='Search' aria-label='Search' type='text'></div></div>\
             <div class='table-responsive'>\
@@ -123,7 +141,7 @@ function unconfirmed_table() {
 function patrons_table() {
     $.post("/api/get_all_patrons", {}, function (data, status) {
         if (data == 'Access forbidden.') {
-            alert('Access forbidden.')
+            alert('Access forbidden.');
         } else {
             output_html = "<h3>Patrons</h3><div class='row'><div class='col-md-12'><input id='search' class='form-control w-100' placeholder='Search' aria-label='Search' type='text'></div></div>\
             <div class='table-responsive'>\
@@ -165,7 +183,7 @@ function patrons_table() {
 function librarians_table() {
     $.post("/api/get_all_librarians", {}, function (data, status) {
         if (data == 'Access forbidden.') {
-            alert('Access forbidden.')
+            alert('Access forbidden.');
         } else {
             data = data.slice(1)
             output_html = "<h3>Librarians</h3><div class='row'><div class='col-md-12'><input id='search' class='form-control w-100' placeholder='Search' aria-label='Search' type='text'></div></div>\
@@ -212,7 +230,7 @@ function user_info() {
     }
     $.post("/api/get_user", { user_id: user_id_ }, function (data, status) {
         if (data == 'Access forbidden.') {
-            alert('Access forbidden.')
+            alert('Access forbidden.');
         } else {
             output_html_ = "<div class='row'><div class='col-md-1'><button id='prev' class='btn btn-sm'><span data-feather='arrow-left'></span></button></div><div class='col-md-9'><h3 id='name'>" + data['name'] + "</h3></div><div class='col-md-1'><button class='btn btn-sm delete " + user_id_ + "'><span data-feather='trash-2'></span></div><div class='col-md-1'><button id = '" + user_id_ + "' class='btn btn-sm settings'><span data-feather='settings'></span></div></div>\
             <h5>Id: </h5><p id='id'>" + data['id'] + "</p>\
@@ -222,7 +240,7 @@ function user_info() {
             <h5>Current documents: </h5>";
             $.post("/api/get_user_orders", { user_id: user_id_ }, function (data, status) {
                 if (data == 'Access forbidden.') {
-                    alert('Access forbidden.')
+                    alert('Access forbidden.');
                 } else {
                     output_html_ += "<div class='table-responsive'>\
                     <table class='table table-striped table-sm'>\
@@ -260,7 +278,7 @@ function user_info() {
                         <tbody>";
                     $.post("/api/get_user_history", { user_id: user_id_ }, function (data, status) {
                         if (data == 'Access forbidden.') {
-                            alert('Access forbidden.')
+                            alert('Access forbidden.');
                         } else {
                             data.forEach(elem => {
                                 output_html_ += "<tr id = '" + elem['id'] + "'>";
@@ -290,7 +308,7 @@ function delete_user() {
     console.log(user_id);
     $.post("/api/delete_user", { user_id: user_id }, function (data, status) {
         if (data == 'Access forbidden.') {
-            alert('Access forbidden.')
+            alert('Access forbidden.');
         } else {
             patrons_table();
         }
@@ -326,7 +344,7 @@ function modify_user() {
         send_data = { id: user['id'], name: $("#name").val(), phone: $("#phone").val(), address: $("#address").val(), status: $("#status").val() };
         $.post("/api/modify_user", send_data, function (data, status) {
             if (data == 'Access forbidden.') {
-                alert('Access forbidden.')
+                alert('Access forbidden.');
             } else {
                 user_info();
             }
@@ -351,7 +369,7 @@ function documents_event(event) {
 function books() {
     $.post("/api/get_all_doctype", { type: 'book' }, function (data, status) {
         if (data == 'Access forbidden.') {
-            alert('Access forbidden.')
+            alert('Access forbidden.');
         } else {
             output_html = "<div class='row'>\
             <div class = 'col-2'><h3>Books</h3></div>\
@@ -411,7 +429,7 @@ function book_info() {
     console.log(book_id_);
     $.post("/api/get_document", { id: book_id_, type: 'book' }, function (data, status) {
         if (data == 'Access forbidden.') {
-            alert('Access forbidden.')
+            alert('Access forbidden.');
         } else {
             console.log(data);
             output_html_ = "<p id='id' hidden>" + book_id_ + "</p><div class='row'><div class='col-md-1'><button id='prev' class='btn btn-sm'><span data-feather='arrow-left'></span></button></div><div class='col-md-9'><h3 id='title'>" + data['title'] + "</h3></div><div class='col-md-1'><button class='btn btn-sm delete'><span data-feather='trash-2'></span></button></div><div class='col-md-1'><button id = '" + book_id_ + "' class='btn btn-sm settings'><span data-feather='settings'></span></div></div>\
@@ -472,7 +490,7 @@ function outstanding_book() {
     book_id = $("#id").html();
     $.post("/api/outstanding", { doc_id: book_id, type: "book" }, function (data, status) {
         if (data == 'Access forbidden.') {
-            alert('Access forbidden.')
+            alert('Access forbidden.');
         } else {
             book_info();
         }
@@ -483,7 +501,7 @@ function add_copies_book() {
     if ($(this).attr("id") == "add") {
         $.post("/api/add_copies_of_doc", { id: $("#id").html(), delta_count: 1, type: 'book' }, function (data, status) {
             if (data == 'Access forbidden.') {
-                alert('Access forbidden.')
+                alert('Access forbidden.');
             } else {
                 book_info();
             }
@@ -491,7 +509,7 @@ function add_copies_book() {
     } else {
         $.post("/api/add_copies_of_doc", { id: $("#id").html(), delta_count: -1, type: 'book' }, function (data, status) {
             if (data == 'Access forbidden.') {
-                alert('Access forbidden.')
+                alert('Access forbidden.');
             } else {
                 book_info();
             }
@@ -553,7 +571,7 @@ function edit_book() {
         if (new_book) {
             $.post("/api/add_document", send_data, function (data, status) {
                 if (data == 'Access forbidden.') {
-                    alert('Access forbidden.')
+                    alert('Access forbidden.');
                 } else {
                     books();
                 }
@@ -561,7 +579,7 @@ function edit_book() {
         } else {
             $.post("/api/modify_document", send_data, function (data, status) {
                 if (data == 'Access forbidden.') {
-                    alert('Access forbidden.')
+                    alert('Access forbidden.');
                 } else {
                     book_info();
                 }
@@ -581,7 +599,7 @@ function delete_book() {
     book_id_ = $("#id").html();
     $.post("/api/delete_document", { id: book_id_, type: 'book' }, function (data, status) {
         if (data == 'Access forbidden.') {
-            alert('Access forbidden.')
+            alert('Access forbidden.');
         } else {
             books();
         }
@@ -591,7 +609,7 @@ function delete_book() {
 function av_materials() {
     $.post("/api/get_all_doctype", { type: 'media' }, function (data, status) {
         if (data == 'Access forbidden.') {
-            alert('Access forbidden.')
+            alert('Access forbidden.');
         } else {
             output_html = "<div class='row'>\
             <div class = 'col-5'><h3>Audio visual materials</h3></div>\
@@ -647,7 +665,7 @@ function av_material_info() {
     console.log(media_id_);
     $.post("/api/get_document", { id: media_id_, type: 'media' }, function (data, status) {
         if (data == 'Access forbidden.') {
-            alert('Access forbidden.')
+            alert('Access forbidden.');
         } else {
 
             output_html_ = "<p id='id' hidden>" + media_id_ + "</p><div class='row'><div class='col-md-1'><button id='prev' class='btn btn-sm'><span data-feather='arrow-left'></span></button></div><div class='col-md-9'><h3 id='title'>" + data['title'] + "</h3></div><div class='col-md-1'><button class='btn btn-sm delete'><span data-feather='trash-2'></span></button></div><div class='col-md-1'><button id = '" + media_id_ + "' class='btn btn-sm settings'><span data-feather='settings'></span></div></div>\
@@ -659,7 +677,7 @@ function av_material_info() {
             if (data['queue'] != "[]") {
                 $.post("/api/get_queue_on_document", { doc_id: media_id_, type: 'media' }, function (data, status) {
                     if (data == 'Access forbidden.') {
-                        alert('Access forbidden.')
+                        alert('Access forbidden.');
                     } else {
                         output_html_ += "<h5>Queue: </h5><div class='table-responsive'>\
                         <table class='table table-striped table-sm'>\
@@ -704,7 +722,7 @@ function outstanding_av() {
     av_id = $("#id").html();
     $.post("/api/outstanding", { doc_id: av_id, type: "media" }, function (data, status) {
         if (data == 'Access forbidden.') {
-            alert('Access forbidden.')
+            alert('Access forbidden.');
         } else {
             av_material_info();
         }
@@ -715,7 +733,7 @@ function add_copies_av() {
     if ($(this).attr("id") == "add") {
         $.post("/api/add_copies_of_doc", { id: $("#id").html(), delta_count: 1, type: 'media' }, function (data, status) {
             if (data == 'Access forbidden.') {
-                alert('Access forbidden.')
+                alert('Access forbidden.');
             } else {
                 av_material_info();
             }
@@ -723,7 +741,7 @@ function add_copies_av() {
     } else {
         $.post("/api/add_copies_of_doc", { id: $("#id").html(), delta_count: -1, type: 'media' }, function (data, status) {
             if (data == 'Access forbidden.') {
-                alert('Access forbidden.')
+                alert('Access forbidden.');
             } else {
                 av_material_info();
             }
@@ -773,7 +791,7 @@ function edit_av_material() {
         if (new_media) {
             $.post("/api/add_document", send_data, function (data, status) {
                 if (data == 'Access forbidden.') {
-                    alert('Access forbidden.')
+                    alert('Access forbidden.');
                 } else {
                     av_materials();
                 }
@@ -781,7 +799,7 @@ function edit_av_material() {
         } else {
             $.post("/api/modify_document", send_data, function (data, status) {
                 if (data == 'Access forbidden.') {
-                    alert('Access forbidden.')
+                    alert('Access forbidden.');
                 } else {
                     av_material_info();
                 }
@@ -801,7 +819,7 @@ function delete_av_material() {
     av_material_id_ = $("#id").html();
     $.post("/api/delete_document", { id: av_material_id_, type: 'media' }, function (data, status) {
         if (data == 'Access forbidden.') {
-            alert('Access forbidden.')
+            alert('Access forbidden.');
         } else {
             av_materials();
         }
@@ -811,7 +829,7 @@ function delete_av_material() {
 function articles() {
     $.post("/api/get_all_doctype", { type: 'article' }, function (data, status) {
         if (data == 'Access forbidden.') {
-            alert('Access forbidden.')
+            alert('Access forbidden.');
         } else {
             output_html = "<div class='row'>\
             <div class = 'col-2'><h3>Articles</h3></div>\
@@ -916,7 +934,7 @@ function edit_article() {
         if (new_article) {
             $.post("/api/add_document", send_data, function (data, status) {
                 if (data == 'Access forbidden.') {
-                    alert('Access forbidden.')
+                    alert('Access forbidden.');
                 } else {
                     articles();
                 }
@@ -924,7 +942,7 @@ function edit_article() {
         } else {
             $.post("/api/modify_document", send_data, function (data, status) {
                 if (data == 'Access forbidden.') {
-                    alert('Access forbidden.')
+                    alert('Access forbidden.');
                 } else {
                     article_info();
                 }
@@ -950,7 +968,7 @@ function article_info() {
     console.log(article_id_);
     $.post("/api/get_document", { id: article_id_, type: 'article' }, function (data, status) {
         if (data == 'Access forbidden.') {
-            alert('Access forbidden.')
+            alert('Access forbidden.');
         } else {
             output_html_ = "<p id='id' hidden>" + article_id_ + "</p><div class='row'><div class='col-md-1'><button id='prev' class='btn btn-sm'><span data-feather='arrow-left'></span></button></div><div class='col-md-9'><h3 id='title'>" + data['title'] + "</h3></div><div class='col-md-1'><button class='btn btn-sm delete'><span data-feather='trash-2'></span></button></div><div class='col-md-1'><button id = '" + article_id_ + "' class='btn btn-sm settings'><span data-feather='settings'></span></div></div>\
             <h5>Authors: </h5><p id='authors'>" + data['authors'] + "</p>\
@@ -965,7 +983,7 @@ function article_info() {
             if (data['queue'] != "[]") {
                 $.post("/api/get_queue_on_document", { doc_id: $("#id").html(), type: 'article' }, function (data, status) {
                     if (data == 'Access forbidden.') {
-                        alert('Access forbidden.')
+                        alert('Access forbidden.');
                     } else {
                         output_html_ += "<h5>Queue: </h5><div class='table-responsive'>\
                         <table class='table table-striped table-sm'>\
@@ -1011,7 +1029,7 @@ function outstanding_article() {
     article_id = $("#id").html();
     $.post("/api/outstanding", { doc_id: article_id, type: "article" }, function (data, status) {
         if (data == 'Access forbidden.') {
-            alert('Access forbidden.')
+            alert('Access forbidden.');
         } else {
             article_info();
         }
@@ -1022,7 +1040,7 @@ function add_copies_article() {
     if ($(this).attr("id") == "add") {
         $.post("/api/add_copies_of_doc", { id: $("#id").html(), delta_count: 1, type: 'article' }, function (data, status) {
             if (data == 'Access forbidden.') {
-                alert('Access forbidden.')
+                alert('Access forbidden.');
             } else {
                 article_info();
             }
@@ -1030,7 +1048,7 @@ function add_copies_article() {
     } else {
         $.post("/api/add_copies_of_doc", { id: $("#id").html(), delta_count: -1, type: 'article' }, function (data, status) {
             if (data == 'Access forbidden.') {
-                alert('Access forbidden.')
+                alert('Access forbidden.');
             } else {
                 article_info();
             }
@@ -1042,7 +1060,7 @@ function delete_article() {
     article_id_ = $("#id").html();
     $.post("/api/delete_document", { id: article_id_, type: 'article' }, function (data, status) {
         if (data == 'Access forbidden.') {
-            alert('Access forbidden.')
+            alert('Access forbidden.');
         } else {
             articles();
         }
@@ -1063,7 +1081,7 @@ function orders_event(event) {
 function awaiting_orders() {
     $.post("/api/get_all_waiting_doc", {}, function (data, status) {
         if (data == 'Access forbidden.') {
-            alert('Access forbidden.')
+            alert('Access forbidden.');
         } else {
             output_html = "<div class='row'>\
             <div class = 'col-3'><h3>Awaiting orders</h3></div>\
@@ -1114,7 +1132,7 @@ function user_get_doc() {
     order_id_ = $(this).parent().parent().attr("id");
     $.post("/api/user_get_doc", { order_id: order_id_ }, function (data, status) {
         if (data == 'Access forbidden.') {
-            alert('Access forbidden.')
+            alert('Access forbidden.');
         }
     });
     $(this).parent().parent().remove();
@@ -1127,7 +1145,7 @@ function delete_order() {
 function active_orders() {
     $.post("/api/get_all_active_orders", {}, function (data, status) {
         if (data == 'Access forbidden.') {
-            alert('Access forbidden.')
+            alert('Access forbidden.');
         } else {
             output_html = "<div class='row'>\
             <div class = 'col-3'><h3>Active orders</h3></div>\
@@ -1177,7 +1195,7 @@ function user_return_doc() {
     order_id_ = $(this).parent().parent().attr("id");
     $.post("/api/return_doc", { order_id: order_id_ }, function (data, status) {
         if (data == 'Access forbidden.') {
-            alert('Access forbidden.')
+            alert('Access forbidden.');
         } else {
             alert(data)
         }
@@ -1191,7 +1209,7 @@ function history_event(event) {
     $(".main").html(bar_user);
     $.post("/api/get_all_returned_doc", {}, function (data, status) {
         if (data == 'Access forbidden.') {
-            alert('Access forbidden.')
+            alert('Access forbidden.');
         } else {
             output_html = "<div class='row'>\
             <div class = 'col-4'><h3>History of orders</h3></div>\

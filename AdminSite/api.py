@@ -8,6 +8,7 @@ from configs import host, telegram_alias
 
 logger = logging.getLogger('api-site')
 
+
 def security_decorator_maker(privilege_val):
     def security_decorator(api_method):
         def decorator(self):
@@ -40,6 +41,8 @@ class API:
             '/signup', 'signup', self.signup_post, methods=['POST'])
         self.blueprint.add_url_rule(
             '/signout', 'signout', self.signout_get, methods=['GET'])
+        self.blueprint.add_url_rule(
+            '/api/get_account_info', 'get_account_info', self.get_account_info, methods=['POST'])
         self.blueprint.add_url_rule(
             '/api/get_verification_links', 'get_verification_links', self.get_verification_links, methods=['POST'])
         self.blueprint.add_url_rule('/api/generate_invite_link', 'generate_invite_link',
@@ -124,12 +127,14 @@ class API:
             return string
         else:
             return 'Need privilege value'
+
     @security_decorator_maker(3)
     def get_verification_links(self):
         link = "http://" + host + '/signup?verification_string='
         ver_strings = self.dbmanager.all_verification_strings(1)
         if ver_strings:
-            output = [link+string[0] + '; Privilege level: ' + str(self.dbmanager.get_privilege_by_verification_string(string[0])[0] + 1) for string in ver_strings]
+            output = [link+string[0] + ' -------- Privilege level: ' + str(
+                self.dbmanager.get_privilege_by_verification_string(string[0])[0] + 1) for string in ver_strings]
             return jsonify(output)
         else:
             return jsonify([])
@@ -142,7 +147,6 @@ class API:
         return 'Write to telegram bot(<a href="https://t.me/{}">https://t.me/{}</a>) this line</br> /verification {}'.format(telegram_alias, telegram_alias, ver_val[0])
 
     def signup_post(self):
-        print(request.values)
         if 'verification_string' in request.values and self.dbmanager.if_verification_string_exist(request.values.get('verification_string'), 1):
             keys = ['login', 'name', 'phone', 'address']
             user = dict(zip(keys, [request.values.get(key) for key in keys]))
@@ -168,6 +172,14 @@ class API:
         response = self.app.make_response(redirect('/'))
         response.set_cookie('session_id', '', expires=0)
         return response
+
+    def get_account_info(self):
+        session_id = request.cookies['session_id']
+        user_id = self.dbmanager.get_user_id_by_session(session_id)[0]
+        user = dict(zip(['id','login','password','name','phone','address','chat_id','privilege'],self.dbmanager.get_user_by_id(user_id)))
+        user.pop('password')
+        user.pop('chat_id')
+        return jsonify(user)
 
     @security_decorator_maker(0)
     def get_all_unconfirmed_post(self):
