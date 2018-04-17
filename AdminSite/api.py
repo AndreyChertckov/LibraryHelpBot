@@ -195,8 +195,7 @@ class API:
         if 'user_id' in request.values:
             user_id = request.values.get('user_id')
             success = self.controller.confirm_user(user_id)
-            self.notifictation.send_message(
-                user_id, "Your application was confirmed.")
+        
             return 'OK' if success else "Somthing went wrong"
         else:
             return 'Need id of user'
@@ -218,8 +217,7 @@ class API:
     @security_decorator_maker(2)
     def delete_user_post(self):
         if 'user_id' in request.values:
-            self.notifictation.send_message(request.values.get(
-                'user_id'), "Your account was deleted.")
+        
             return str(self.controller.delete_user(request.values.get('user_id')))
         else:
             return 'Need id of user'
@@ -269,9 +267,6 @@ class API:
                 request.values.get('order_id'))['doc']['title']
             _, _, _, user_for_notify = self.controller.return_doc(
                 request.values.get('order_id'))
-            if user_for_notify != -1:
-                self.notifictation.send_message(
-                    user_for_notify, "You can get document "+title_doc)
         else:
             return 'Need id of order'
 
@@ -416,7 +411,4 @@ class API:
         f, notify_users = self.controller.outstanding_request(
             request.values.get('doc_id'), request.values.get('type'))
         print(f, notify_users)
-        for user in notify_users:
-            self.notifictation.send_message(
-                user, "Please return document " + title_book)
         return "OK"
