@@ -44,3 +44,7 @@ def is_int(n):
         return True
     except ValueError:
         return False
+
+
+def to_list(s):
+    return list(map(int, re.split(r"\d+", s)))
