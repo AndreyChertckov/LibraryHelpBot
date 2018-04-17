@@ -4,7 +4,7 @@ import logging
 
 from AdminSite.utils import generate_sault, md5_hash, create_session, check_session, check_privilege
 
-from configs import host, port, telegram_alias
+from configs import host, port, inet_addr,telegram_alias
 
 logger = logging.getLogger('api-site')
 
@@ -131,9 +131,9 @@ class API:
     @security_decorator_maker(3)
     def get_verification_links(self):
         if int(port) == 80:
-            link = "http://" + host + '/signup?verification_string='
+            link = "http://" + inet_addr + '/signup?verification_string='
         else:
-            link = "http://" + host + \
+            link = "http://" + inet_addr + ":"+\
                 str(port) + '/signup?verification_string='
         ver_strings = self.dbmanager.all_verification_strings(1)
         if ver_strings:
