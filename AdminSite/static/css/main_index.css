@@ -26,7 +26,6 @@ body {
     position: -webkit-sticky;
     position: sticky;
     top: 48px; /* Height of navbar */
-    padding-top:4em;
     height: calc(100vh - 48px);
     overflow-x: hidden;
     overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */

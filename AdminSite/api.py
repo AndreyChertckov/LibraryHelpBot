@@ -4,7 +4,7 @@ import logging
 
 from AdminSite.utils import generate_sault, md5_hash, create_session, check_session, check_privilege
 
-from configs import host, telegram_alias
+from configs import host, port, telegram_alias
 
 logger = logging.getLogger('api-site')
 
@@ -130,7 +130,11 @@ class API:
 
     @security_decorator_maker(3)
     def get_verification_links(self):
-        link = "http://" + host + '/signup?verification_string='
+        if int(port) == 80:
+            link = "http://" + host + '/signup?verification_string='
+        else:
+            link = "http://" + host + \
+                str(port) + '/signup?verification_string='
         ver_strings = self.dbmanager.all_verification_strings(1)
         if ver_strings:
             output = [link+string[0] + ' -------- Privilege level: ' + str(
@@ -176,7 +180,8 @@ class API:
     def get_account_info(self):
         session_id = request.cookies['session_id']
         user_id = self.dbmanager.get_user_id_by_session(session_id)[0]
-        user = dict(zip(['id','login','password','name','phone','address','chat_id','privilege'],self.dbmanager.get_user_by_id(user_id)))
+        user = dict(zip(['id', 'login', 'password', 'name', 'phone', 'address',
+                         'chat_id', 'privilege'], self.dbmanager.get_user_by_id(user_id)))
         user.pop('password')
         user.pop('chat_id')
         return jsonify(user)

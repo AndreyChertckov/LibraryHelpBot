@@ -1084,7 +1084,7 @@ function awaiting_orders() {
             alert('Access forbidden.');
         } else {
             output_html = "<div class='row'>\
-            <div class = 'col-3'><h3>Awaiting orders</h3></div>\
+            <div class = 'col-6'><h3>Awaiting orders</h3></div>\
             </div>\
             <div class='row'><div class='col-md-12'><input id='search' class='form-control w-100' placeholder='Search' aria-label='Search' type='text'></div></div>\
             <div class='table-responsive'>\
