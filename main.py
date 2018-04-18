@@ -14,9 +14,10 @@ def main():
     file_db = 'DataBase.db'
     lc = False
     lf = False
+    only_site = False
     cleanup_database = False
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'h:s:t:c', ['log_file=', 'database=','cleanup_database'])
+        opts, args = getopt.getopt(sys.argv[1:], 'h:s:t:c', ['log_file=', 'database=','cleanup_database','only_site'])
     except getopt.GetoptError:
         print('main.py -t -c --log_file=<filelog> --database=<filedb>')
         sys.exit(2)
@@ -39,16 +40,26 @@ def main():
             file_db = arg
         elif opt == '--cleanup_database':
             cleanup_database = True
+        elif opt == '--only_site':
+            only_site = True
     c = Controller(file_db, lc, lf, file_log)
-    LibraryBot = start_bot(c)
-    site = Main(c,LibraryBot.get_bot())
-    if cleanup_database:
-        site.api.dbmanager.cleanup_database()
-        site.api.dbmanager.init_tables()
-    thread_site = threading.Thread(target=site.run)
-    thread_site.start()
-    LibraryBot.run()
-    
+    if not only_site:
+        LibraryBot = start_bot(c)
+        site = Main(c,LibraryBot.get_bot())
+        if cleanup_database:
+            site.api.dbmanager.cleanup_database()
+            site.api.dbmanager.init_tables()
+        thread_site = threading.Thread(target=site.run)
+        thread_site.start()
+        LibraryBot.run()
+    else:
+        print('saotehus')
+        site = Main(c,None)
+        if cleanup_database:
+            site.api.dbmanager.cleanup_database()
+            site.api.dbmanager.init_tables()
+        site.run()
+        
 
 
 if __name__ == '__main__':

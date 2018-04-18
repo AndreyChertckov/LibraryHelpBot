@@ -4,7 +4,7 @@ from AdminSite.views import Views
 from AdminSite.DBmanager import DBManager
 from AdminSite.notification import Notification
 
-from configs import admin_user_login,admin_user_pass
+from configs import admin_user_login,admin_user_pass,host,port,debug
 from AdminSite.utils import md5_hash
 
 class Main:
@@ -18,10 +18,10 @@ class Main:
         self.create_admin_user()
 
     def create_admin_user(self):
-        user = {'login': admin_user_login,'name':'','phone':'','address':'','privilege':'4'}
+        user = {'login': admin_user_login,'name':'Admin','phone':'','address':'','privilege':'3'}
         user['passwd'] = md5_hash(admin_user_pass.encode('utf-8'))
         if not self.dbmanager.get_user_id(admin_user_login,user['passwd']):
             self.dbmanager.create_user(user)
     
     def run(self):
-        self.app.run(threaded=True)
+        self.app.run(threaded=True,host=host,port=int(port),debug=debug)

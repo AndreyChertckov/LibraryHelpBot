@@ -4,7 +4,7 @@ import logging
 
 from AdminSite.utils import generate_sault, md5_hash, create_session, check_session, check_privilege
 
-from configs import host, telegram_alias
+from configs import host, port, inet_addr,telegram_alias
 
 logger = logging.getLogger('api-site')
 
@@ -130,7 +130,11 @@ class API:
 
     @security_decorator_maker(3)
     def get_verification_links(self):
-        link = "http://" + host + '/signup?verification_string='
+        if int(port) == 80:
+            link = "http://" + inet_addr + '/signup?verification_string='
+        else:
+            link = "http://" + inet_addr + ":"+\
+                str(port) + '/signup?verification_string='
         ver_strings = self.dbmanager.all_verification_strings(1)
         if ver_strings:
             output = [link+string[0] + ' -------- Privilege level: ' + str(
@@ -176,7 +180,8 @@ class API:
     def get_account_info(self):
         session_id = request.cookies['session_id']
         user_id = self.dbmanager.get_user_id_by_session(session_id)[0]
-        user = dict(zip(['id','login','password','name','phone','address','chat_id','privilege'],self.dbmanager.get_user_by_id(user_id)))
+        user = dict(zip(['id', 'login', 'password', 'name', 'phone', 'address',
+                         'chat_id', 'privilege'], self.dbmanager.get_user_by_id(user_id)))
         user.pop('password')
         user.pop('chat_id')
         return jsonify(user)
@@ -190,8 +195,7 @@ class API:
         if 'user_id' in request.values:
             user_id = request.values.get('user_id')
             success = self.controller.confirm_user(user_id)
-            self.notifictation.send_message(
-                user_id, "Your application was confirmed.")
+        
             return 'OK' if success else "Somthing went wrong"
         else:
             return 'Need id of user'
@@ -213,8 +217,7 @@ class API:
     @security_decorator_maker(2)
     def delete_user_post(self):
         if 'user_id' in request.values:
-            self.notifictation.send_message(request.values.get(
-                'user_id'), "Your account was deleted.")
+        
             return str(self.controller.delete_user(request.values.get('user_id')))
         else:
             return 'Need id of user'
@@ -264,9 +267,6 @@ class API:
                 request.values.get('order_id'))['doc']['title']
             _, _, _, user_for_notify = self.controller.return_doc(
                 request.values.get('order_id'))
-            if user_for_notify != -1:
-                self.notifictation.send_message(
-                    user_for_notify, "You can get document "+title_doc)
         else:
             return 'Need id of order'
 
@@ -411,7 +411,4 @@ class API:
         f, notify_users = self.controller.outstanding_request(
             request.values.get('doc_id'), request.values.get('type'))
         print(f, notify_users)
-        for user in notify_users:
-            self.notifictation.send_message(
-                user, "Please return document " + title_book)
         return "OK"
