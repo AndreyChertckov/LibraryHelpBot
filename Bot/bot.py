@@ -85,46 +85,38 @@ class LibraryBot:
     #  bot -- This object represents a Bot's commands
     #  update -- This object represents an incoming update
     def main_menu(self, bot, update):
-        chat = update.message.chat_id
-        user_type = self.controller.user_type(chat)
+        chat_id = update.message.chat_id
+        user_type = self.controller.user_type(chat_id)
         keyboard = self.keyboard_dict[self.types[user_type]]
-        self.location[chat] = 'main'
-        self.user_data[chat] = []
-        bot.send_message(chat_id=chat, text='Main menu', reply_markup=RKM(keyboard, True))
+        self.location[chat_id] = 'main'
+        self.user_data[chat_id] = []
+        bot.send_message(chat_id=chat_id, text='Main menu', reply_markup=RKM(keyboard, True))
 
     def check_overdue(self, bot, update):
         pass
 
-    def get_data(self, bot, chat, location, text=None):
+    def get_data(self, bot, chat_id, location, text=None):
         n = 5
         data_list = []
         if location == 'confirm':
             data_list = self.controller.get_all_unconfirmed()
-            if len(data_list) == 0:
-                bot.send_message(chat_id=chat, text='There are no application to confirm')
-                return [], 0
         elif location == 'library':
             doc_type = func_data.analog.get(text, text)
             data_list = self.controller.get_all_doctype(doc_type)
-            if len(data_list) == 0:
-                bot.send_message(chat_id=chat, text='There are no materials in the library')
-                return [], 0
         elif location == 'my_orders':
-            data_list = self.controller.get_user_orders(chat)
-            if len(data_list) == 0:
-                bot.send_message(chat_id=chat, text='You do not have active orders')
-                return [], 0
+            data_list = self.controller.get_user_orders(chat_id)
         elif location == 'users':
             data_list = self.controller.get_all_patrons()
-            if len(data_list) == 0:
-                bot.send_message(chat_id=chat, text='There are no patrons')
-                return [], 0
+
+        if len(data_list) == 0:
+            bot.send_message(chat_id=chat_id, text=func_data.empty_list[location])
+            return [], 0
 
         data_list = [data_list[i: i + n] for i in range(0, len(data_list), n)]
         max_page = len(data_list) - 1
         return data_list, max_page
 
-    def get_message(self, loc, page, item, doc_type=None, chat=None):
+    def get_message(self, loc, page, item, doc_type=None, chat_id=None):
         message = [0, 0]
         if loc == 'confirm':
             message[0] = 'Check whether all data is correct:\nName: {name}' \
@@ -140,11 +132,11 @@ class LibraryBot:
                 text += 'Journal: {journal}\nIssue: {issue}\nDate: {date}\nFree copy: {free_count}'
             elif doc_type == 'media':
                 text += 'Free copy: {free_count}'
-            if self.controller.user_type(chat) == 2:
+            if self.controller.user_type(chat_id) == 2:
                 cb = 'order {} {} {}' if item['free_count'] > 0 else 'queue {} {} {}'
                 keyboard = [[IKB('Order the document', callback_data=cb.format(item['id'], doc_type, loc)),
                              IKB('Cancel', callback_data='cancel {} {} {}'.format(page, doc_type, loc))]]
-            elif self.controller.user_type(chat) == 3:
+            elif self.controller.user_type(chat_id) == 3:
                 if item['free_count'] == item['count']:
                     keyboard = [[IKB('Edit', callback_data='edit {} {} {} {}'.format(page, item['id'], doc_type, loc)),
                                  IKB('Delete', callback_data='del {} {} {} {}'.format(page, item['id'], doc_type, loc)),
@@ -187,10 +179,10 @@ class LibraryBot:
         return message
 
     def online_init(self, bot, update):
-        chat = update.message.chat_id
-        loc = self.location[chat]
+        chat_id = update.message.chat_id
+        loc = self.location[chat_id]
         text = update.message.text
-        data_list, max_page = self.get_data(bot, chat, loc, text)
+        data_list, max_page = self.get_data(bot, chat_id, loc, text)
         if not data_list:
             return
         text_message = func_data.text_gen(data_list, loc)
@@ -204,10 +196,10 @@ class LibraryBot:
 
     def online_button_checker(self, bot, update):
         query = update.callback_query
-        chat = query.message.chat.id
+        chat_id = query.message.chat.id
         message_id = query.message.message_id
         action, *args, loc = query.data.split(' ')
-        data_list, max_page = self.get_data(bot, chat, loc, args[-1])
+        data_list, max_page = self.get_data(bot, chat_id, loc, args[-1])
         if not data_list:
             return
 
@@ -225,26 +217,26 @@ class LibraryBot:
             keyboard += [[IKB('⬅', callback_data='prev {} {}'.format(page, loc)),
                           IKB('➡️', callback_data='next {} {}'.format(page, loc))]]
             bot.edit_message_text(text=text_message + '\n\nCurrent page: {}/{}'.format(page + 1, max_page + 1),
-                                  chat_id=chat,
+                                  chat_id=chat_id,
                                   message_id=message_id, reply_markup=IKM(keyboard))
         elif action == 'item':
             k = int(args[0])
             page = int(args[1])
             item = data_list[page][k]
-            message = self.get_message(loc, page, item, args[-1], chat)
-            bot.edit_message_text(chat_id=chat, message_id=message_id, text=message[0], reply_markup=message[1])
+            message = self.get_message(loc, page, item, args[-1], chat_id)
+            bot.edit_message_text(chat_id=chat_id, message_id=message_id, text=message[0], reply_markup=message[1])
         elif action in ['accept', 'reject'] and loc == 'confirm':
             user_id = int(args[0])
-            ids = [chat, message_id]
+            ids = [chat_id, message_id]
             self.conf_user(bot, ids, user_id, action)
         elif loc == 'library':
-            ids = [chat, message_id]
+            ids = [chat_id, message_id]
             self.modify_document(bot, ids, action, args)
         elif loc == 'users':
-            ids = [chat, message_id]
+            ids = [chat_id, message_id]
             self.user_flip(bot, ids, action, args)
         elif loc == 'my_orders':
-            ids = [chat, message_id]
+            ids = [chat_id, message_id]
             self.manage_orders(bot, ids, action, args)
 
     def get_bot(self):

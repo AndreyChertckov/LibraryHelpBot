@@ -71,7 +71,7 @@ sample_messages = {
 
 lists = {
     "user_types": ['unauth', "unconf", "auth", 'admin'],
-    "reg_fields": ["name", 'phone', "address" , "status"],
+    "reg_fields": ["name", 'phone', "address", "status"],
     'book': ['title', 'list of authors (divided by ";")', 'description', 'keywords (divided by ";")', 'price', 'count'],
     "article": ['title', ' list of authors (separated by ";")', 'journal title', 'issue', 'issue editors',
                 'date of publication', 'keywords (separated by ";")', 'price', 'count'],
@@ -80,17 +80,23 @@ lists = {
     "article_bd": ['title', 'authors', 'journal', 'issue', 'editors', 'date', 'keywords', 'price', 'count'],
     "media_bd": ['title', 'authors', 'keywords', 'price', 'count'],
     'order_db': ['id', 'time', 'table', 'doc_id', 'user_id', 'time_out', 'active', 'renewed'],
-    'book_db': ['id', 'title', 'authors', 'description', 'count', 'free_count', 'price', 'best_seller', 'keywords', 'queue'],
+    'book_db': ['id', 'title', 'authors', 'description', 'count', 'free_count', 'price', 'best_seller', 'keywords',
+                'queue'],
     'article_db': ['id', 'title', 'authors', 'journal', 'count', 'free_count', 'price', 'keywords', 'issue', 'editors',
-                'date', 'queue'],
+                   'date', 'queue'],
     'media_db': ['id', 'title', 'authors', 'count', 'free_count', 'price', 'keywords', 'queue'],
     'reference_book_db': ['id', 'title', 'authors', 'keywords'],
     'reference_article_db': ['id', 'title', 'authors', 'journal', 'keywords', 'issue', 'editors', 'date'],
     'patrons_db': ['id', 'name', 'phone', 'address', 'history', 'current_docs', 'status'],
     'unconfirmed_db': ['id', 'name', 'phone', 'address', 'status'],
     'librarians_db': ['id', 'name', 'phone', 'address']
+}
 
-
+empty_list = {
+    'users': 'There are no patrons',
+    'my_orders': 'You do not have active orders',
+    'library': 'There are no materials in the library',
+    'confirm': 'There are no application to confirm'
 }
 
 analog = {
