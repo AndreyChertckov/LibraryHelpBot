@@ -30,4 +30,4 @@ class Main:
             self.dbmanager.create_user(user)
 
     def run(self):
-        self.app.run(threaded=True, host=host, port=int(port), debug=debug)
+        self.app.run(threaded=True, host=host, port=int(port), debug=debug, ssl_context=self.context)
