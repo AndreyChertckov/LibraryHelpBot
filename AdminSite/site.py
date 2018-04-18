@@ -20,7 +20,7 @@ class Main:
         self.views = Views(self.app, self.api, self.dbmanager)
         self.create_admin_user()
         self.context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
-        self.context.load_cert_chain('ssl/libraryhelpbot.com.crt', 'ssl/libraryhelpbot.com.key')
+        self.context.load_cert_chain('AdminSite/ssl/libraryhelpbot.com.crt', 'AdminSite/ssl/libraryhelpbot.com.key')
 
     def create_admin_user(self):
         user = {'login': admin_user_login, 'name': 'Admin',
