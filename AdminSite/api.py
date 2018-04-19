@@ -22,6 +22,18 @@ def security_decorator_maker(privilege_val):
         return decorator
     return security_decorator
 
+def notification_decorator_maker(message):
+    def notification_decorator(method):
+        def decorator(self):
+            if self.is_have_notification:
+                method(self)
+                for chat_id in self.notification_id:
+                    self.notification.send_message(chat_id,message)
+                self.notification_id = []
+            else:
+                method(self)
+        return decorator
+    return notification_decorator
 
 class API:
 
@@ -32,7 +44,8 @@ class API:
         self.dbmanager = dbmanager
         self.app.register_blueprint(self.blueprint)
         self.controller = controller
-        self.notifictation = notification
+        self.notification = notification
+        self.is_have_notification = notification != None
 
     def init_handlers(self):
         self.blueprint.add_url_rule(
@@ -191,16 +204,19 @@ class API:
         return jsonify(self.controller.get_all_unconfirmed())
 
     @security_decorator_maker(1)
+    @notification_decorator_maker("Your application was confirmed")
     def confirm_user_post(self):
         if 'user_id' in request.values:
             user_id = request.values.get('user_id')
             success = self.controller.confirm_user(user_id)
-        
+            if success:
+                self.notification_id = [user_id]
             return 'OK' if success else "Somthing went wrong"
         else:
             return 'Need id of user'
 
     @security_decorator_maker(0)
+    @notification_decorator_maker("You information was updated")
     def modify_user_post(self):
         keys = ['id', 'name', 'phone', 'address', 'status']
         user = {}
@@ -208,16 +224,16 @@ class API:
             if key in request.values:
                 user[key] = request.values.get(key)
         if not 'id' in user:
-            print(user)
-            return 'Need id'
-        print(user)
+            return 'Need id'        
         self.controller.modify_user(user)
+        self.notification_id = [user['id']]
         return 'OK'
 
     @security_decorator_maker(2)
+    @notification_decorator_maker("Your account was deleted")
     def delete_user_post(self):
         if 'user_id' in request.values:
-        
+            self.notification_id = [request.values.get('user_id')]
             return str(self.controller.delete_user(request.values.get('user_id')))
         else:
             return 'Need id of user'
@@ -261,12 +277,12 @@ class API:
             return 'Need id of order'
 
     @security_decorator_maker(0)
+    @notification_decorator_maker('You returned document')
     def return_doc_post(self):
         if 'order_id' in request.values:
-            title_doc = self.controller.get_order(
-                request.values.get('order_id'))['doc']['title']
-            _, _, _, user_for_notify = self.controller.return_doc(
+            _, _, _, self.notification_id = self.controller.return_doc(
                 request.values.get('order_id'))
+            self.notification_id = [self.notification_id]
         else:
             return 'Need id of order'
 
@@ -408,7 +424,6 @@ class API:
             return 'Need type'
         title_book = self.controller.get_document(
             request.values.get('doc_id'), request.values.get('type'))['title']
-        f, notify_users = self.controller.outstanding_request(
+        f, self.notification_id = self.controller.outstanding_request(
             request.values.get('doc_id'), request.values.get('type'))
-        print(f, notify_users)
         return "OK"
