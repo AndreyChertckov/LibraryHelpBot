@@ -145,6 +145,8 @@ class API:
     def get_verification_links(self):
         if int(port) == 80:
             link = "http://" + inet_addr + '/signup?verification_string='
+        if int(port) == 443:
+            link = "https://" + inet_addr + '/signup?verification_string='
         else:
             link = "http://" + inet_addr + ":"+\
                 str(port) + '/signup?verification_string='
