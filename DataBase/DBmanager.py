@@ -43,6 +43,7 @@ class Manager:
         cur = self.__create_connection().cursor()
         cur.execute("SELECT * FROM " + str(table_to_select))
         rows = cur.fetchall()
+        cur.close()
         return rows
 
     # Add new order to DB
@@ -94,6 +95,7 @@ class Manager:
         cur = self.__create_connection().cursor()
         cur.execute("SELECT * FROM " + selecting_table + " WHERE id=" + str(id) + ";")
         a = cur.fetchone()
+        cur.close()
         return a
 
     # Add new  book to DB
@@ -103,10 +105,9 @@ class Manager:
     def add_book(self, newDoc):
         sql = """INSERT INTO book(title,authors,description,count,free_count,price,best_seller,keywords,queue)
             VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
-
-        cur = self.__create_connection().cursor()
         self.add_new(sql, (newDoc.title, newDoc.authors, newDoc.description, newDoc.count, newDoc.free_count,
                            newDoc.price, newDoc.best_seller, newDoc.keywords, '[[],[],[],[],[]]'))
+        
 
     # Add new media to DB
     # params:
@@ -146,6 +147,7 @@ class Manager:
         sql = "UPDATE " + table + " SET " + ', '.join([set + '=%s' for set in sets]) + " WHERE id=%s"
         cur = self.__create_connection().cursor()
         cur.execute(sql, tuple(newLabels + [id]))
+        cur.close()
 
     # Deletes some record
     # params:
@@ -180,6 +182,7 @@ class Manager:
     def __create_table(self, create_table_sql):
         c = self.__create_connection().cursor()
         c.execute(create_table_sql)
+        c.close()
 
     # Create all tables
     def __create_tables(self):
@@ -286,37 +289,46 @@ class Manager:
     def add_new(self, sql, new):
         cur = self.__create_connection().cursor()
         cur.execute(sql, new)
-        return cur.lastrowid
+        res = cur.lastrowid
+        cur.close()
+        return res
 
     def get_max_id(self, table):
         cur = self.__create_connection().cursor()
         cur.execute("SELECT max(id) from " + table)
         a = cur.fetchone()[0]
+        cur.close()
         return a if a else 0
 
     def get_by(self, get_by_what, get_from, get_value):
         sql = "SELECT * from " + get_from + " WHERE " + get_by_what + "=%s"
         cur = self.__create_connection().cursor()
-        ans = cur.execute(sql, (get_value,))
-        return cur.fetchall()
+        cur.execute(sql, (get_value,))
+        res = cur.fetchall()
+        cur.close()
+        return res
 
     def get_by_parameters(self, get_by_whats, get_from, get_values):
         sql = "SELECT * from " + get_from + " WHERE " + ' AND '.join([param + '=%s' for param in get_by_whats])
         cur = self.__create_connection().cursor()
-        ans = cur.execute(sql, tuple(get_values))
-        return cur.fetchall()
+        cur.execute(sql, tuple(get_values))
+        ans = cur.fetchall()
+        cur.close()
+        return ans
 
     def get_label(self, what_to_select, from_table, id):
         cur = self.__create_connection().cursor()
         sql="SELECT " + what_to_select + " from " + from_table + " WHERE id=" + str(id)
         cur.execute(sql)
         a = cur.fetchone()[0]
+        cur.close()
         return a
 
     def get_count(self, table):
         cur = self.__create_connection().cursor()
         cur.execute("SELECT count(*) from " + table + ";")
         a = cur.fetchone()[0]
+        cur.close()
         return a
 
     def get_connection(self):
