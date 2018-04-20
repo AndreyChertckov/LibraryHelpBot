@@ -21,7 +21,8 @@ class LibraryBot:
     # controller -- data base connector
     def __init__(self, token, controller):
         self.controller = controller
-        self.updater = Updater(token=token)
+        self.updater = Updater(token=token,  request_kwargs={
+            'proxy_url': 'socks5://196.18.13.70:8000', 'urllib3_proxy_kwargs': {'username':'Q5aawZ', 'password':'dN0xJX'}})
         self.dispatcher = self.updater.dispatcher
         self.bot = self.updater.bot
         logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -163,7 +164,8 @@ class LibraryBot:
             user = item
             user_id = user['id']
             orders = self.controller.get_user_orders(user_id)
-            text = 'Name: {name}\nAddress: {address}\nPhone: {phone}\nStatus: {status}\nTaken documents: '.format(**user)
+            text = 'Name: {name}\nAddress: {address}\nPhone: {phone}\nStatus: {status}\nTaken documents: '.format(
+                **user)
             text += '{}\nOverdue documents: '.format(len(orders))
             overdue = filter(lambda i: datetime.strptime(i['time_out'], '%Y-%m-%d') < datetime.today(), orders)
             text += str(len(list(overdue)))
@@ -189,7 +191,8 @@ class LibraryBot:
         if loc == 'library':
             loc = func_data.analog[text] + ' ' + loc
 
-        keyboard = [[IKB(str(i + 1), callback_data='item {} {} {}'.format(i, 0, loc)) for i in range(len(data_list[0]))]]
+        keyboard = [
+            [IKB(str(i + 1), callback_data='item {} {} {}'.format(i, 0, loc)) for i in range(len(data_list[0]))]]
         keyboard += [[IKB('⬅', callback_data='prev 0 {} ' + loc), IKB('➡️', callback_data='next 0 ' + loc)]]
         update.message.reply_text(text=text_message + '\n\nCurrent page: 1/' + str(max_page + 1),
                                   reply_markup=IKM(keyboard))
