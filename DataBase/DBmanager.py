@@ -24,6 +24,7 @@ class Manager:
         # self.drop_tables()
         self.__create_tables()
 
+
     # Get all data from some table
     # params:
     # ----table_to_select - name of the table to get information
@@ -186,6 +187,7 @@ class Manager:
 
     # Create all tables
     def __create_tables(self):
+        self.__create_table("""SET sql_notes = 0;""")
         self.__create_table("""
                         CREATE TABLE IF NOT EXISTS unconfirmed (
                         id INTEGER PRIMARY KEY,
@@ -281,6 +283,7 @@ class Manager:
              FOREIGN KEY (user_id) REFERENCES patrons(id)
              );
         """)
+        self.__create_table("""SET sql_notes = 1;""")
 
     # Add new record to the database
     # params:
