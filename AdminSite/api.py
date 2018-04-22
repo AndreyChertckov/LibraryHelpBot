@@ -247,8 +247,9 @@ class API:
 
     @security_decorator_maker(0)
     def get_all_librarians_post(self):
-        librarians_list = [dict(zip(['id', 'name', 'phone', 'address'], tup))
+        librarians_list = [dict(zip(['id', 'name', 'phone', 'address','chat_id','privilege'], tup))
                            for tup in self.dbmanager.get_users()]
+        
         return jsonify(librarians_list)
 
     @security_decorator_maker(0)
@@ -420,6 +421,7 @@ class API:
         return jsonify(self.controller.get_document_queue(request.values.get('type'), request.values.get('doc_id')))
 
     @security_decorator_maker(1)
+    @notification_decorator_maker("You are removed from queue.")
     def outstanding_post(self):
         if not 'doc_id' in request.values:
             return 'Need id'
