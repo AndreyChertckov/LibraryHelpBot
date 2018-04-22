@@ -195,7 +195,7 @@ function librarians_table() {
                             <th>Name</th>\
                             <th>Phone</th>\
                             <th>Address</th>\
-                            <th></th>\
+                            <th>Privilege</th>\
                         </tr>\
                     </thead>\
                     <tbody id='tbody'>";
