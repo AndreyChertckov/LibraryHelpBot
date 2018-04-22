@@ -26,12 +26,13 @@ def notification_decorator_maker(message):
     def notification_decorator(method):
         def decorator(self):
             if self.is_have_notification:
-                method(self)
+                result = method(self)
                 for chat_id in self.notification_id:
                     self.notification.send_message(chat_id,message)
                 self.notification_id = []
+                return result
             else:
-                method(self)
+                return method(self)
         return decorator
     return notification_decorator
 
