@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from Bot.func_data import tuple_to_dict
 from DataBase.DBmanager import Manager
 from DataBase.DBPackager import Packager
@@ -29,6 +29,7 @@ class Controller:
                 fh.setFormatter(formater)
                 self.logger.addHandler(fh)
         self.log('INFO', 'Start work.')
+        self.outstanding = []
 
     def log(self, type_msg, msg):
         if self.is_log:
@@ -76,14 +77,17 @@ class Controller:
             ['new ' + str(key) + ' is ' + str(new_user_info[key]) for key in new_user_info.keys()])
         self.log('INFO', log)
 
-    # Delete user by user_info
-    # param: user_info: dictionary {id,name,address,status,phone}
+    # Delete user by user_id
+    # param: user_id: id of user
     def delete_user(self, user_id):
         table = ['unauthorized', 'unconfirmed', 'patrons', 'librarians'][self.user_type(user_id)]
         if table != 'unauthorized':
-            u_name = self.get_user(user_id)['name']
+            user = self.get_user(user_id)
+            if table == 'patrons' and user['current_docs'] != '[]':
+                return False
             self.DBmanager.delete_label(table, user_id)
-            self.log('INFO', 'User {} is deleted from table {}.'.format(u_name, table))
+            self.log('INFO', 'User {} is deleted from table {}.'.format(user['name'], table))
+            return True
 
     # Return all users who don`t confirmed
     def get_all_unconfirmed(self):
@@ -107,7 +111,8 @@ class Controller:
     # param : user_id - id of user
     # return : bool value
     def chat_exists(self, user_id):
-        return any([self.DBmanager.select_label('librarians', user_id), self.DBmanager.select_label('patrons', user_id)])
+        return any(
+            [self.DBmanager.select_label('librarians', user_id), self.DBmanager.select_label('patrons', user_id)])
 
     # Return user by id
     # param : user_id - id of user
@@ -148,7 +153,14 @@ class Controller:
         mas = eval(self.DBmanager.get_label('queue', doc_type, doc_id))
         priority = priority_dict[status]
         if mas[priority].__contains__(user_id):
-            return
+            return False, "You are already in queue"
+        current = eval(self.DBmanager.get_label('current_docs', 'patrons', user_id))
+
+        for i in current:
+            order = self.get_order(i)
+            if order['doc_id'] == doc_id:
+                return False, "You already have this document"
+
         mas[priority] += [user_id]
         self.DBmanager.edit_label(doc_type, ['queue'], [str(mas)], doc_id)
         queue = eval(self.DBmanager.get_label('queue', 'patrons', user_id))
@@ -164,7 +176,7 @@ class Controller:
         priority_dict = {'Student': 0, 'Instructor': 1, 'TA': 2, 'Visiting Professor': 3, 'Professor': 4}
         queue = eval(self.DBmanager.get_label('queue', 'patrons', user_id))
         for i in queue:
-            if i[:2] == [doc_id, type_of_media]:
+            if (i == (doc_id, type_of_media)):
                 queue.remove(i)
         doc_queue = eval(self.DBmanager.get_label('queue', type_of_media, doc_id))
         priority = priority_dict[self.get_user(user_id)['status']]
@@ -172,27 +184,39 @@ class Controller:
         self.DBmanager.edit_label(type_of_media, ['queue'], [str(doc_queue)], doc_id)
         self.DBmanager.edit_label('patrons', ['queue'], [str(queue)], user_id)
 
-    def renew_item(self, user_id, doc_type, doc_id):
-        user = self.get_user(user_id, status=2)
-        orders_id = eval(user['current_docs'])
-        returning_time = self.get_returning_time(0, doc_type, doc_id, user_id)
-        for order_id in orders_id:
-            order = self.get_order(order_id)
-            if ((order['table'], order['doc_id']) == (doc_type, doc_id)
-                and (order['renewed'] == 0 or user['status'] == 'Visiting Professor')):
-                self.DBmanager.edit_label('orders', ['out_of_time', 'renewed'],
-                                          [str(datetime.now() + timedelta(weeks=returning_time)), order['renewed'] + 1],
-                                          order_id)
+    def renew_item(self, order_id, cur_date=datetime.now()):
 
-    def get_document_queue(self, doc_type,doc_id):
+        order = self.get_order(order_id)
+        if (order['doc_id'], order['table']) in self.outstanding:
+            return False
+
+        user = self.get_user(order['user_id'])
+        new_date = (datetime.strptime(order['time_out'], '%Y-%m-%d') + timedelta(weeks=1)).date().isoformat()
+        if order['renewed'] == 0:
+            self.DBmanager.edit_label('orders', ['out_of_time', 'renewed'], [new_date, 1], order_id)
+            return True
+        elif user['status'] == 'Visiting Professor':
+            self.DBmanager.edit_label('orders', ['out_of_time'], [new_date], order_id)
+            return True
+        return False
+
+    def delete_doc_queue(self, doc_id, doc_type):
+        queue = eval(self.DBmanager.get_label('queue', doc_type, doc_id))
+
+        for i in queue:
+            for id in i:
+                self.delete_user_queue(id, doc_type, doc_id)
+
+    def get_document_queue(self, doc_type, doc_id):
         output = []
-        queue = self.DBmanager.get_label('queue',doc_type,doc_id)
-        for i in range(1,5):
-            queue[0].extends(queue[i])
+        queue = eval(self.DBmanager.get_label('queue', doc_type, doc_id))
+        for i in range(1, 5):
+            queue[0].extend(queue[i])
         queue = queue[0]
         for user_id in queue:
             output.append(self.get_user(user_id))
         return output
+
     # def delete_queue_order(self, user_id, type_of_media, doc_id):
 
     def get_user_by_name(self, name, by_who_id=-1):
@@ -201,18 +225,16 @@ class Controller:
         self.log('INFO', 'Get user with name {} by {}'.format(name, by_who))
         return tuple_to_dict('patrons', user)
 
-    # Check out book
-    # param : user_id - id of user
-    # param : book_id - id of book
     def get_returning_time(self, returning_time, type_bd, doc_id, user_id):
         user_status = self.DBmanager.get_label('status', 'patrons', user_id)
         if returning_time == 0 and type_bd == 'book':
             is_best_seller = self.DBmanager.get_label('best_seller', type_bd, doc_id) == 1
             returning_time = 3 if user_status == 'Student' else 4
             returning_time = 2 if is_best_seller else returning_time
+            returning_time = 4 if user_status == 'Professor' else returning_time
         elif type_bd != 'book':
             returning_time = 2
-        returning_time = 1 if user_status == 'VP' else returning_time
+        returning_time = 1 if user_status == 'Visiting Professor' else returning_time
         return returning_time
 
     def check_out_doc(self, user_id, doc_id, type_bd='book', returning_time=0, date_when_took=datetime.now()):
@@ -272,17 +294,58 @@ class Controller:
     def user_get_doc(self, order_id):
         self.DBmanager.edit_label('orders', ['active'], [1], order_id)
 
-    def calculate_fine(self, order):
-        time_out = datetime.strptime(order['time_out'],"%Y-%m-%d")
-        days = divmod(datetime.now() - time_out,86400)
-        fine = days*100
+    def calculate_fine(self, order, cur_date=date.today()):
+        order['doc'] = self.get_document(order['doc_id'], order['table'])
+        time_out = datetime.strptime(order['time_out'], "%Y-%m-%d").date()
+        fine = (cur_date - time_out).days * 100
+        return max(min(fine, order['doc']['price']), 0)
 
-    def return_doc(self, order_id):
+    # Need to pass tests
+    def get_overdue(self, user_id, date_=date.today()):
+        user_orders = self.get_user_orders(user_id)
+        overdue = []
+        for id in user_orders:
+            time_out = datetime.strptime(id['time_out'], "%Y-%m-%d").date()
+            overdue.append((self.DBmanager.get_label('title', id['table'], id['doc_id']),
+                            (date_ - time_out).days))
+        return overdue
+
+    def get_fine(self, user_id, date):
+        user_orders = self.get_user_orders(user_id)
+        fine = []
+        for id in user_orders:
+            fine.append((self.DBmanager.get_label('title', id['table'], id['doc_id']),
+                         self.calculate_fine(id, date)))
+        return fine
+
+    def get_user_due(self, user_id):
+        user_orders = self.get_user_orders(user_id)
+        doc = []
+        for order in user_orders:
+            doc.append((self.DBmanager.get_label('title', order['table'], order['doc_id']),
+                        order['time_out']))
+        return doc
+
+    def outstanding_request(self, doc_id, doc_type, date=date.today()):
+        orders = self.get_all_orders()
+        self.outstanding.append((doc_id, doc_type))
+        deleted_from_waiting_list = [i['id'] for i in self.get_document_queue(doc_type, doc_id)]
+        self.delete_doc_queue(doc_id, doc_type)
+        notified_patrons = []
+        for order in orders:
+            if order['table'] == doc_type and str(order['doc_id']) == str(doc_id) and order['active'] == 1:
+                self.DBmanager.edit_label('orders', ['out_of_time'], [str(date)], order['id'])
+                notified_patrons.append(order['user_id'])
+        return [deleted_from_waiting_list, notified_patrons]
+
+    def return_doc(self, order_id, testing=False):
         order = self.get_order(order_id)
         fine = self.calculate_fine(order)
         user_id, doc_id, doc_type = order["user_id"], order["doc_id"], order["table"]
         curr_doc = eval(self.DBmanager.get_label('current_docs', 'patrons', user_id))
         curr_doc.remove(order['id'])
+        if (doc_id, doc_type) in self.outstanding:
+            self.outstanding.remove((doc_id,doc_type))
 
         free_count = int(self.DBmanager.get_label("free_count", order['table'], doc_id))
         free_count += 1
@@ -295,13 +358,22 @@ class Controller:
         self.log('INFO', 'User {} is returned document {}.'.format(
             self.get_user(user_id)['name'],
             self.get_document(doc_id, order['table'])['title']))
-        return True, fine
+        queue = self.get_document_queue(order["table"], doc_id)
+        next_owner = 0
+        queue_was_used = [False]
+        if len(queue) != 0:
+
+            next_owner = queue[0]
+            if (not testing):
+                 self.delete_user_queue(next_owner['id'], order["table"], doc_id)
+                 self.check_out_doc(next_owner['id'], doc_id, order["table"])
+            queue_was_used = [True, next_owner]
+        return True, fine, queue_was_used, next_owner['id']
 
     def get_user_orders(self, user_id):
         user = self.get_user(user_id)
         if not user:
             return []
-        # print()
         orders_id = eval(user['current_docs'])
         output = []
 

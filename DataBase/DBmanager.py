@@ -21,8 +21,24 @@ class Manager:
 
         self.db_connectionn = pymysql.connect('localhost', library_login_database, library_password_database,
                                               library_database, autocommit=True)
-        # self.drop_tables()
         self.__create_tables()
+
+    def get_connection(self):
+        return self.db_connectionn.cursor()
+        # return self.__create_connection(self.file).cursor()
+
+    # Execute sql query:
+    # params:
+    # ----create_table_sql - sql query(string)
+    def __execute_sql(self, *sql_query):
+        c = self.get_connection()
+        c.execute(*sql_query)
+        c.close()
+
+    def __return_sql(self, *sql_request):
+        c = self.get_connection()
+        c.execute(*sql_request)
+        return c
 
     # Get all data from some table
     # params:
@@ -36,11 +52,13 @@ class Manager:
         self.drop_table('article')
         self.drop_table('media')
         self.drop_table('unconfirmed')
+        self.drop_table('orders')
+        self.__create_tables()
 
     def select_all(self, table_to_select):
-        cur = self.__create_connection().cursor()
-        cur.execute("SELECT * FROM " + str(table_to_select))
+        cur = self.__return_sql("SELECT * FROM " + str(table_to_select))
         rows = cur.fetchall()
+        cur.close()
         return rows
 
     # Add new order to DB
@@ -89,9 +107,9 @@ class Manager:
     # returns:cortege with all attributes
 
     def select_label(self, selecting_table, id):
-        cur = self.__create_connection().cursor()
-        cur.execute("SELECT * FROM " + selecting_table + " WHERE id=" + str(id) + ";")
+        cur = self.__return_sql("SELECT * FROM " + selecting_table + " WHERE id=" + str(id) + ";")
         a = cur.fetchone()
+        cur.close()
         return a
 
     # Add new  book to DB
@@ -101,8 +119,6 @@ class Manager:
     def add_book(self, newDoc):
         sql = """INSERT INTO book(title,authors,description,count,free_count,price,best_seller,keywords,queue)
             VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
-
-        cur = self.__create_connection().cursor()
         self.add_new(sql, (newDoc.title, newDoc.authors, newDoc.description, newDoc.count, newDoc.free_count,
                            newDoc.price, newDoc.best_seller, newDoc.keywords, '[[],[],[],[],[]]'))
 
@@ -140,10 +156,9 @@ class Manager:
     # ---table - table to update record from(string)
     # ---set - what to update(string)
     # ---newLabel - cortege , containing updated information
-    def edit_label(self, table, sets, newLabels, id):
+    def edit_label(self, table, sets, new_labels, id):
         sql = "UPDATE " + table + " SET " + ', '.join([set + '=%s' for set in sets]) + " WHERE id=%s"
-        cur = self.__create_connection().cursor()
-        cur.execute(sql, tuple(newLabels + [id]))
+        self.__execute_sql(sql, tuple(new_labels + [id]))
 
     # Deletes some record
     # params:
@@ -151,44 +166,25 @@ class Manager:
     # ---delID - id of the record to delete
 
     def delete_label(self, deleteFrom, deLID):
-        self.__create_connection().cursor().execute("DELETE FROM " + deleteFrom + " where id=%s", (deLID,))
+        self.__execute_sql("DELETE FROM " + deleteFrom + " where id=%s", (deLID,))
 
     # Clears some table
     # params:
     # ---table - table to clear(string)
     def clear_table(self, table):
-        # self.__create_connection(self.file).cursor().execute("UPDATE sqlite_sequence SET seq=%s where name=%s",
-        #                                                     (0, table,))
-        self.__create_connection().cursor().execute("DELETE FROM " + table)
+        self.__execute_sql("DELETE FROM " + table)
 
     # Deletes some table
     # params:
     # ---table - table to delete(string)
 
     def drop_table(self, table):
-        self.__create_connection().cursor().execute("DROP TABLE IF EXISTS " + table)
-
-    # Get connection to the database
-    def __create_connection(self, file=None):
-        return self.db_connectionn
-
-    # Execute sql query to create new table:
-    # params:
-    # ----create_table_sql - sql query(string)
-    def __create_table(self, create_table_sql):
-        c = self.__create_connection().cursor()
-        c.execute(create_table_sql)
+        self.__execute_sql("DROP TABLE IF EXISTS " + table)
 
     # Create all tables
     def __create_tables(self):
-        self.__create_table("""
-                CREATE TABLE IF NOT EXISTS librarians (
-                id INTEGER PRIMARY KEY ,
-                name TEXT NOT NULL,
-                phone TEXT,
-                address TEXT
-              ); """)
-        self.__create_table("""
+        self.__execute_sql("""SET sql_notes = 0;""")
+        self.__execute_sql("""
                         CREATE TABLE IF NOT EXISTS unconfirmed (
                         id INTEGER PRIMARY KEY,
                         name TEXT NOT NULL,
@@ -196,7 +192,7 @@ class Manager:
                         address TEXT,
                         status TEXT
                       ); """)
-        self.__create_table("""
+        self.__execute_sql("""
                  CREATE TABLE IF NOT EXISTS patrons (
                  id INTEGER PRIMARY KEY,
                  name TEXT NOT NULL,
@@ -208,7 +204,7 @@ class Manager:
                  queue TEXT
                   ); """)
 
-        self.__create_table("""CREATE TABLE IF NOT EXISTS reference_book(
+        self.__execute_sql("""CREATE TABLE IF NOT EXISTS reference_book(
                     id INTEGER AUTO_INCREMENT,
                     title TEXT NOT NULL,
                     authors TEXT NOT NULL,
@@ -218,7 +214,7 @@ class Manager:
                     );
               """)
 
-        self.__create_table("""CREATE TABLE IF NOT EXISTS book(
+        self.__execute_sql("""CREATE TABLE IF NOT EXISTS book(
               id INTEGER AUTO_INCREMENT,
               title TEXT NOT NULL,
               authors TEXT NOT NULL,
@@ -233,7 +229,7 @@ class Manager:
               );
         """)
 
-        self.__create_table("""CREATE TABLE IF NOT EXISTS article(
+        self.__execute_sql("""CREATE TABLE IF NOT EXISTS article(
             id INTEGER  PRIMARY KEY AUTO_INCREMENT,
             title TEXT NOT NULL,
             authors TEXT,
@@ -248,7 +244,7 @@ class Manager:
             queue TEXT);
         """)
 
-        self.__create_table("""CREATE TABLE IF NOT EXISTS media(
+        self.__execute_sql("""CREATE TABLE IF NOT EXISTS media(
                 id INTEGER PRIMARY KEY AUTO_INCREMENT,
                 title TEXT NOT NULL,
                 authors TEXT,
@@ -259,7 +255,7 @@ class Manager:
                 queue TEXT);
                 """)
 
-        self.__create_table("""CREATE TABLE IF NOT EXISTS reference_article(
+        self.__execute_sql("""CREATE TABLE IF NOT EXISTS reference_article(
                 id INTEGER  PRIMARY KEY AUTO_INCREMENT,
                 title TEXT NOT NULL,
                 authors TEXT,
@@ -270,7 +266,7 @@ class Manager:
                 date TEXT);
             """)
 
-        self.__create_table("""
+        self.__execute_sql("""
              CREATE TABLE  IF NOT EXISTS orders (
              id INTEGER PRIMARY KEY AUTO_INCREMENT,
              date TEXT NOT NULL,
@@ -283,46 +279,47 @@ class Manager:
              FOREIGN KEY (user_id) REFERENCES patrons(id)
              );
         """)
+        self.__execute_sql("""SET sql_notes = 1;""")
 
     # Add new record to the database
     # params:
     # ---sql - sql command for adding new record
     # ---new - new record
     def add_new(self, sql, new):
-        cur = self.__create_connection().cursor()
-        cur.execute(sql, new)
-        return cur.lastrowid
+        cur = self.__return_sql(sql, new)
+        res = cur.lastrowid
+        cur.close()
+        return res
 
     def get_max_id(self, table):
-        cur = self.__create_connection().cursor()
-        cur.execute("SELECT max(id) from " + table)
+        cur = self.__return_sql("SELECT max(id) from " + table)
         a = cur.fetchone()[0]
+        cur.close()
         return a if a else 0
 
     def get_by(self, get_by_what, get_from, get_value):
         sql = "SELECT * from " + get_from + " WHERE " + get_by_what + "=%s"
-        cur = self.__create_connection().cursor()
-        ans = cur.execute(sql, (get_value,))
-        return cur.fetchall()
+        cur = self.__return_sql(sql, (get_value,))
+        res = cur.fetchall()
+        cur.close()
+        return res
 
     def get_by_parameters(self, get_by_whats, get_from, get_values):
         sql = "SELECT * from " + get_from + " WHERE " + ' AND '.join([param + '=%s' for param in get_by_whats])
-        cur = self.__create_connection().cursor()
-        ans = cur.execute(sql, tuple(get_values))
-        return cur.fetchall()
+        cur = self.__return_sql(sql, tuple(get_values))
+        ans = cur.fetchall()
+        cur.close()
+        return ans
 
     def get_label(self, what_to_select, from_table, id):
-        cur = self.__create_connection().cursor()
-        cur.execute("SELECT " + what_to_select + " from " + from_table + " WHERE id=" + str(id))
+        sql = "SELECT " + what_to_select + " from " + from_table + " WHERE id=" + str(id)
+        cur = self.__return_sql(sql)
         a = cur.fetchone()[0]
+        cur.close()
         return a
 
     def get_count(self, table):
-        cur = self.__create_connection().cursor()
-        cur.execute("SELECT count(*) from " + table + ";")
+        cur = self.__return_sql("SELECT count(*) from " + table + ";")
         a = cur.fetchone()[0]
+        cur.close()
         return a
-
-    def get_connection(self):
-        return self.db_connectionn.cursor()
-        # return self.__create_connection(self.file).cursor()

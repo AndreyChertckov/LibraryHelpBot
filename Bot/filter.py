@@ -31,7 +31,7 @@ class UserFilter(BaseFilter):
 
 
 # Filter for checking location users in system (main menu, library etc.)
-class LocationFilter(BaseFilter):
+class LocFilter(BaseFilter):
     # user_locations -- a dictionary containing the locations of all users
     # location -- required location
     def __init__(self, user_locations, location):
