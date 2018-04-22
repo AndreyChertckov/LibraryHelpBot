@@ -121,7 +121,7 @@ class API:
         else:
             link = 'http://{}:{}/signup?verification_string='.format(inet_addr, port)
         ver_strings = self.dbmanager.all_verification_strings(1)
-        pattern = '%s{} -------- Privilege level: {}' % link
+        pattern = '<a href="#">%s{}</a> -------- Privilege level: {}' % link
         if ver_strings:
             output = [pattern.format(string[0], self.dbmanager.get_privilege_by_verification_string(string[0])[0] + 1) for string in ver_strings]
             return jsonify(output)

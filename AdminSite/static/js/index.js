@@ -534,23 +534,23 @@ function edit_book() {
     </div>\
     <div class='form-group'>\
     <label for='authors'>Authors</lable></br>\
-    <input type='form-control'id='authors' name='authors' value='"+ book['authors'] + "' type='text'>\
+    <input type='form-control' id='authors' name='authors' value='"+ book['authors'] + "' type='text'>\
     </div>\
     <div class='form-group'>\
     <label for='description'>Description</lable></br>\
-    <input type='form-control'id='description' name='description' value='"+ book['description'] + "' type='text'>\
+    <textarea type='form-control' id='description' name='description' value='"+ book['description'] + "' rows='2' ></textarea>\
     </div>\
     <div class='form-group'>\
     <label for='count'>Count</lable></br>\
-    <input type='form-control'id='count' name='count' value='"+ book['count'] + "' type='number'>\
+    <input type='form-control' id='count' name='count' value='"+ book['count'] + "' type='number'>\
     </div>\
     <div class='form-group'>\
     <label for='free_count'>Free count</lable></br>\
-    <input type='form-control'id='free_count' name='free_count' value='"+ book['free_count'] + "' type='number'>\
+    <input type='form-control' id='free_count' name='free_count' value='"+ book['free_count'] + "' type='number'>\
     </div>\
     <div class='form-group'>\
     <label for='price'>Price</lable></br>\
-    <input type='form-control'id='price' name='price' value='"+ book['price'] + "' type='number'>\
+    <input type='form-control' id='price' name='price' value='"+ book['price'] + "' type='number'>\
     </div>\
     <div class='form-check'>\
     <input type='checkbox' class='form-check-input' id='best_seller'>\
@@ -558,7 +558,7 @@ function edit_book() {
     </div>\
     <div class='form-group'>\
     <label for='keywords'>Keywords</lable></br>\
-    <input type='form-control'id='keywords' name='keywords' value='"+ book['keywords'] + "' type='number'>\
+    <input type='form-control' id='keywords' name='keywords' value='"+ book['keywords'] + "' type='number'>\
     </div>\
     <button id='save' class='btn'>Save</button><p id='id' hidden>"+ book['id'] + "</p></form>";
     $(".content").html(output_html);
