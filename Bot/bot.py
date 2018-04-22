@@ -22,7 +22,7 @@ class LibraryBot:
         self.controller = controller
         # self.updater = Updater(token=token)
         self.updater = Updater(token=token, request_kwargs={
-            'proxy_url': 'socks5://196.18.15.159:8000',
+            'proxy_url': 'socks5://196.18.14.203:8000',
             'urllib3_proxy_kwargs': {'username': 'Q5aawZ', 'password': 'dN0xJX'}})
         self.dispatcher = self.updater.dispatcher
         self.bot = self.updater.bot
@@ -137,21 +137,20 @@ class LibraryBot:
                 text += 'Journal: {journal}\nIssue: {issue}\nDate: {date}\nFree copy: {free_count}'
             elif doc_type == 'media':
                 text += 'Free copy: {free_count}'
-            doc_type = add_text + " " + doc_type if add_text else doc_type
+            c = add_text + " " + doc_type if add_text else doc_type
+            cancel = IKB('Cancel', callback_data='cancel {} {} {}'.format(page, c, loc))
+            edit = IKB('Edit', callback_data='edit {} {} {} library'.format(page, item['id'], doc_type))
+            delete = IKB('Delete', callback_data='del {} {} {} library'.format(page, item['id'], doc_type))
             if self.controller.user_type(chat_id) == 2:
-                cb = 'order {} {} {}' if item['free_count'] > 0 else 'queue {} {} {}'
-                keyboard = [[IKB('Order the document', callback_data=cb.format(item['id'], doc_type, loc)),
-                             IKB('Cancel', callback_data='cancel {} {} {}'.format(page, doc_type, loc))]]
+                cb = 'order {} {} library' if item['free_count'] > 0 else 'queue {} {} library'
+                keyboard = [[IKB('Order the document', callback_data=cb.format(item['id'], doc_type)), cancel]]
             elif self.controller.user_type(chat_id) == 3:
                 if item['free_count'] == item['count']:
-                    keyboard = [[IKB('Edit', callback_data='edit {} {} {} {}'.format(page, item['id'], doc_type, loc)),
-                                 IKB('Delete', callback_data='del {} {} {} {}'.format(page, item['id'], doc_type, loc)),
-                                 IKB('Cancel️', callback_data='cancel {} {} {}'.format(page, doc_type, loc))]]
+                    keyboard = [[edit, delete, cancel]]
                 else:
-                    keyboard = [[IKB('Edit', callback_data='edit {} {} {} {}'.format(page, item['id'], doc_type, loc)),
-                                 IKB('Cancel️', callback_data='cancel {} {} {}'.format(page, doc_type, loc))]]
+                    keyboard = [[edit, cancel]]
             else:
-                keyboard = [[IKB('Cancel️', callback_data='cancel {} {} {}'.format(page, doc_type, loc))]]
+                keyboard = [[cancel]]
             message[0] = text.format(**item)
             message[1] = IKM(keyboard)
         if loc == 'my_orders':
@@ -193,11 +192,11 @@ class LibraryBot:
         data_list, max_page = self.get_data(bot, chat_id, loc, text, add_data)
         if not data_list:
             return
-        text_message = func_data.text_gen(data_list, loc, add_text=text)
+        text_message = func_data.text_gen(data_list, loc, add_text=add_data)
         if loc == 'library':
             loc = func_data.analog[text] + ' ' + loc
         if loc == 'search':
-            loc = '{} {} {}'.format(self.user_data[chat_id][0], text, loc)
+            loc = '{} {} {}'.format(add_data, text, loc)
 
         keyboard = [[IKB(str(i + 1), callback_data='item {} {} {}'.format(i, 0, loc)) for i in range(len(data_list[0]))]]
         keyboard += [[IKB('⬅', callback_data='prev 0 {} ' + loc), IKB('➡️', callback_data='next 0 ' + loc)]]
@@ -220,7 +219,7 @@ class LibraryBot:
                 page = 0 if page == max_page else page + 1
             if action == 'prev':
                 page = max_page if page == 0 else page - 1
-            text_message = func_data.text_gen(data_list, loc, page)
+            text_message = func_data.text_gen(data_list, loc, page, add_data)
             if loc == 'library':
                 loc = args[-1] + ' ' + loc
             if loc == 'search':
@@ -241,7 +240,7 @@ class LibraryBot:
             user_id = int(args[0])
             ids = [chat_id, message_id]
             self.conf_user(bot, ids, user_id, action)
-        elif loc == 'library':
+        elif loc in ['library', 'search']:
             ids = [chat_id, message_id]
             self.modify_document(bot, ids, action, args)
         elif loc == 'users':

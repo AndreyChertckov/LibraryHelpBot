@@ -126,7 +126,7 @@ def text_gen(data, location, page=0, add_text=''):
         page = enumerate(data)
         base = "{}) {} written by {}\n Available till {}"
         text = [base.format(i + 1, doc['doc']['title'], doc['doc']['authors'], doc['time_out']) for i, doc in page]
-    if location == 'search_enter':
+    if location == 'search':
         text = ["{}) {} - {}".format(i + 1, item['title'], item["authors"]) for i, item in page]
-        text[0] = 'Results on request {}\n\n{}'.format(add_text, text[0])
+        text[0] = 'Results on request "{}"\n\n{}'.format(add_text, text[0])
     return sep.join(text)
