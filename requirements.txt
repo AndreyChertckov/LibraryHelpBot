@@ -3,3 +3,4 @@ python-telegram-bot
 pytest
 flask
 PyMySQL
+PySocks

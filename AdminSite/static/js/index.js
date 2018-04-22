@@ -195,7 +195,7 @@ function librarians_table() {
                             <th>Name</th>\
                             <th>Phone</th>\
                             <th>Address</th>\
-                            <th></th>\
+                            <th>Privilege</th>\
                         </tr>\
                     </thead>\
                     <tbody id='tbody'>";
@@ -204,7 +204,8 @@ function librarians_table() {
                 output_html += "<td>" + elem['id'] + "</td>";
                 output_html += "<td>" + elem['name'] + "</td>";
                 output_html += "<td>" + elem['phone'] + "</td>";
-                output_html += "<td>" + elem['address'] + "</td></tr>";
+                output_html += "<td>" + elem['address'] + "</td>";
+                output_html += "<td>" + (elem['privilege'] +1) + "</td></tr>";
             });
             output_html += "</tbody></table></div>";
             $(".content").html(output_html);
@@ -463,7 +464,7 @@ function book_info() {
                         output_html_ += "<td>" + elem['status'] + "</td>";
                     });
                     output_html_ += "</tbody></table>";
-                    output_html_ += "<button class='btn' id='outstanding'>Outstanding request<button>";
+                    output_html_ += "<button class='btn' id='outstanding'>Outstanding request</button>";
                     $(".content").html(output_html_);
                     $("#prev").click(books);
                     $(".settings").click(edit_book);

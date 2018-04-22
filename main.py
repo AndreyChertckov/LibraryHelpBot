@@ -59,11 +59,7 @@ def main():
             site.api.dbmanager.cleanup_database()
             site.api.dbmanager.init_tables()
         site.run()
-        
 
 
 if __name__ == '__main__':
-    try:
-        main()
-    except Exception as e:
-        logging.critical('Cannot run application. Exception : {}'.format(str(e)))
+	main()

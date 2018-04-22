@@ -30,13 +30,13 @@ def notification_decorator_maker(message, reply_markup=None):
     def notification_decorator(method):
         def decorator(self):
             if self.is_have_notification:
-                method(self)
+                result = method(self)
                 for chat_id in self.notification_id:
                     self.notification.send_message(chat_id, message, reply_markup)
                 self.notification_id = []
+                return result
             else:
-                method(self)
-
+                return method(self)
         return decorator
 
     return notification_decorator
@@ -116,6 +116,8 @@ class API:
     def get_verification_links(self):
         if int(port) == 80:
             link = 'http://{}/signup?verification_string='.format(inet_addr)
+        elif int(port) == 443:
+            link = 'https://{}/signup?verification_string='.format(inet_addr)
         else:
             link = 'http://{}:{}/signup?verification_string='.format(inet_addr, port)
         ver_strings = self.dbmanager.all_verification_strings(1)
@@ -209,7 +211,9 @@ class API:
 
     @security_decorator_maker(0)
     def get_all_librarians_post(self):
-        librarians_list = [tuple_to_dict('librarians', tup) for tup in self.dbmanager.get_users()]
+        librarians_list = [dict(zip(['id', 'name', 'phone', 'address', 'privilege'], tup))
+                           for tup in self.dbmanager.get_users()]
+
         return jsonify(librarians_list)
 
     @security_decorator_maker(0)
@@ -369,8 +373,7 @@ class API:
             return 'Need authors'
         if not ('type' in values):
             return 'Need type'
-        return jsonify(
-            self.controller.get_documents_by_title(values.get('authors'), values.get('type')))
+        return jsonify(self.controller.get_documents_by_title(values.get('authors'), values.get('type')))
 
     @security_decorator_maker(0)
     def get_queue_on_documnent_post(self):
@@ -382,6 +385,7 @@ class API:
         return jsonify(self.controller.get_document_queue(values.get('type'), values.get('doc_id')))
 
     @security_decorator_maker(1)
+    @notification_decorator_maker("You are removed from queue.")
     def outstanding_post(self):
         values = request.values
         if not ('doc_id' in values):
