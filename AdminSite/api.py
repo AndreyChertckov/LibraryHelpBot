@@ -174,7 +174,7 @@ class API:
         return jsonify(self.controller.get_all_unconfirmed())
 
     @security_decorator_maker(1)
-    @notification_decorator_maker("Your application was confirmed")
+    @notification_decorator_maker("Your application was confirmed", RKM(keyboard_dict["auth"], True))
     def confirm_user_post(self):
         if 'user_id' in request.values:
             user_id = request.values.get('user_id')
@@ -186,7 +186,7 @@ class API:
             return 'Need id of user'
 
     @security_decorator_maker(0)
-    @notification_decorator_maker("You information was updated", RKM(keyboard_dict["auth"], True))
+    @notification_decorator_maker("You information was updated")
     def modify_user_post(self):
         keys = ['id', 'name', 'phone', 'address', 'status']
         user = {key: request.values.get(key) for key in keys if key in request.values}
