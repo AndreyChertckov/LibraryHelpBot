@@ -68,7 +68,7 @@ class DBManager:
 
     def get_users(self):
         cursor = self.db_connectionn.cursor()
-        cursor.execute("SELECT id,name,phone,address FROM librarians;")
+        cursor.execute("SELECT id,name,phone,address,privilege FROM librarians;")
         res = cursor.fetchall()
         cursor.close()
         return res

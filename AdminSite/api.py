@@ -247,7 +247,7 @@ class API:
 
     @security_decorator_maker(0)
     def get_all_librarians_post(self):
-        librarians_list = [dict(zip(['id', 'name', 'phone', 'address','chat_id','privilege'], tup))
+        librarians_list = [dict(zip(['id', 'name', 'phone', 'address','privilege'], tup))
                            for tup in self.dbmanager.get_users()]
         
         return jsonify(librarians_list)
