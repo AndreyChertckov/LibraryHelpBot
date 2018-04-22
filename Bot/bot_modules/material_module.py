@@ -133,12 +133,12 @@ class Material_module:
             bot.edit_message_text(text=text, chat_id=chat, message_id=message_id, reply_markup=IKM(keyboard))
 
     def update_doc_param(self, bot, update):
-        chat = update.message.chat_id
-        doc, parameter, doc_type = self.user_data[chat]
+        chat_id = update.message.chat_id
+        doc, parameter, doc_type = self.user_data[chat_id]
         doc[parameter] = update.message.text
         self.controller.modify_document(doc, doc_type)
-        self.location[chat] = 'library'
-        bot.send_message(text='Document was updated', chat_id=chat)
+        self.location[chat_id] = 'library'
+        bot.send_message(text='Document was updated', chat_id=chat_id)
 
     def user_orders(self, bot, update):
         self.location[update.message.chat_id] = 'my_orders'
@@ -158,4 +158,24 @@ class Material_module:
             order = self.controller.get_order(order_id)
             queue = self.controller.get_document_queue(order["table"], order["doc_id"])
             print(queue)
+
+    def start_search(self, bot, update):
+        self.location[update.message.chat_id] = 'search'
+        bot.send_message(chat_id=update.message.chat_id, text="Choose type of material",
+                         reply_markup=RKM(self.keyboard_dict["lib_main"], True))
+
+    def enter_search(self, bot, update):
+        chat_id = update.message.chat_id
+        self.location[chat_id] = 'search'
+        self.user_data[chat_id] = [func_data.analog[update.message.text]]
+        bot.send_message(chat_id=chat_id, text="Enter title, author or a keyword of a document")
+
+    def search(self, bot, update):
+        self.location[update.message.chat_id] = 'search'
+        self.online_init(bot, update)
+
+
+
+
+
 

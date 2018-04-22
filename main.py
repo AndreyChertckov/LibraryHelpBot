@@ -54,7 +54,7 @@ def main():
         LibraryBot.run()
     else:
         print('saotehus')
-        site = Main(c,None)
+        site = Main(c, None)
         if cleanup_database:
             site.api.dbmanager.cleanup_database()
             site.api.dbmanager.init_tables()

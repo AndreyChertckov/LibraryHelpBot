@@ -7,8 +7,6 @@ from telegram.ext import MessageHandler as MHandler
 from telegram.ext import Updater, CommandHandler, Filters, CallbackQueryHandler
 from Bot.filter import *
 from Bot import utils, func_data
-import logging
-import configs
 
 
 class Reg_module:
@@ -30,7 +28,6 @@ class Reg_module:
     #  bot -- This object represents a Bot's commands
     #  update -- This object represents an incoming update
     def registration(self, bot, update):
-        # self.location = {}
         chat = update.message.chat_id
         self.location[chat] = 'reg'
         self.user_data[chat] = [0, {"id": chat}]
