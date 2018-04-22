@@ -205,7 +205,7 @@ function librarians_table() {
                 output_html += "<td>" + elem['name'] + "</td>";
                 output_html += "<td>" + elem['phone'] + "</td>";
                 output_html += "<td>" + elem['address'] + "</td>";
-                output_html += "<td>" + elem['privilege'] + "</td></tr>";
+                output_html += "<td>" + (elem['privilege'] +1) + "</td></tr>";
             });
             output_html += "</tbody></table></div>";
             $(".content").html(output_html);
