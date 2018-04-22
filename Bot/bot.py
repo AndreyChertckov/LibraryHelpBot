@@ -42,6 +42,7 @@ class LibraryBot:
         self.dispatcher.add_handler(CommandHandler('start', self.main_menu))
         # User handlers
         self.dispatcher.add_handler(CallbackQueryHandler(self.online_button_checker))
+        self.dispatcher.add_handler(MessageH(WordFilter('Cancel⤵️'), self.main_menu))
 
         self.dispatcher.add_handler(MessageH(WordFilter('Library🏤'), self.library))
         self.dispatcher.add_handler(MessageH(WordFilter('Search🔎'), self.start_search))
@@ -57,7 +58,6 @@ class LibraryBot:
         self.dispatcher.add_handler(MessageH(LocFilter(self.location, 'reg') & Filters.text, self.reg_steps))
         self.dispatcher.add_handler(CommandHandler('get_admin', self.verification, pass_args=True))
 
-        self.dispatcher.add_handler(MessageH(WordFilter('Cancel⤵️'), self.main_menu))
 
         # Admin handlers
         self.dispatcher.add_handler(CommandHandler('get_key', utils.get_key, filters=UserFilter(3)))
