@@ -108,9 +108,9 @@ class LibraryBot:
         elif location == 'search':
             doc_type = func_data.analog.get(text[0], text[0])
             data_list = self.controller.get_all_doctype(doc_type)
-            sep = lambda x: x['title'].lower().find(text[1]) >= 0 or \
-                            x['authors'].lower().find(text[1]) >= 0 or \
-                            x['keywords'].lower().find(text[1]) >= 0
+            sep = lambda x: x['title'].lower().find(text[1].lower()) >= 0 or \
+                            x['authors'].lower().find(text[1].lower()) >= 0 or \
+                            x['keywords'].lower().find(text[1].lower()) >= 0
             data_list = list(filter(sep, data_list))
 
         if len(data_list) == 0:
