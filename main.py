@@ -6,7 +6,7 @@ import logging
 
 from Bot.bot import start_bot
 from Controller.controller import Controller
-from AdminSite.site import Main 
+from AdminSite.site import Main
 
 
 def main():
@@ -17,7 +17,7 @@ def main():
     only_site = False
     cleanup_database = False
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'h:s:t:c', ['log_file=', 'database=','cleanup_database','only_site'])
+        opts, args = getopt.getopt(sys.argv[1:], 'h:s:t:c', ['log_file=', 'database=', 'cleanup_database', 'only_site'])
     except getopt.GetoptError:
         print('main.py -t -c --log_file=<filelog> --database=<filedb>')
         sys.exit(2)
@@ -45,7 +45,7 @@ def main():
     c = Controller(file_db, lc, lf, file_log)
     if not only_site:
         LibraryBot = start_bot(c)
-        site = Main(c,LibraryBot.get_bot())
+        site = Main(c, LibraryBot.get_bot())
         if cleanup_database:
             site.api.dbmanager.cleanup_database()
             site.api.dbmanager.init_tables()
@@ -62,4 +62,4 @@ def main():
 
 
 if __name__ == '__main__':
-	main()
+    main()
