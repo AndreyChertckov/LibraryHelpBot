@@ -23,9 +23,8 @@ class Main:
         self.context.load_cert_chain('AdminSite/ssl/libraryhelpbot.com.crt', 'AdminSite/ssl/libraryhelpbot.com.key')
 
     def create_admin_user(self):
-        user = {'login': admin_user_login, 'name': 'Admin',
-                'phone': '', 'address': '', 'privilege': '3'}
-        user['passwd'] = md5_hash(admin_user_pass.encode('utf-8'))
+        user = {'login': admin_user_login, 'name': 'Admin', 'phone': '', 'address': '', 'privilege': '3',
+                'passwd': md5_hash(admin_user_pass.encode('utf-8'))}
         if not self.dbmanager.get_user_id(admin_user_login, user['passwd']):
             self.dbmanager.create_user(user)
 

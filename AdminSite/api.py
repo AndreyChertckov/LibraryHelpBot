@@ -94,7 +94,7 @@ class API:
 
     def signin_post(self):
         login = request.values.get('login')
-        password = md5_hash(request.values.get('password').encode('utf-8'))
+        password = md5_hash(request.values.get('passwd').encode('utf-8'))
         if self.dbmanager.get_user(login, password) is None:
             response = self.app.make_response(redirect('/signin'))
             response.set_cookie('error', 'Login error')
@@ -142,11 +142,11 @@ class API:
         if ver_str in values and self.dbmanager.if_verification_string_exist(values.get(ver_str), 1):
             keys = ['login', 'name', 'phone', 'address']
             user = dict(zip(keys, [values.get(key) for key in keys]))
-            user['password'] = md5_hash(values.get('password').encode('utf-8'))
+            user['passwd'] = md5_hash(values.get('passwd').encode('utf-8'))
             user['privilege'] = self.dbmanager.get_privilege_by_verification_string(values.get(ver_str))
             self.dbmanager.create_user(user)
             response = self.app.make_response(redirect('/'))
-            session_id = create_session(user['login'], user['password'], self.dbmanager)
+            session_id = create_session(user['login'], user['passwd'], self.dbmanager)
             response.set_cookie('session_id', session_id)
             user_id = self.dbmanager.get_user_id_by_session(session_id)
             self.dbmanager.activate_verification_string(values.get(ver_str), user_id)
@@ -165,7 +165,7 @@ class API:
         session_id = request.cookies['session_id']
         user_id = self.dbmanager.get_user_id_by_session(session_id)[0]
         user = tuple_to_dict('account', self.dbmanager.get_user_by_id(user_id))
-        user.pop('password')
+        user.pop('passwd')
         user.pop('chat_id')
         return jsonify(user)
 
