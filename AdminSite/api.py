@@ -321,6 +321,7 @@ class API:
         return 'OK'
 
     @security_decorator_maker(0)
+    @notification_decorator_maker("You can get the document")
     def add_copies_of_doc_post(self):
         values = request.values
         if not ('id' in values):
@@ -329,6 +330,10 @@ class API:
             return 'Need delta count'
         if not ('type' in values):
             return 'Need type'
+        queue = self.controller.get_document_queue(values.get('type'),values.get('id'))
+        if values.get('delta_count') > 0:
+            for i in range(min([len(queue),values.get('delta_count')])):
+                self.notification_id.append(queue[i]['id'])
         self.controller.add_copies_of_document(values.get('type'), values.get('id'), int(values.get('delta_count')))
         return 'OK'
 
