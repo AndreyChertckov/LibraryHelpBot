@@ -25,8 +25,13 @@ function account_info() {
         output_html = "<div class='row'><div class='col-md-11'><h3 id='name'>" + data['name'] + "</h3></div><div class='col-md-1'><button id = '0' class='btn btn-sm settings'><span data-feather='settings'></span></div></div>\
             <h5>Id: </h5><p id='id'>" + data['id'] + "</p>\
             <h5>Phone: </h5><p id='phone'>" + data['phone'] + "</p>\
-            <h5>Address: </h5><p id='address'>"+ data['address'] + "</p>\
-            <h5>Privilege: </h5><p id='status'>" + (data['privilege']+1) + "</p>";
+            <h5>Address: </h5><p id='address'>"+ data['address'] + "</p>";
+        if ((data['privilege']+1) == 4) {
+            output_html += "<h5>Privilege Level: </h5><p id='status'>Admin</p>";
+        }else {
+            output_html += "<h5>Privilege Level: </h5><p id='status'>Librarian level " + (data['privilege'] +1) + "</p>";
+        }
+        
         $(".content").html(output_html);
         feather.replace();
     });
