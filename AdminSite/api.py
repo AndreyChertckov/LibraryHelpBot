@@ -62,7 +62,7 @@ class API:
         add_rule('/api/get_account_info', 'get_account_info', self.get_account_info, methods=['POST'])
         add_rule('/api/get_verification_links', 'get_verification_links', self.get_verification_links, methods=['POST'])
         add_rule('/api/generate_invite_link', 'generate_invite_link', self.generate_verification_string, methods=['POST'])
-        add_rule('/api/get_verification_message', 'get_verification_message', self.get_verification_message_post, methods=['POST'])
+        add_rule('/api/get_telegram_verification_message', 'get_telegram_verification_message', self.get_verification_message_post, methods=['POST'])
         add_rule('/api/get_all_unconfirmed', 'get_all_unconfirmed', self.get_all_unconfirmed_post, methods=['POST'])
         add_rule('/api/confirm_user', 'confirm_user', self.confirm_user_post, methods=['POST'])
         add_rule('/api/modify_user', 'modify_user', self.modify_user_post, methods=['POST'])
