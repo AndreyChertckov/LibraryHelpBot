@@ -93,8 +93,10 @@ class Controller:
             user = self.get_user(user_id)
             if table == 'patrons' and user['current_docs'] != '[]':
                 return False
+            for order_id in user['history']:
+                self.DBmanager.delete_label('orders',order_id)
             self.DBmanager.delete_label(table, user_id)
-            by_who = 'UNKNOW' if librarian_id == 0 else self.get_user(librarian_id)['name']
+            by_who = 'UNKNOW' if librarian_id == -1 else self.get_user(librarian_id)['name']
             log = 'User {} is deleted by {}.'.format(user_id, by_who)
             self.log('INFO', log)
             return True
