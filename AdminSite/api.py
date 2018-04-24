@@ -165,8 +165,8 @@ class API:
         session_id = request.cookies['session_id']
         user_id = self.dbmanager.get_user_id_by_session(session_id)[0]
         user = tuple_to_dict('account', self.dbmanager.get_user_by_id(user_id))
-        user.pop('passwd')
-        user.pop('chat_id')
+        user.pop('passwd', 0)
+        user.pop('chat_id', 0)
         return jsonify(user)
 
     @security_decorator_maker(0)
