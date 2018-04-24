@@ -56,10 +56,12 @@ function invite_links() {
 
 function generate_link() {
     privi = -1;
-    while(privi >= 3 || privi <0) {
+    while(privi >= 3 || privi <= 0) {
         privi = prompt('Enter user privilege') - 1;
+        if(plivi == null) {
+            return;
+        }
     }
-    
     $.post("/api/generate_invite_link", {privilege:privi}, function (data, status) {
         if (data == 'Access forbidden.') {
             alert('Access forbidden.');
