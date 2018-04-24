@@ -435,8 +435,20 @@ class Controller:
         return output
     
     def delete_waiting_order(self,order_id):
+        order = self.get_order(order_id)
+        user_id, doc_id, doc_type = order["user_id"], order["doc_id"], order["table"]
+        curr_doc = eval(self.DBmanager.get_label(
+            'current_docs', 'patrons', user_id))
+        curr_doc.remove(order['id'])
+        free_count = int(self.DBmanager.get_label(
+            "free_count", order['table'], doc_id))
+        free_count += 1
+        self.DBmanager.edit_label(
+            order['table'], ['free_count'], [free_count], doc_id)
+        self.DBmanager.edit_label('patrons', ['current_docs'], [
+                                  str(curr_doc)], user_id)
         self.DBmanager.delete_label('orders',order_id)
-
+        
     def get_order(self, order_id):
         order = self.DBmanager.select_label("orders", order_id)
         if order is None:

@@ -259,7 +259,6 @@ class API:
     def return_doc_post(self):
         if 'order_id' in request.values:
             *_, self.notification_id = self.controller.return_doc(request.values.get('order_id'))
-            self.notification_id = [self.notification_id]
         else:
             return 'Need id of order'
 
