@@ -178,7 +178,8 @@ class API:
     def confirm_user_post(self):
         if 'user_id' in request.values:
             user_id = request.values.get('user_id')
-            success = self.controller.confirm_user(user_id)
+            librarian_id = self.dbmanager.get_user_id_by_session(request.cookies.get('session_id'))[0]
+            success = self.controller.confirm_user(user_id,librarian_id)
             if success:
                 self.notification_id = [user_id]
             return 'OK' if success else "Something went wrong"
@@ -192,7 +193,8 @@ class API:
         user = {key: request.values.get(key) for key in keys if key in request.values}
         if not ('id' in user):
             return 'Need id'
-        self.controller.modify_user(user)
+        librarian_id = self.dbmanager.get_user_id_by_session(request.cookies.get('session_id'))[0]
+        self.controller.modify_user(user,librarian_id)
         self.notification_id = [user['id']]
         return 'OK'
 
@@ -300,8 +302,8 @@ class API:
         if all([key in values for key in keys]):
             document = dict(zip(keys, [values.get(key) for key in keys]))
             document['best_seller'] = int(document['best_seller'])
-            print(document)
-            self.controller.add_document(document, doc_type)
+            librarian_id = self.dbmanager.get_user_id_by_session(request.cookies.get('session'))[0]
+            self.controller.add_document(document, doc_type,librarian_id)
             return 'OK'
         else:
             print([key for key in values.keys()])
@@ -317,7 +319,8 @@ class API:
             return 'Need id'
         if not ('type' in values):
             return 'Need type'
-        self.controller.modify_document(doc, values.get('type'))
+        librarian_id = self.dbmanager.get_user_id_by_session(request.cookies.get('session'))[0]
+        self.controller.modify_document(doc, values.get('type'),librarian_id)
         return 'OK'
 
     @security_decorator_maker(0)
@@ -334,6 +337,7 @@ class API:
         if int(values.get('delta_count')) > 0:
             for i in range(min([len(queue),int(values.get('delta_count'))])):
                 self.notification_id.append(queue[i]['id'])
+                self.controller.delete_user_queue(queue[i]['id'],values.get('type'),values.get('id'))
         self.controller.add_copies_of_document(values.get('type'), values.get('id'), int(values.get('delta_count')))
         return 'OK'
 

@@ -17,7 +17,8 @@ class Controller:
             logger_str = 'controller' if not test_logging else 'controller_' + name_test
             self.logger = logging.getLogger(logger_str)
             self.logger.setLevel(logging.DEBUG)
-            formater = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+            formater = logging.Formatter(
+                '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
             if lc:
                 ch = logging.StreamHandler()
                 ch.setLevel(logging.INFO)
@@ -42,7 +43,8 @@ class Controller:
     # param: user_info: dictionary {id,name,address,status,phone}
     def registration(self, user_info):
         self.DBmanager.add_unconfirmed(Packager(user_info))
-        self.log('INFO', 'User {} signed up. Waiting for librarians confirmation.'.format(user_info['name']))
+        self.log('INFO', 'User {} signed up. Waiting for librarians confirmation.'.format(
+            user_info['name']))
 
     # Accept user to the library
     # param: user_id - id of user
@@ -54,8 +56,10 @@ class Controller:
         user['current_docs'] = str([])
         self.delete_user(user_id)
         self.DBmanager.add_patron(Packager(user))
-        by_who = 'UNKNOW' if librarian_id == -1 else self.get_user(librarian_id)['name']
-        self.log('INFO', 'User status {} is confirmed by {}.'.format(user['name'], by_who))
+        by_who = 'UNKNOW' if librarian_id == - \
+            1 else self.get_user(librarian_id)['name']
+        self.log('INFO', 'User status {} is confirmed by {}.'.format(
+            user['name'], by_who))
         return True
 
     # Move patron from table patrons to table librarians
@@ -66,12 +70,15 @@ class Controller:
         user_info.pop('history', 0)
         self.delete_user(user_id)
         self.DBmanager.add_librarian(Packager(user_info))
-        self.log('INFO', 'User {} is upgraded to librarian'.format(user_info['name']))
+        self.log('INFO', 'User {} is upgraded to librarian'.format(
+            user_info['name']))
 
     def modify_user(self, new_user_info, by_who_id=0):
         user_id = new_user_info['id']
-        self.DBmanager.edit_label('patrons', list(new_user_info.keys()), list(new_user_info.values()), user_id)
-        by_who = 'UNKNOW' if by_who_id == 0 else self.get_user(by_who_id)['name']
+        self.DBmanager.edit_label('patrons', list(
+            new_user_info.keys()), list(new_user_info.values()), user_id)
+        by_who = 'UNKNOW' if by_who_id == 0 else self.get_user(by_who_id)[
+            'name']
         log = 'User with id {} was modified by {}: '.format(
             user_id, by_who) + ', '.join(
             ['new ' + str(key) + ' is ' + str(new_user_info[key]) for key in new_user_info.keys()])
@@ -79,14 +86,17 @@ class Controller:
 
     # Delete user by user_id
     # param: user_id: id of user
-    def delete_user(self, user_id):
-        table = ['unauthorized', 'unconfirmed', 'patrons', 'librarians'][self.user_type(user_id)]
+    def delete_user(self, user_id, librarian_id = -1):
+        table = ['unauthorized', 'unconfirmed', 'patrons',
+                 'librarians'][self.user_type(user_id)]
         if table != 'unauthorized':
             user = self.get_user(user_id)
             if table == 'patrons' and user['current_docs'] != '[]':
                 return False
             self.DBmanager.delete_label(table, user_id)
-            self.log('INFO', 'User {} is deleted from table {}.'.format(user['name'], table))
+            by_who = 'UNKNOW' if librarian_id == 0 else self.get_user(librarian_id)['name']
+            log = 'User {} is deleted by {}.'.format(user_id, by_who)
+            self.log('INFO', log)
             return True
 
     # Return all users who don`t confirmed
@@ -94,16 +104,12 @@ class Controller:
         return [tuple_to_dict('unconfirmed', user) for user in self.DBmanager.select_all("unconfirmed")]
 
     # Return all patrons from database
-    def get_all_patrons(self, by_who_id=-1):
+    def get_all_patrons(self):
         rows = self.DBmanager.select_all("patrons")
-        by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)['name']
-        self.log('INFO', 'Get all patrons by {}'.format(by_who))
         return [tuple_to_dict('patrons', user) for user in rows]
 
     # Return all librarians from database
-    def get_all_librarians(self, by_who_id=-1):
-        by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)['name']
-        self.log('INFO', 'Get all librarians by {}'.format(by_who))
+    def get_all_librarians(self):
         rows = self.DBmanager.select_all("librarians")
         return [tuple_to_dict('librarians', user) for user in rows]
 
@@ -120,7 +126,8 @@ class Controller:
     # or {id,name,address,phone,history,current_docs,status},
     # or false if user does not exist
     def get_user(self, user_id, status=None):
-        types = {0: "unauthorized", 1: 'unconfirmed', 2: 'patrons', 3: 'librarians'}
+        types = {0: "unauthorized", 1: 'unconfirmed',
+                 2: 'patrons', 3: 'librarians'}
         if not status:
             status = self.user_type(user_id)
         user_type = types[status]
@@ -148,13 +155,15 @@ class Controller:
             return types['unauthorized']
 
     def add_queue_order(self, user_id, doc_type, doc_id):
-        priority_dict = {'Student': 0, 'Instructor': 1, 'TA': 2, 'Visiting Professor': 3, 'Professor': 4}
+        priority_dict = {'Student': 0, 'Instructor': 1,
+                         'TA': 2, 'Visiting Professor': 3, 'Professor': 4}
         status = self.DBmanager.get_label('status', 'patrons', user_id)
         mas = eval(self.DBmanager.get_label('queue', doc_type, doc_id))
         priority = priority_dict[status]
         if mas[priority].__contains__(user_id):
             return False, "You are already in queue"
-        current = eval(self.DBmanager.get_label('current_docs', 'patrons', user_id))
+        current = eval(self.DBmanager.get_label(
+            'current_docs', 'patrons', user_id))
 
         for i in current:
             order = self.get_order(i)
@@ -172,16 +181,19 @@ class Controller:
         queue = eval(self.DBmanager.get_label('queue', 'patrons', user_id))
         return queue
 
-    def delete_user_queue(self, user_id, type_of_media, doc_id):
-        priority_dict = {'Student': 0, 'Instructor': 1, 'TA': 2, 'Visiting Professor': 3, 'Professor': 4}
+    def delete_user_queue(self, user_id, type_of_doc, doc_id):
+        priority_dict = {'Student': 0, 'Instructor': 1,
+                         'TA': 2, 'Visiting Professor': 3, 'Professor': 4}
         queue = eval(self.DBmanager.get_label('queue', 'patrons', user_id))
         for i in queue:
-            if (i == (doc_id, type_of_media)):
+            if (i == (doc_id, type_of_doc)):
                 queue.remove(i)
-        doc_queue = eval(self.DBmanager.get_label('queue', type_of_media, doc_id))
+        doc_queue = eval(self.DBmanager.get_label(
+            'queue', type_of_doc, doc_id))
         priority = priority_dict[self.get_user(user_id)['status']]
         doc_queue[priority].remove(user_id)
-        self.DBmanager.edit_label(type_of_media, ['queue'], [str(doc_queue)], doc_id)
+        self.DBmanager.edit_label(type_of_doc, ['queue'], [
+                                  str(doc_queue)], doc_id)
         self.DBmanager.edit_label('patrons', ['queue'], [str(queue)], user_id)
 
     def renew_item(self, order_id, cur_date=datetime.now()):
@@ -191,12 +203,15 @@ class Controller:
             return False
 
         user = self.get_user(order['user_id'])
-        new_date = (datetime.strptime(order['time_out'], '%Y-%m-%d') + timedelta(weeks=1)).date().isoformat()
+        new_date = (datetime.strptime(
+            order['time_out'], '%Y-%m-%d') + timedelta(weeks=1)).date().isoformat()
         if order['renewed'] == 0:
-            self.DBmanager.edit_label('orders', ['out_of_time', 'renewed'], [new_date, 1], order_id)
+            self.DBmanager.edit_label('orders', ['out_of_time', 'renewed'], [
+                                      new_date, 1], order_id)
             return True
         elif user['status'] == 'Visiting Professor':
-            self.DBmanager.edit_label('orders', ['out_of_time'], [new_date], order_id)
+            self.DBmanager.edit_label(
+                'orders', ['out_of_time'], [new_date], order_id)
             return True
         return False
 
@@ -217,18 +232,17 @@ class Controller:
             output.append(self.get_user(user_id))
         return output
 
-    # def delete_queue_order(self, user_id, type_of_media, doc_id):
+    # def delete_queue_order(self, user_id, type_of_doc, doc_id):
 
-    def get_user_by_name(self, name, by_who_id=-1):
-        by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)
+    def get_user_by_name(self, name):
         user = self.DBmanager.get_by('name', 'patrons', name)[0]
-        self.log('INFO', 'Get user with name {} by {}'.format(name, by_who))
         return tuple_to_dict('patrons', user)
 
     def get_returning_time(self, returning_time, type_bd, doc_id, user_id):
         user_status = self.DBmanager.get_label('status', 'patrons', user_id)
         if returning_time == 0 and type_bd == 'book':
-            is_best_seller = self.DBmanager.get_label('best_seller', type_bd, doc_id) == 1
+            is_best_seller = self.DBmanager.get_label(
+                'best_seller', type_bd, doc_id) == 1
             returning_time = 3 if user_status == 'Student' else 4
             returning_time = 2 if is_best_seller else returning_time
             returning_time = 4 if user_status == 'Professor' else returning_time
@@ -242,11 +256,14 @@ class Controller:
             self.log('WARNING', 'Document with id {} not found.'.format(doc_id))
             return False, 'Document doesn`t exist'
 
-        returning_time = self.get_returning_time(returning_time, type_bd, doc_id, user_id)
-        free_count = int(self.DBmanager.get_label("free_count", type_bd, doc_id))
+        returning_time = self.get_returning_time(
+            returning_time, type_bd, doc_id, user_id)
+        free_count = int(self.DBmanager.get_label(
+            "free_count", type_bd, doc_id))
         if free_count > 0:
 
-            current_orders = eval(self.DBmanager.get_label("current_docs", "patrons", user_id))
+            current_orders = eval(self.DBmanager.get_label(
+                "current_docs", "patrons", user_id))
             current_docs_id = []
 
             for order_id in current_orders:
@@ -271,12 +288,14 @@ class Controller:
 
             self.DBmanager.add_order(Packager(order))
             order_id = self.DBmanager.get_max_id('orders')
-            history = eval(self.DBmanager.get_label("history", "patrons", user_id))
+            history = eval(self.DBmanager.get_label(
+                "history", "patrons", user_id))
             current_orders += [order_id]
             history += [order_id]
             free_count -= 1
 
-            self.DBmanager.edit_label(type_bd, ["free_count"], [free_count], doc_id)
+            self.DBmanager.edit_label(
+                type_bd, ["free_count"], [free_count], doc_id)
             self.DBmanager.edit_label("patrons", ["history", "current_docs"], [str(history), str(current_orders)],
                                       user_id)
             self.log(
@@ -288,7 +307,8 @@ class Controller:
             return True, 'OK'
 
         else:
-            self.log('INFO', 'Not enough copies of document \'{}\''.format(self.get_document(doc_id, type_bd)['title']))
+            self.log('INFO', 'Not enough copies of document \'{}\''.format(
+                self.get_document(doc_id, type_bd)['title']))
             return False, 'Not enough copies'
 
     def user_get_doc(self, order_id):
@@ -329,12 +349,14 @@ class Controller:
     def outstanding_request(self, doc_id, doc_type, date=date.today()):
         orders = self.get_all_orders()
         self.outstanding.append((doc_id, doc_type))
-        deleted_from_waiting_list = [i['id'] for i in self.get_document_queue(doc_type, doc_id)]
+        deleted_from_waiting_list = [i['id']
+                                     for i in self.get_document_queue(doc_type, doc_id)]
         self.delete_doc_queue(doc_id, doc_type)
         notified_patrons = []
         for order in orders:
             if order['table'] == doc_type and str(order['doc_id']) == str(doc_id) and order['active'] == 1:
-                self.DBmanager.edit_label('orders', ['out_of_time'], [str(date)], order['id'])
+                self.DBmanager.edit_label('orders', ['out_of_time'], [
+                                          str(date)], order['id'])
                 notified_patrons.append(order['user_id'])
         return [deleted_from_waiting_list, notified_patrons]
 
@@ -342,19 +364,24 @@ class Controller:
         order = self.get_order(order_id)
         fine = self.calculate_fine(order)
         user_id, doc_id, doc_type = order["user_id"], order["doc_id"], order["table"]
-        curr_doc = eval(self.DBmanager.get_label('current_docs', 'patrons', user_id))
+        curr_doc = eval(self.DBmanager.get_label(
+            'current_docs', 'patrons', user_id))
         curr_doc.remove(order['id'])
         if (doc_id, doc_type) in self.outstanding:
-            self.outstanding.remove((doc_id,doc_type))
+            self.outstanding.remove((doc_id, doc_type))
 
-        free_count = int(self.DBmanager.get_label("free_count", order['table'], doc_id))
+        free_count = int(self.DBmanager.get_label(
+            "free_count", order['table'], doc_id))
         free_count += 1
 
         returned_time = str(datetime.now()).split(' ')[0]
 
-        self.DBmanager.edit_label(order['table'], ['free_count'], [free_count], doc_id)
-        self.DBmanager.edit_label('patrons', ['current_docs'], [str(curr_doc)], user_id)
-        self.DBmanager.edit_label('orders', ['active', 'out_of_time'], [2, returned_time], order['id'])
+        self.DBmanager.edit_label(
+            order['table'], ['free_count'], [free_count], doc_id)
+        self.DBmanager.edit_label('patrons', ['current_docs'], [
+                                  str(curr_doc)], user_id)
+        self.DBmanager.edit_label('orders', ['active', 'out_of_time'], [
+                                  2, returned_time], order['id'])
         self.log('INFO', 'User {} is returned document {}.'.format(
             self.get_user(user_id)['name'],
             self.get_document(doc_id, order['table'])['title']))
@@ -365,8 +392,9 @@ class Controller:
 
             next_owner = queue[0]
             if (not testing):
-                 self.delete_user_queue(next_owner['id'], order["table"], doc_id)
-                 self.check_out_doc(next_owner['id'], doc_id, order["table"])
+                self.delete_user_queue(
+                    next_owner['id'], order["table"], doc_id)
+                self.check_out_doc(next_owner['id'], doc_id, order["table"])
             queue_was_used = [True, next_owner]
         return True, fine, queue_was_used, next_owner['id']
 
@@ -413,10 +441,8 @@ class Controller:
             return None
         return tuple_to_dict('order', order)
 
-    def get_all_orders(self, by_who_id=-1):
-        by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)['name']
+    def get_all_orders(self):
         orders = self.DBmanager.select_all('orders')
-        self.log('INFO', 'Librarian {} whant to see all orders'.format(by_who))
         output = [tuple_to_dict('order', order) for order in orders]
         for order in output:
             doc = self.DBmanager.select_label(order['table'], order['doc_id'])
@@ -424,10 +450,8 @@ class Controller:
             order['user'] = self.get_user(order['user_id'])
         return output
 
-    def get_all_active_orders(self, by_who_id=-1):
-        by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)['name']
+    def get_all_active_orders(self):
         orders = self.DBmanager.get_by('active', 'orders', 1)
-        self.log('INFO', 'Librarian {} whant to see all active orders'.format(by_who))
         output = [tuple_to_dict('order', order) for order in orders]
         for order in output:
             doc = self.DBmanager.select_label(order['table'], order['doc_id'])
@@ -435,10 +459,8 @@ class Controller:
             order['user'] = self.get_user(order['user_id'])
         return output
 
-    def get_all_waiting_doc(self, by_who_id=-1):
-        by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)['name']
+    def get_all_waiting_doc(self):
         orders = self.DBmanager.get_by('active', 'orders', 0)
-        self.log('INFO', 'Librarian {} whant to see all waiting orders'.format(by_who))
         output = [tuple_to_dict('order', order) for order in orders]
         for order in output:
             doc = self.DBmanager.select_label(order['table'], order['doc_id'])
@@ -446,10 +468,8 @@ class Controller:
             order['user'] = self.get_user(order['user_id'])
         return output
 
-    def get_all_returned_orders(self, by_who_id=-1):
-        by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)['name']
+    def get_all_returned_orders(self):
         orders = self.DBmanager.get_by('active', 'orders', 2)
-        self.log('INFO', 'Librarian {} wants to see all returned orders'.format(by_who))
         output = [tuple_to_dict('order', order) for order in orders]
         for order in output:
             doc = self.DBmanager.select_label(order['table'], order['doc_id'])
@@ -478,20 +498,23 @@ class Controller:
         elif key == 'reference_article':
             self.DBmanager.add_reference_article(Packager(doc))
 
-        by_who = 'UNKNOW' if by_who_id == 0 else self.get_user(by_who_id)['name']
-        self.log('INFO', '{} \'{}\' is added to system by {}.'.format(key.capitalize(), doc['title'], by_who))
+        by_who = 'UNKNOW' if by_who_id == 0 else self.get_user(by_who_id)[
+            'name']
+        self.log('INFO', '{} \'{}\' is added to system by {}.'.format(
+            key.capitalize(), doc['title'], by_who))
 
     def modify_document(self, doc, doc_type, by_who_id=0):
         doc_id = doc['id']
-        self.DBmanager.edit_label(doc_type, list(doc.keys()), list(doc.values()), doc_id)
-        by_who = 'UNKNOW' if by_who_id == 0 else self.get_user(by_who_id)['name']
+        self.DBmanager.edit_label(doc_type, list(
+            doc.keys()), list(doc.values()), doc_id)
+        by_who = 'UNKNOW' if by_who_id == 0 else self.get_user(by_who_id)[
+            'name']
         log = 'Document with id {} was modified by {}: '.format(
             doc_id, by_who) + ', '.join(['new ' + str(key) + ' is ' + str(doc[key]) for key in doc.keys()])
         self.log('INFO', log)
 
     def add_copies_of_document(self, doc_type, doc_id, new_count, by_who_id=0):
         doc = self.get_document(doc_id, doc_type)
-
         new_free_count = doc['free_count'] + new_count  # - doc['count']
         self.modify_document({'id': doc_id, 'count': doc['count'] + new_count, 'free_count': new_free_count}, doc_type,
                              by_who_id)
@@ -525,27 +548,21 @@ class Controller:
         return [tuple_to_dict('media', media) for media in rows]
 
     def get_all_doctype(self, doc_type, by_who_id=-1):
-        by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)['name']
         if doc_type == 'book':
             return self.get_all_books()
         elif doc_type == 'article':
             return self.get_all_articles()
         elif doc_type == 'media':
             return self.get_all_media()
-        self.log('INFO', 'Get all {} by {}.'.format(doc_type.capitalize(), by_who))
 
     def get_documents_by_title(self, title, type_db, by_who_id=-1):
-        by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)['name']
         documents = self.DBmanager.get_by('title', type_db, title)
-        self.log('INFO', 'Get {} by title {} by {}.'.format(type_db.capitalize(), title, by_who))
         return [tuple_to_dict(type_db, i) for i in documents]
 
     def get_documents_by_authors(self, authors, type_db, by_who_id=-1):
-        by_who = 'UNKNOW' if by_who_id == -1 else self.get_user(by_who_id)['name']
         documents = self.get_all_doctype(type_db)
         output = []
         for doc in documents:
             if all([author in doc['authors'].split(';') for author in authors]):
                 output.append(doc)
-        self.log('INFO', 'Get {} by authors: {}.'.format(type_db.capitalize(), ', '.join(authors)))
         return output
