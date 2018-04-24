@@ -23,7 +23,7 @@ class DBManager:
 
     def get_user(self, login, hash_passwd):
         cursor = self.db_connectionn.cursor()
-        cursor.execute("SELECT * FROM librarians WHERE login=%s AND PASSWORD=%s;", (login, hash_passwd,))
+        cursor.execute("SELECT * FROM librarians WHERE login=%s AND password=%s;", (login, hash_passwd,))
         res = cursor.fetchone()
         cursor.close()
         return res
@@ -44,7 +44,7 @@ class DBManager:
 
     def get_user_id(self, login, hash_passwd):
         cursor = self.db_connectionn.cursor()
-        cursor.execute("SELECT (id) FROM librarians WHERE login=%s AND PASSWORD=%s;", (login, hash_passwd,))
+        cursor.execute("SELECT (id) FROM librarians WHERE login=%s AND password=%s;", (login, hash_passwd,))
         res = cursor.fetchone()
         cursor.close()
         return res

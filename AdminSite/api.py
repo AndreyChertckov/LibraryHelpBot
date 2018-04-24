@@ -94,13 +94,13 @@ class API:
 
     def signin_post(self):
         login = request.values.get('login')
-        password = md5_hash(request.values.get('passwd').encode('utf-8'))
-        if self.dbmanager.get_user(login, password) is None:
+        passwd = md5_hash(request.values.get('password').encode('utf-8'))
+        if self.dbmanager.get_user(login, passwd) is None:
             response = self.app.make_response(redirect('/signin'))
             response.set_cookie('error', 'Login error')
             return response
         response = self.app.make_response(redirect('/'))
-        response.set_cookie('session_id', create_session(login, password, self.dbmanager))
+        response.set_cookie('session_id', create_session(login, passwd, self.dbmanager))
         return response
 
     @security_decorator_maker(3)
@@ -142,7 +142,7 @@ class API:
         if ver_str in values and self.dbmanager.if_verification_string_exist(values.get(ver_str), 1):
             keys = ['login', 'name', 'phone', 'address']
             user = dict(zip(keys, [values.get(key) for key in keys]))
-            user['passwd'] = md5_hash(values.get('passwd').encode('utf-8'))
+            user['passwd'] = md5_hash(values.get('password').encode('utf-8'))
             user['privilege'] = self.dbmanager.get_privilege_by_verification_string(values.get(ver_str))
             self.dbmanager.create_user(user)
             response = self.app.make_response(redirect('/'))
