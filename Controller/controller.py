@@ -436,7 +436,7 @@ class Controller:
     
     def delete_waiting_order(self,order_id):
         order = self.get_order(order_id)
-        user_id, doc_id, doc_type = order["user_id"], order["doc_id"], order["table"]
+        user_id, doc_id = order["user_id"], order["doc_id"]
         curr_doc = eval(self.DBmanager.get_label(
             'current_docs', 'patrons', user_id))
         curr_doc.remove(order['id'])
