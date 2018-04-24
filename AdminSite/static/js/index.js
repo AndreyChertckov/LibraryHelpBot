@@ -1147,7 +1147,13 @@ function user_get_doc() {
 }
 
 function delete_order() {
-
+    order_id_ = $(this).parent().parent().attr("id");
+    $.post("/api/reject_order", { order_id: order_id_ }, function (data, status) {
+        if (data == 'Access forbidden.') {
+            alert('Access forbidden.');
+        }
+    });
+    $(this).parent().parent().remove();
 }
 
 function active_orders() {

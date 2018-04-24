@@ -433,6 +433,9 @@ class Controller:
             order['doc'] = tuple_to_dict(order['table'], doc)
             output.append(order)
         return output
+    
+    def delete_waiting_order(self,order_id):
+        self.DBmanager.delete_label('orders',order_id)
 
     def get_order(self, order_id):
         order = self.DBmanager.select_label("orders", order_id)

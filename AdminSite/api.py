@@ -72,6 +72,7 @@ class API:
         add_rule('/api/get_librarian_by_name', 'get_librarian_by_name', self.get_librarian_by_name_post, methods=['POST'])
         add_rule('/api/get_user', 'get_user', self.get_user_post, methods=['POST'])
         add_rule('/api/get_user_by_name', 'get_user_by_name', self.get_user_by_name_post, methods=['POST'])
+        add_rule('/api/reject_order', 'reject_order', self.reject_order_post, methods=['POST'])
         add_rule('/api/user_get_doc', 'user_get_doc', self.user_get_doc_post, methods=['POST'])
         add_rule('/api/return_doc', 'return_doc', self.return_doc_post, methods=['POST'])
         add_rule('/api/get_user_orders', 'get_user_orders', self.get_user_orders_post, methods=['POST'])
@@ -236,6 +237,14 @@ class API:
             return jsonify(self.controller.get_user_by_name(request.values.get('name')))
         else:
             return 'Need id of user'
+
+    @security_decorator_maker(0)
+    def reject_order_post(self):
+        if 'order_id' in request.values:
+            self.controller.delete_waiting_order(request.values.get('order_id'))
+            return 'OK'
+        else:
+            return 'Need id of order'
 
     @security_decorator_maker(0)
     def user_get_doc_post(self):
