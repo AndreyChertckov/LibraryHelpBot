@@ -25,8 +25,13 @@ function account_info() {
         output_html = "<div class='row'><div class='col-md-11'><h3 id='name'>" + data['name'] + "</h3></div><div class='col-md-1'><button id = '0' class='btn btn-sm settings'><span data-feather='settings'></span></div></div>\
             <h5>Id: </h5><p id='id'>" + data['id'] + "</p>\
             <h5>Phone: </h5><p id='phone'>" + data['phone'] + "</p>\
-            <h5>Address: </h5><p id='address'>"+ data['address'] + "</p>\
-            <h5>Privilege: </h5><p id='status'>" + (data['privilege']+1) + "</p>";
+            <h5>Address: </h5><p id='address'>"+ data['address'] + "</p>";
+        if ((data['privilege']+1) == 4) {
+            output_html += "<h5>Privilege Level: </h5><p id='status'>Admin</p>";
+        }else {
+            output_html += "<h5>Privilege Level: </h5><p id='status'>Librarian level " + (data['privilege'] +1) + "</p>";
+        }
+        
         $(".content").html(output_html);
         feather.replace();
     });
@@ -51,10 +56,12 @@ function invite_links() {
 
 function generate_link() {
     privi = -1;
-    while(privi >= 3 || privi <0) {
+    while(privi >= 3 || privi <= 0) {
         privi = prompt('Enter user privilege') - 1;
+        if(plivi == null) {
+            return;
+        }
     }
-    
     $.post("/api/generate_invite_link", {privilege:privi}, function (data, status) {
         if (data == 'Access forbidden.') {
             alert('Access forbidden.');
@@ -1140,7 +1147,13 @@ function user_get_doc() {
 }
 
 function delete_order() {
-
+    order_id_ = $(this).parent().parent().attr("id");
+    $.post("/api/reject_order", { order_id: order_id_ }, function (data, status) {
+        if (data == 'Access forbidden.') {
+            alert('Access forbidden.');
+        }
+    });
+    $(this).parent().parent().remove();
 }
 
 function active_orders() {
