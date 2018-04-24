@@ -486,7 +486,7 @@ class Controller:
         return output
 
     def get_all_returned_orders(self):
-        orders = self.DBmanager.get_by('active', 'orders', 2)
+        orders = self.DBmanager.get_by('active', 'orders', 2)[0]
         output = [tuple_to_dict('order', order) for order in orders]
         for order in output:
             doc = self.DBmanager.select_label(order['table'], order['doc_id'])
