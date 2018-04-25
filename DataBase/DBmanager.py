@@ -1,4 +1,6 @@
+import logging
 import pymysql
+
 from configs import *
 
 
@@ -16,12 +18,15 @@ from configs import *
 
 class Manager:
     # initializion of object
-    def __init__(self):
+    def __init__(self,logging=False,controller=False):
         # self.drop_table("orders")
-
         self.db_connectionn = pymysql.connect('localhost', library_login_database, library_password_database,
                                               library_database, autocommit=True)
+        self.logging=logging
+        self.control=controller
+        self.flag=False
         self.__create_tables()
+
 
     def get_connection(self):
         return self.db_connectionn.cursor()
@@ -46,6 +51,7 @@ class Manager:
     # returns number of the last row in the table
 
     def drop_tables(self):
+        self.drop_table('librarians')
         self.drop_table('book')
         self.drop_table('orders')
         self.drop_table('patrons')
@@ -69,6 +75,7 @@ class Manager:
         sql = """INSERT INTO reference_book(title,authors,description,keywords) VALUES (%s,%s,%s,%s)"""
         self.add_new(sql, (new_ref_book.title, new_ref_book.authors, new_ref_book.description, new_ref_book.keywords))
 
+    # 
     def add_reference_article(self, newArticle):
         sql = """INSERT INTO reference_article(title,authors,journal,keywords,issue,editors,date)
               VALUES(%s,%s,%s,%s,%s,%s,%s)"""
@@ -86,9 +93,11 @@ class Manager:
     #  ---newLibr -  'Librarian' Object
 
     def add_librarian(self, newLibr):
-        sql = """INSERT INTO librarians(id,name,phone,address)
-                    VALUES(%s,%s,%s,%s)"""
-        self.add_new(sql, (newLibr.id, newLibr.name, newLibr.phone, newLibr.address))
+        sql = """INSERT INTO librarians (id,name,phone,address,privileges)
+                    VALUES (%s,%s,%s,%s,%s) """
+        if (self.logging):
+            self.control.log('INFO','New Librarian: Lib{} was added'.format(newLibr.id))
+        self.add_new(sql, (newLibr.id, newLibr.name, newLibr.phone, newLibr.address,newLibr.privileges))
 
     # Add new unconfirmed user to DB
     # params:
@@ -146,8 +155,11 @@ class Manager:
     # Add new 'patron' to DB
     # params:
     # ---newPatron - 'Patron' object
-    def add_patron(self, newPatron):
+    def add_patron(self, newPatron,by_who_id=-1):
         sql = """INSERT INTO patrons(id, name, address, phone, history, current_docs, status,queue) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"""
+        if (self.logging):
+            self.control.log('INFO','New patron {} has been created by  Lib{}'.format(
+                newPatron.name,by_who_id))
         self.add_new(sql, (newPatron.id, newPatron.name, newPatron.address, newPatron.phone,
                            str(newPatron.history), str(newPatron.current_docs), newPatron.status, '[]'))
 
@@ -279,6 +291,15 @@ class Manager:
              FOREIGN KEY (user_id) REFERENCES patrons(id)
              );
         """)
+        self.__execute_sql("""
+        CREATE TABLE IF NOT EXISTS librarians(
+        id INTEGER PRIMARY KEY,
+        name   TEXT,
+        phone  TEXT,
+        address TEXT,
+        privileges INTEGER
+        );
+        """)
         self.__execute_sql("""SET sql_notes = 1;""")
 
     # Add new record to the database
@@ -298,10 +319,12 @@ class Manager:
         return a if a else 0
 
     def get_by(self, get_by_what, get_from, get_value):
-        sql = "SELECT * from " + get_from + " WHERE " + get_by_what + "=%s"
-        cur = self.__return_sql(sql, (get_value,))
-        res = cur.fetchall()
-        cur.close()
+        sql = "SELECT * from " + get_from
+        res=[]
+        cur=self.__return_sql(sql).fetchall()
+        for id in cur:
+          if (self.get_label(get_by_what,get_from,id[0]).lower().__contains__(get_value.lower())):
+                res.append(id)
         return res
 
     def get_by_parameters(self, get_by_whats, get_from, get_values):

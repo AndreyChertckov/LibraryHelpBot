@@ -62,7 +62,7 @@ class API:
         add_rule('/api/get_account_info', 'get_account_info', self.get_account_info, methods=['POST'])
         add_rule('/api/get_verification_links', 'get_verification_links', self.get_verification_links, methods=['POST'])
         add_rule('/api/generate_invite_link', 'generate_invite_link', self.generate_verification_string, methods=['POST'])
-        add_rule('/api/get_verification_message', 'get_verification_message', self.get_verification_message_post, methods=['POST'])
+        add_rule('/api/get_telegram_verification_message', 'get_telegram_verification_message', self.get_verification_message_post, methods=['POST'])
         add_rule('/api/get_all_unconfirmed', 'get_all_unconfirmed', self.get_all_unconfirmed_post, methods=['POST'])
         add_rule('/api/confirm_user', 'confirm_user', self.confirm_user_post, methods=['POST'])
         add_rule('/api/modify_user', 'modify_user', self.modify_user_post, methods=['POST'])
@@ -72,6 +72,7 @@ class API:
         add_rule('/api/get_librarian_by_name', 'get_librarian_by_name', self.get_librarian_by_name_post, methods=['POST'])
         add_rule('/api/get_user', 'get_user', self.get_user_post, methods=['POST'])
         add_rule('/api/get_user_by_name', 'get_user_by_name', self.get_user_by_name_post, methods=['POST'])
+        add_rule('/api/reject_order', 'reject_order', self.reject_order_post, methods=['POST'])
         add_rule('/api/user_get_doc', 'user_get_doc', self.user_get_doc_post, methods=['POST'])
         add_rule('/api/return_doc', 'return_doc', self.return_doc_post, methods=['POST'])
         add_rule('/api/get_user_orders', 'get_user_orders', self.get_user_orders_post, methods=['POST'])
@@ -94,13 +95,13 @@ class API:
 
     def signin_post(self):
         login = request.values.get('login')
-        password = md5_hash(request.values.get('passwd').encode('utf-8'))
-        if self.dbmanager.get_user(login, password) is None:
+        passwd = md5_hash(request.values.get('password').encode('utf-8'))
+        if self.dbmanager.get_user(login, passwd) is None:
             response = self.app.make_response(redirect('/signin'))
             response.set_cookie('error', 'Login error')
             return response
         response = self.app.make_response(redirect('/'))
-        response.set_cookie('session_id', create_session(login, password, self.dbmanager))
+        response.set_cookie('session_id', create_session(login, passwd, self.dbmanager))
         return response
 
     @security_decorator_maker(3)
@@ -142,7 +143,7 @@ class API:
         if ver_str in values and self.dbmanager.if_verification_string_exist(values.get(ver_str), 1):
             keys = ['login', 'name', 'phone', 'address']
             user = dict(zip(keys, [values.get(key) for key in keys]))
-            user['passwd'] = md5_hash(values.get('passwd').encode('utf-8'))
+            user['passwd'] = md5_hash(values.get('password').encode('utf-8'))
             user['privilege'] = self.dbmanager.get_privilege_by_verification_string(values.get(ver_str))
             self.dbmanager.create_user(user)
             response = self.app.make_response(redirect('/'))
@@ -165,8 +166,8 @@ class API:
         session_id = request.cookies['session_id']
         user_id = self.dbmanager.get_user_id_by_session(session_id)[0]
         user = tuple_to_dict('account', self.dbmanager.get_user_by_id(user_id))
-        user.pop('passwd')
-        user.pop('chat_id')
+        user.pop('passwd', 0)
+        user.pop('chat_id', 0)
         return jsonify(user)
 
     @security_decorator_maker(0)
@@ -178,7 +179,8 @@ class API:
     def confirm_user_post(self):
         if 'user_id' in request.values:
             user_id = request.values.get('user_id')
-            success = self.controller.confirm_user(user_id)
+            librarian_id = self.dbmanager.get_user_id_by_session(request.cookies.get('session_id'))[0]
+            success = self.controller.confirm_user(user_id,librarian_id)
             if success:
                 self.notification_id = [user_id]
             return 'OK' if success else "Something went wrong"
@@ -192,7 +194,8 @@ class API:
         user = {key: request.values.get(key) for key in keys if key in request.values}
         if not ('id' in user):
             return 'Need id'
-        self.controller.modify_user(user)
+        librarian_id = self.dbmanager.get_user_id_by_session(request.cookies.get('session_id'))[0]
+        self.controller.modify_user(user,librarian_id)
         self.notification_id = [user['id']]
         return 'OK'
 
@@ -236,6 +239,14 @@ class API:
             return 'Need id of user'
 
     @security_decorator_maker(0)
+    def reject_order_post(self):
+        if 'order_id' in request.values:
+            self.controller.delete_waiting_order(request.values.get('order_id'))
+            return 'OK'
+        else:
+            return 'Need id of order'
+
+    @security_decorator_maker(0)
     def user_get_doc_post(self):
         if 'order_id' in request.values:
             self.controller.user_get_doc(request.values.get('order_id'))
@@ -248,7 +259,6 @@ class API:
     def return_doc_post(self):
         if 'order_id' in request.values:
             *_, self.notification_id = self.controller.return_doc(request.values.get('order_id'))
-            self.notification_id = [self.notification_id]
         else:
             return 'Need id of order'
 
@@ -300,8 +310,8 @@ class API:
         if all([key in values for key in keys]):
             document = dict(zip(keys, [values.get(key) for key in keys]))
             document['best_seller'] = int(document['best_seller'])
-            print(document)
-            self.controller.add_document(document, doc_type)
+            librarian_id = self.dbmanager.get_user_id_by_session(request.cookies.get('session'))[0]
+            self.controller.add_document(document, doc_type,librarian_id)
             return 'OK'
         else:
             print([key for key in values.keys()])
@@ -317,10 +327,12 @@ class API:
             return 'Need id'
         if not ('type' in values):
             return 'Need type'
-        self.controller.modify_document(doc, values.get('type'))
+        librarian_id = self.dbmanager.get_user_id_by_session(request.cookies.get('session'))[0]
+        self.controller.modify_document(doc, values.get('type'),librarian_id)
         return 'OK'
 
     @security_decorator_maker(0)
+    @notification_decorator_maker("You can get the document")
     def add_copies_of_doc_post(self):
         values = request.values
         if not ('id' in values):
@@ -329,6 +341,11 @@ class API:
             return 'Need delta count'
         if not ('type' in values):
             return 'Need type'
+        queue = self.controller.get_document_queue(values.get('type'),values.get('id'))
+        if int(values.get('delta_count')) > 0:
+            for i in range(min([len(queue),int(values.get('delta_count'))])):
+                self.notification_id.append(queue[i]['id'])
+                self.controller.delete_user_queue(queue[i]['id'],values.get('type'),values.get('id'))
         self.controller.add_copies_of_document(values.get('type'), values.get('id'), int(values.get('delta_count')))
         return 'OK'
 
