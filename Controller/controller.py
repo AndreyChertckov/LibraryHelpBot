@@ -353,7 +353,7 @@ class Controller:
         return doc
 
     def outstanding_request(self, doc_id, doc_type, date=date.today(),by_who_id=0):
-        if self.DBmanager.get_label('privileges','librarians',by_who_id)<2:
+        if self.testing and self.DBmanager.get_label('privileges','librarians',by_who_id)<2:
             self.log('INFO','Outstanding request by Lib{} is not possible'.format(by_who_id))
             return False
         orders = self.get_all_orders()
