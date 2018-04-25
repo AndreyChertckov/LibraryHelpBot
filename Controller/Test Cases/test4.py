@@ -69,7 +69,7 @@ def test_two():
     m.add_librarian(Packager(l2))
     m.add_librarian(Packager(l3))
     assert (m.get_count('librarians') == 3)
-    print('Ok')
+    return True
 
 
 def test_three():
@@ -82,7 +82,7 @@ def test_three():
     assert (c.add_copies_of_document('book', 2, 3, l1['id']) == False)
     assert (c.add_copies_of_document('book', 3, 3, l1['id']) == False)
     assert (m.get_count('book') == 0)
-    print('Ok')
+    return True
 
 
 def test_four():
@@ -101,14 +101,14 @@ def test_four():
     m.add_patron(Packager(v), 2)
 
     assert (m.get_count('patrons') == 5)
-    print('Ok')
+    return True
 
 
 def test_five():
     test_four()
     c.add_copies_of_document('book', 1, -1, by_who_id=l2['id'])
     assert (m.get_label('count', 'book', 1) == 2)
-    print('Ok')
+    return True
 
 
 def test_six():
@@ -119,7 +119,7 @@ def test_six():
     c.check_out_doc(v['id'], 3)
     c.check_out_doc(p3['id'], 3)
     assert (c.outstanding_request(3, 'book', by_who_id=1) == False)
-    print('Ok')
+    return True
 
 
 def test_seven():
@@ -132,7 +132,7 @@ def test_seven():
     req = c.outstanding_request(3, 'book', by_who_id=3)
     assert (c.get_document_queue('book', 3) == [])
     assert (req == [[v['id'], p3['id']], [p1['id'], p2['id'], s['id']]])
-    print('Ok')
+    return True
 
 def test_eight():
     test_six()
@@ -148,19 +148,19 @@ def test_ten():
     res_book = Packager(c.get_documents_by_title('Introduction to Algorithms', 'book')[0])
     assert (res_book.title == d1['title']
             and res_book.authors == d1['authors'])
-    print('Ok')
+    return True
 
 def test_eleven():
     test_four()
     res = c.get_documents_by_title('Algorithms', 'book')
     assert ([i['title'] for i in res] == [d1['title'], d2['title']])
-    print('Ok')
+    return True
 
 def test_twelve():
     test_four()
     res = c.get_documents_by_keywords('Algorithms', 'book')
     assert ([i['title'] for i in res] == [d1['title'], d2['title'], d3['title']])
-    print('Ok')
+    return True
 
 def run_test(i):
     tests = [test_one, test_two, test_three, test_four, test_five,
