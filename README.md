@@ -12,12 +12,12 @@ This is the implementation of Library Management System (LMS). LMSs are used in 
 2.  Bot analyzes the response and sends commands to the controller which executes the command and makes according changes in the database.
 
 ## Dependencies
-> wheel
-python-telegram-bot
-pytest
-flask
-PyMySQL
-> PySocks
+* wheel
+* python-telegram-bot
+* pytest
+* flask
+* PyMySQL
+* PySocks
 
 ## Installation
 
