@@ -120,10 +120,10 @@ class LibraryBot:
                 nonlocal text
                 search_w = [i.split(" and ") for i in text[1].lower().split(" or ")]
                 y = [1]*len(search_w)
-                for i in search_w:
+                for ind, i in enumerate(search_w):
                     for j in range(len(i)):
-                        y[i] *= x['title'].lower().find(i[j]) >= 0 or x['authors'].lower().find(i[j]) >= 0 or \
-                                x['keywords'].lower().find(i[j]) >= 0
+                        y[ind] *= int(x['title'].lower().find(i[j]) >= 0 or x['authors'].lower().find(i[j]) >= 0 or \
+                                    x['keywords'].lower().find(i[j]) >= 0)
                 return sum(y)
             data_list = list(filter(sep, data_list))
 
