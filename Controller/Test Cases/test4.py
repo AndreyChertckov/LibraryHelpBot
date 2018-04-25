@@ -166,10 +166,11 @@ def run_test(i):
     tests = [test_one, test_two, test_three, test_four, test_five,
              test_six, test_seven, test_eight, test_nine, test_ten, test_eleven(), test_twelve()]
     tests[i]()
+    return True
 
 i = 0
 
 while (True):
     print('Enter test number:')
     test=int(input())
-    run_test(i)
+    print(run_test(i))
