@@ -45,12 +45,12 @@ def main():
     c = Controller(file_db, lc, lf, file_log)
     if not only_site:
         LibraryBot = start_bot(c)
-        # site = Main(c, LibraryBot.get_bot())
-        # if cleanup_database:
-        #     site.api.dbmanager.cleanup_database()
-        #     site.api.dbmanager.init_tables()
-        # thread_site = threading.Thread(target=site.run)
-        # thread_site.start()
+        site = Main(c, LibraryBot.get_bot())
+        if cleanup_database:
+            site.api.dbmanager.cleanup_database()
+            site.api.dbmanager.init_tables()
+        thread_site = threading.Thread(target=site.run)
+        thread_site.start()
         LibraryBot.run()
     else:
         print('saotehus')
