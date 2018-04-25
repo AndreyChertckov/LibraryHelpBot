@@ -8,13 +8,16 @@ from DataBase.DBPackager import Packager
 # Class booking system
 class Controller:
     def __init__(
-            self, lc=False, lf=False, file_log='controller.log', test_logging=False,
-            name_test='0'):
+            self, lc=False, lf=True, file_log='controller.log', test_logging=False,
+            name_test='0',testing=False):
         self.DBmanager = Manager()
+        self.testing=testing
+        open(file_log, 'w').close()
         self.is_log = False
         if lc or lf:
             self.is_log = True
             logger_str = 'controller' if not test_logging else 'controller_' + name_test
+
             self.logger = logging.getLogger(logger_str)
             self.logger.setLevel(logging.DEBUG)
             formater = logging.Formatter(
@@ -38,6 +41,7 @@ class Controller:
                 self.logger.warning(msg)
             elif type_msg == 'INFO':
                 self.logger.info(msg)
+
 
     # Put user in queue for accepting to the library
     # param: user_info: dictionary {id,name,address,status,phone}
@@ -77,7 +81,7 @@ class Controller:
         user_id = new_user_info['id']
         self.DBmanager.edit_label('patrons', list(
             new_user_info.keys()), list(new_user_info.values()), user_id)
-        by_who = 'UNKNOW' if by_who_id == 0 else self.get_user(by_who_id)[
+        by_who = 'UNKNOWN' if by_who_id == 0 else self.get_user(by_who_id)[
             'name']
         log = 'User with id {} was modified by {}: '.format(
             user_id, by_who) + ', '.join(
@@ -94,7 +98,7 @@ class Controller:
             if table == 'patrons' and user['current_docs'] != '[]':
                 return False
             self.DBmanager.delete_label(table, user_id)
-            by_who = 'UNKNOW' if librarian_id == 0 else self.get_user(librarian_id)['name']
+            by_who = 'UNKNOWN' if librarian_id == -1 else self.get_user(librarian_id)['name']
             log = 'User {} is deleted by {}.'.format(user_id, by_who)
             self.log('INFO', log)
             return True
@@ -251,7 +255,8 @@ class Controller:
         returning_time = 1 if user_status == 'Visiting Professor' else returning_time
         return returning_time
 
-    def check_out_doc(self, user_id, doc_id, type_bd='book', returning_time=0, date_when_took=datetime.now()):
+    def check_out_doc(self, user_id, doc_id, type_bd='book',
+                      returning_time=0, date_when_took=datetime.now()):
         if self.DBmanager.select_label(type_bd, doc_id) is None:
             self.log('WARNING', 'Document with id {} not found.'.format(doc_id))
             return False, 'Document doesn`t exist'
@@ -261,7 +266,6 @@ class Controller:
         free_count = int(self.DBmanager.get_label(
             "free_count", type_bd, doc_id))
         if free_count > 0:
-
             current_orders = eval(self.DBmanager.get_label(
                 "current_docs", "patrons", user_id))
             current_docs_id = []
@@ -282,8 +286,8 @@ class Controller:
             out_of_time = str(out_of_time)
             time = time[:time.index(' ')]
             out_of_time = out_of_time[:out_of_time.index(' ')]
-
-            order = {'date': time, 'table': type_bd, "user_id": user_id, "doc_id": doc_id, "active": 0,
+            active_=1 if self.testing else 0
+            order = {'date': time, 'table': type_bd, "user_id": user_id, "doc_id": doc_id, "active": active_,
                      'out_of_time': out_of_time, 'renewed': 0}
 
             self.DBmanager.add_order(Packager(order))
@@ -307,8 +311,10 @@ class Controller:
             return True, 'OK'
 
         else:
+            self.add_queue_order(user_id,type_bd,doc_id)
             self.log('INFO', 'Not enough copies of document \'{}\''.format(
                 self.get_document(doc_id, type_bd)['title']))
+
             return False, 'Not enough copies'
 
     def user_get_doc(self, order_id):
@@ -346,7 +352,10 @@ class Controller:
                         order['time_out']))
         return doc
 
-    def outstanding_request(self, doc_id, doc_type, date=date.today()):
+    def outstanding_request(self, doc_id, doc_type, date=date.today(),by_who_id=0):
+        if self.DBmanager.get_label('privileges','librarians',by_who_id)<2:
+            self.log('INFO','Outstanding request by Lib{} is not possible'.format(by_who_id))
+            return False
         orders = self.get_all_orders()
         self.outstanding.append((doc_id, doc_type))
         deleted_from_waiting_list = [i['id']
@@ -358,9 +367,13 @@ class Controller:
                 self.DBmanager.edit_label('orders', ['out_of_time'], [
                                           str(date)], order['id'])
                 notified_patrons.append(order['user_id'])
+        self.log('INFO','Lib{} placed an outstanding_request for {} {}'.format(by_who_id,doc_type,doc_id))
+        self.log('INFO','Waiting list {} for {} {} has been deleted'.format(deleted_from_waiting_list,doc_type,doc_id))
+        self.log('INFO','Patrons with IDs:{} has been notified to return {} {}'.format(notified_patrons,
+                                                                                     doc_type,doc_id ))
         return [deleted_from_waiting_list, notified_patrons]
 
-    def return_doc(self, order_id, testing=False):
+    def return_doc(self, order_id):
         order = self.get_order(order_id)
         fine = self.calculate_fine(order)
         user_id, doc_id, doc_type = order["user_id"], order["doc_id"], order["table"]
@@ -391,7 +404,7 @@ class Controller:
         if len(queue) != 0:
 
             next_owner = queue[0]
-            if (not testing):
+            if (not self.testing):
                 self.delete_user_queue(
                     next_owner['id'], order["table"], doc_id)
                 self.check_out_doc(next_owner['id'], doc_id, order["table"])
@@ -500,6 +513,12 @@ class Controller:
     # param: price - price of the book
 
     def add_document(self, doc, key, by_who_id=0):
+        if (self.testing):
+
+            if (self.DBmanager.get_label('privileges','librarians',by_who_id)<2):
+                #print('Librarian has not enough privileges')
+                return False
+
         if doc.keys().__contains__('free_count'):
             doc['free_count'] = doc['count']
         if key == 'book':
@@ -529,6 +548,11 @@ class Controller:
         self.log('INFO', log)
 
     def add_copies_of_document(self, doc_type, doc_id, new_count, by_who_id=0):
+        if (self.testing):
+           if (self.DBmanager.get_label('privileges','librarians',by_who_id)<2):
+               #print('Librarian has not enough privileges')
+               return False
+
         doc = self.get_document(doc_id, doc_type)
         new_free_count = doc['free_count'] + new_count  # - doc['count']
         self.modify_document({'id': doc_id, 'count': doc['count'] + new_count, 'free_count': new_free_count}, doc_type,
@@ -569,6 +593,10 @@ class Controller:
             return self.get_all_articles()
         elif doc_type == 'media':
             return self.get_all_media()
+
+    def get_documents_by_keywords(self,keywords,type_db):
+        documents = self.DBmanager.get_by('keywords',type_db,keywords)
+        return [tuple_to_dict(type_db,i)for i in documents]
 
     def get_documents_by_title(self, title, type_db, by_who_id=-1):
         documents = self.DBmanager.get_by('title', type_db, title)
