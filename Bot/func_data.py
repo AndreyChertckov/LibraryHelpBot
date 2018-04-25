@@ -109,7 +109,10 @@ analog = {
 
 
 def tuple_to_dict(key, data):
-    return dict(zip(lists[key + "_db"], list(data)))
+    if data != None:
+        return dict(zip(lists[key + "_db"], list(data)))
+    else:
+        return dict()
 
 
 def text_gen(data, location, page=0, add_text=''):
