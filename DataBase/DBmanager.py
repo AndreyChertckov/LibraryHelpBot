@@ -24,6 +24,7 @@ class Manager:
                                               library_database, autocommit=True)
         self.logging=logging
         self.control=controller
+        self.flag=False
         self.__create_tables()
 
 
