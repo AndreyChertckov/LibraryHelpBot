@@ -10,6 +10,7 @@ from Bot.bot_modules.constructor import construct
 import logging
 import configs
 from datetime import datetime
+import re
 
 
 # Class represents a Bot in Telegram
@@ -108,9 +109,22 @@ class LibraryBot:
         elif location == 'search':
             doc_type = func_data.analog.get(text[0], text[0])
             data_list = self.controller.get_all_doctype(doc_type)
-            sep = lambda x: x['title'].lower().find(text[1].lower()) >= 0 or \
-                            x['authors'].lower().find(text[1].lower()) >= 0 or \
-                            x['keywords'].lower().find(text[1].lower()) >= 0
+            # search_w = [i.split(" and ") for i in text[1].lower().split(" or ")]
+            # y = [1]*len(search_w)
+            # for i in search_w:
+            #     for j in range(len(i)):
+            #
+            # hr = lambda x, r:
+            # [ for i in search_w]
+            def sep(x):
+                nonlocal text
+                search_w = [i.split(" and ") for i in text[1].lower().split(" or ")]
+                y = [1]*len(search_w)
+                for i in search_w:
+                    for j in range(len(i)):
+                        y[i] *= x['title'].lower().find(i[j]) >= 0 or x['authors'].lower().find(i[j]) >= 0 or \
+                                x['keywords'].lower().find(i[j]) >= 0
+                return sum(y)
             data_list = list(filter(sep, data_list))
 
         if len(data_list) == 0:
